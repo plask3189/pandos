@@ -15,15 +15,19 @@
 #include "../h/const.h"
 #include "../h/pcb.h" //pcb.h includes types.h
 
-pcb_PTR; // pcb_PTR is declared in pcb.h, but I think we have to define it here?
-
-pcb_PTR pcbFree_h; // declaring pcbFree.h
+HIDDEN pcb_PTR pcbFree_h; // declaration for private global variable that points
+                          // to the head of the pcbFree list (page 15)
 
 //------------2.1: The Allocation and Deallocation of pcbs--------------------
 
-/* Insert the element pointed to by p onto the pcbFree list. */
+/* Insert the element pointed to by p onto the pcbFree list.
+*  pushing a node pointed to by p (*p) onto the pcbFree list stack. */
 void freePcb(pcb_t *p){
-  // code
+	p -> p_next = pcbFree_h; // load the address of the current head into the next
+	                         // of the new node which is being pointed to by p
+	pcbFree_h = p; // set the address of the new node to the address that the head
+	             // holds. Now the head points to the new node that is on top
+							 // of the stack holding the free pcbs.
 }
 
 /* Return NULL if the pcbFree list is empty. Otherwise, remove
@@ -33,14 +37,39 @@ pointer to the removed element. ProcBlk’s get reused, so it is
 important that no previous value persist in a ProcBlk when it
 gets reallocated. */
 pcb_t *allocPcb(){
-	// code
+	// -------- Return NULL if the pcbFree list is empty. -----
+  if(pcbFree_h == NULL){
+    return NULL;
+  }
+  // -------- Otherwise, remove an element from the pcbFree list ---------
+  pcb_PTR p_temp; // initialize p_temp pointer. We need temp pointer so we can keep track of old head.
+  p_temp = pcbFree_h; // set address of current head to address of temp so that we
+	                  // can return the pointer to the removed element
+  pcbFree_h = pcbFree_h -> p_next; // access the head node's next that pcbFree_h
+	                                 // points to. Set this next to pcbFree_h so that
+																	 // pcbFree_h points to the node below the old head.
+
+	// -----------Provide initial values for ALL of the ProcBlk’s ﬁelds (i.e. NULL and/or 0)
+	p_PTR p_procBlkTemp; // initialize another pointer to point to values for ProcBlk's fields.
+	p_procBlkTemp -> p_next = NULL;
+	p_procBlkTemp -> p_prev = NULL;
+	p_procBlkTemp -> p_prnt = NULL;
+	p_procBlkTemp -> p_child = NULL;
+	p_procBlkTemp -> p_sib = NULL;
+	p_procBlkTemp -> p_semAdd= 0;
+	p_procBlkTemp -> p_supportScruct = NULL;
+
+	//------------ Then return a pointer to the removed element.
+	return p_procBlkTemp;
 }
 
 /* Initialize the pcbFree list
 Initialize the pcbFree list to contain all the elements of the static array of
 MAXPROC pcbs. This method will be called only once during data structure
 initialization. */
-initPcbs()
+void initPcbs() {
+	// code
+}
 
 
 //------------2.2: Process Queue Maintenance-----------------------------------
