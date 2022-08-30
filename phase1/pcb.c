@@ -89,7 +89,10 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 tail is pointed to by tp. Do not remove this ProcBlkfrom the process
 queue. Return NULL if the process queue is empty. */
 pcb_t *headProcQ(pcb_t *tp){
-  // code
+  if (emptyProcQ(tp)) {
+	  return Null;
+  }
+  return (tp -> p_next);
 }
 
 /*Removes the child pointed to by parent node p*/
