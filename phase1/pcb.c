@@ -21,7 +21,7 @@ HIDDEN pcb_PTR pcbFree_h; // declaration for private global variable that points
 //------------2.1: The Allocation and Deallocation of pcbs--------------------
 
 /* Insert the element pointed to by p onto the pcbFree list.
-*  pushing a node pointed to by p (*p) onto the pcbFree list stack. */
+*  Pushing a node pointed to by p (*p) onto the pcbFree list stack. */
 void freePcb(pcb_t *p){
 	p -> p_next = pcbFree_h; // load the address of the current head into the next
 	                         // of the new node which is being pointed to by p
@@ -52,7 +52,6 @@ pcb_t *allocPcb(){
 	// -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0)
 	p_PTR p_pcbTemp; // initialize another pointer to point to values for pcbs' fields.
 	// these fields are from page 8 of pandos
-	//************** idk if we need a temp pointer to be able to access them?
   /* process queue fields */
 	p_pcbTemp -> p_next = NULL;
 	p_pcbTemp -> p_prev = NULL;
@@ -62,21 +61,27 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_sib = NULL;
 	/* process status information */
 	p_pcbTemp -> p_s = NULL;
-	p_pcbTemp -> p_time = NULL;
-	p_pcbTemp -> p_semAdd = 0;
+	p_pcbTemp -> p_time = 0;
+	p_pcbTemp -> p_semAdd =NULL;
 	/* support layer information */
 	p_pcbTemp -> p_supportScruct = NULL;
 
 	//------------ Then return a pointer to the removed element.
-	return p_pcbTemp;
+	return p_temp;
 }
 
 /* Initialize the pcbFree list to contain all the elements of the static array of
 MAXPROC pcbs. This method will be called only once during data structure initialization. */
 void initPcbs() {
+	int i = 0;
 	static pcb_t pcbArray[MAXPROC]; // create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h
-  // more to come...
-	}
+	// add each pcb in MAXPROC, add it to the freeList
+	for(i = 0; i < MAXPROC; i++){
+			addressOfPcbArrayElement = &pcbArray[i]); // the & means get the address of that element of the array
+			                                         // we need to get an address because freePcb() takes a pointer
+																							 // and a pointer is an address
+			freePcb(addressOfPcbArrayElement); // addressOfPcbArrayElement will be the pointer that freePcb takes as a parameter
+		}
 }
 
 
