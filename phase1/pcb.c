@@ -7,11 +7,14 @@
 *
 *       2) Process Queue Maintenance
 *          Performs manipulations on the process queues (the ones in use currently)
+*          These process queues are double, circularly linked lists with a tail pointer tp
 *
 *       3) Process Tree Maintenance
+*
+*       4) Active Semaphore List
+*
 */
 
-// #include "../h/types.h"
 #include "../h/const.h"
 #include "../h/pcb.h" //pcb.h includes types.h
 
@@ -21,7 +24,7 @@ HIDDEN pcb_PTR pcbFree_h; // declaration for private global variable that points
 //------------2.1: The Allocation and Deallocation of pcbs--------------------
 
 /* Insert the element pointed to by p onto the pcbFree list.
-*  Pushing a node pointed to by p (*p) onto the pcbFree list stack. */
+*  Pushing a node pointed to by p onto the pcbFree list stack. */
 void freePcb(pcb_t *p){
 	p -> p_next = pcbFree_h; // load the address of the current head into the next
 	                         // of the new node which is being pointed to by p
@@ -66,13 +69,14 @@ pcb_t *allocPcb(){
 	/* support layer information */
 	p_pcbTemp -> p_supportScruct = NULL;
 
-	//------------ Then return a pointer to the removed element.
+	//------------ Then return a pointer to the removed element.------------
 	return p_temp;
 }
 
 /* Initialize the pcbFree list to contain all the elements of the static array of
 MAXPROC pcbs. This method will be called only once during data structure initialization. */
 void initPcbs() {
+  pcbFree_h = NULL; // initialize the head pointer to null.
 	int i = 0;
 	static pcb_t pcbArray[MAXPROC]; // create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h
 	// add each pcb in MAXPROC, add it to the freeList
@@ -86,10 +90,11 @@ void initPcbs() {
 
 
 //------------2.2: Process Queue Maintenance-----------------------------------
+/* Generic queue manipulation methods. The queues that will be manipulated are
+ double, circularly linked lists. */
 
 /* This method is used to initialize a variable to be tail pointer to a
-process queue.
-Return a pointer to the tail of an empty process queue; i.e. NULL. */
+process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
 pcb_t *mkEmptyProcQ() {
 	return(NULL);
 }
@@ -108,8 +113,21 @@ int emptyProcQ (pcb_t *tp){
 /* Insert the pcb pointed to by p into the process queue whose
 tail-pointer is pointed to by tp. Note the double indirection through
 tp to allow for the possible updating of the tail pointer as well. */
-void insertProcQ(pcb_t **tp, pcb_t *p){
-  // code
+void insertProcQ(pcb_t **tp, pcb_t *p){ /* **tp is the pointer to the pointer of tp
+	                                       *p is the node that p points to */
+	if (emptyProcQ(*tp)){ // if the queue is empty (the tail pointer points to NULL)
+		// set p_prev and p_next to point to itself.
+		p -> p_prev = p; // p points to the whole new node where there is a field p_prev.
+		                 // By accessing p_prev through the whole node's pointer p, p_prev
+										 // is set to the address of it's own node, held by the pointer p.
+
+		p -> p_next = p; // The p_next field is set to the whole node's address
+		                 // Now the p_next and p_prev of the new node points to the whole new node's own address
+	}
+	else{
+		// more code to enqueue a new node.
+
+	}
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
@@ -135,7 +153,7 @@ whose tail is pointed to by tp. Do not remove this pcbfrom the process queue.
  Return NULL if the process queue is empty. */
 pcb_t *headProcQ(pcb_t *tp){
   if (emptyProcQ(tp)) {
-	  return Null;
+	  return NULL;
   }
   return (tp -> p_next);
 }
@@ -165,4 +183,36 @@ to by p has no parent, return NULL; otherwise, return p. Note that the element p
 to by p need not be the first child of its parent. */
 pcb_t *outChild(pcb_t *p){
 	// code
+}
+
+// ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
+
+/* Search the ASL for a descriptor of this semaphore. If none is found, return NULL;
+otherwise, remove the first (i.e. head) pcb from the process queue of the found semaphore descriptor and
+return a pointer to it. If the process queue for this semaphore becomes empty (emptyProcQ(s procq) is TRUE),
+remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
+pcb_t *removeBlocked(int *semAdd) {
+	//code
+}
+
+/* Remove the pcb pointed to by p from the process queue associated with p’s semaphore
+(p→ p semAdd) on the ASL. If pcb pointed to by p does not appear in the process queue associated
+with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
+pcb_t *outBlocked(pcb t *p) {
+	// code
+}
+
+
+
+/* Return a pointer to the pcb that is at the head of the process queue associated with the semaphore
+semAdd. Return NULL if semAdd is not found on the ASL or if the process queue associated with semAdd is empty. */
+pcb_t *headBlocked(int *semAdd){
+	//code
+}
+
+
+/* Initialize the semdFree list to contain all the elements of the array
+static semd t semdTable[MAXPROC] This method will be only called once during data structure initializa- tion. */
+void initASL(){
+	//code
 }
