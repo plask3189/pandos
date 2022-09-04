@@ -67,6 +67,7 @@ typedef struct state_t {
 
 } state_t, *state_PTR;
 
+/* Process control block type */
 typedef struct pcb_t {
 	/* Process queue fields */
 	struct pcb_t		*p_next, 	/* Pointer to next entry */
