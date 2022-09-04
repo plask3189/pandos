@@ -247,7 +247,22 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 Return NULL if initially there were no children of p. Otherwise, return a pointer
 to this removed first child pcb. */
 pcb_t *removeChild (pcb_t *p){
-	// code
+	if (emptyChild(p)) {		/* Check if p has children, if not then return NULL */
+		return NULL;
+	}
+	else if (p -> p_child -> p_sibPrev == NULL) {	/* Check if there is only ONE child */
+		pcb_t *p_temp = p -> p_child;
+		p -> p_child = NULL;
+		return p_temp;
+	}
+	else {				/* There is more than one child */
+		pcb_t *p_temp = p -> p_child;
+		p_temp -> p_sib -> p_sibPrev = NULL;
+		p -> p_child = p_temp -> p_sib;
+		p_temp -> p_sibPrev = NULL;
+		p -> p_prnt = NULL;
+		return p_temp;
+	}
 }
 /* Make the pcb pointed to by p no longer the child of its parent. If the pcb pointed
 to by p has no parent, return NULL; otherwise, return p. Note that the element pointed
