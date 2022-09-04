@@ -5,6 +5,7 @@
 #include "../h/types.h"
 #include "../h/const.h"
 #include "../h/pcb.h"
+#include "../h/asl.h"
 
 
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
