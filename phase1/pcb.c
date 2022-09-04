@@ -268,7 +268,43 @@ pcb_t *removeChild (pcb_t *p){
 to by p has no parent, return NULL; otherwise, return p. Note that the element pointed
 to by p need not be the first child of its parent. */
 pcb_t *outChild(pcb_t *p){
-	// code
+	
+	/* If-Empty handlers */
+	if (p == NULL) {		/* If p is empty, return NULL */
+		return NULL;
+	}
+	if (p -> p_prnt == NULL) {	/* If parent of p is empty, return NULL */
+		return NULL;
+	}
+	
+	/* If p is the Last child */
+	if (p -> p_sibPrev == NULL) {	/* Check if p is the Last child */
+		p -> p_sib -> p_sibPrev = NULL;	/* If true, set previous sib of p's sibling to NULL */
+		p -> p_sib = NULL;		/* Set sib of p to NULL */
+		p -> p_prnt = NULL;		/* Set parent of p to NULL */
+		return p;
+	}
+	
+	/* If p is the Head child */
+	if (p == p -> p_prnt -> p_child) {		/* Check if p is the Head child */
+		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's sibling */
+		p -> p_sib -> p_sibPrev = NULL;		/* Previous sibling of p's next sibling becomes NULL */
+		p -> p_prnt = NULL;			/* Parent of p becomes NULL */
+		p -> p_sib = NULL;			/* Sibling of p becomes NULL */
+		return p;
+	}	
+	
+	/* If p is a middle child */
+	if (p -> p_sib != NULL && p -> p_sibPrev != NULL) {	/* Check if there is a Next and Previous sibling to p */
+		p -> p_sibPrev -> p_sib = p -> p_sib;		/* If true, the Next sibling of p's Previous sibling equals the Next sibling of p  */
+		p -> p_sib -> p_sibPrev = p -> p_sibPrev;	/* The Previous sibling of p's Next sibling equals the Previous sibling of p */
+		p -> p_prnt = NULL;				/* p's parent set to NULL */
+		p -> p_sib = NULL;				/* p's Next sibling set to NULL */
+		p -> p_sibPrev = NULL;				/* p's Previous sibling set NULL */
+		return p;
+	}
+	return NULL;	/* if no conditions are met, useful for debugging as there should be a met condition */
+	
 }
 
 // ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
