@@ -120,26 +120,13 @@ void insertProcQ(pcb_t **tp, pcb_t *p){ /* **tp is the pointer to the pointer of
 	}
 	else{
 		// to enqueue a new node to the "front" when the queue is not empty
-
-		//----Lines involving the head----
-		//set the new node's prev to the tail node's prev. (which is the head. Want the actual head. Not just the pointer to the nead)
-		p->p_prev = (*tp)->p_prev;
-		// reset the tail's next address (which is the head) and get its next. change it to the address of the new node
+		p->p_next = (*tp)->p_next;
 		(*tp)->p_next = p;
-		//--------------------------
-
-		// reset the tail's prev to be the address of the new node.
-		// now the tail's prev pointer points to the new node.
-		tp->p_prev = p;
-
-		//set the new node's next to be tail node's address
-		p->p_next= tp;
-
-		// set the new node's next to be the tail's address
-		p->p_next = tp;
-
+		(*tp)->p_next -> p_prev = p;
+		p -> p_prev = (*tp);
+		p->p_next = (*tp);
 	}
-
+	(*tp) = p;
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
@@ -192,17 +179,49 @@ pointer if necessary. If the desired entry is not in the indicated queue
 can point to any element of the process queue. */
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 	pcb_PTR removed;
-
-	/* If queue is empty */
-	if(*tp = NULL) {
-		return NULL;
-	} else {
-		if ((*tp) == p) { // If the tp points to the same pcb we want to delete.
-			// more to come
-		} else { // Otherwise, the tp does not point to the same pcb we want to delete.
-			// more to come
+	pcb_PTR temp;
+		if((*tp) == NULL) {
+			return NULL;
+		} else if(p == NULL) {
+			return NULL;
 		}
-	}
+		/* If tail pointer is the same as the node we want pointed to by p*/
+		if((*tp) == p){
+			/* If tp = p and there is only one node in the queue... so the tail's next points to itself*/
+			if ((((*tp) -> p_next) == (*tp))) {
+				removed = (*tp);
+				(*tp) = mkEmptyProcQ();
+				return removed;
+			}
+			/* If tp = p and there is not only one node in the queue. */
+			if ((((*tp) -> p_next) != (*tp))) {
+				/* if tp = p and there is more than one node in the queue*/
+				(*tp)->p_prev->p_next = (*tp)->p_next;
+				   // 1. get the tail's prev which is like the thorax (if we say tail- thorax - abdomen - head)
+					 // 2. Get the thorax's next (which is the tail) and reset it to be the address of the head.
+				(*tp)->p_next->p_prev = (*tp)->p_prev;
+				   // 1. Get the head's prev and set it to be the tail's prev aka the thorax
+				(*tp) = (*tp)->p_prev; // set the thorax to be the tail.
+			} else {
+			return NULL; //idk what other case there would be, but just in case.
+		  }
+		}
+
+		/* If the tail pointer is different from the node to be removed. */
+		if((*tp) != p) {
+			temp = (*tp) -> p_prev; // begin looking for p at the thorax
+			if((temp == p) && (temp != (*tp))){ // if the thorax is p...
+				removed = temp;
+				removed -> p_prev -> p_next = removed -> p_next;
+				removed -> p_next -> p_prev = removed -> p_prev;
+				removed -> p_prev = NULL;
+				removed -> p_next = NULL;
+				return removed;
+			}
+				temp = temp -> p_prev; // get the temp's prev to increment through
+			}
+			/* node is not in the  list */
+			return NULL;
 }
 
 /* Return a pointer to the first pcb from the process queue
