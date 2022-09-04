@@ -92,7 +92,7 @@ typedef struct pcb_t {
 typedef struct semd_t {
 	struct semd_t	*s_next;	/* Next element on the ASL */
 	int		*s_semADD;	/* Pointer to the semaphore */
-	pcb_t		*s_procQ;	/* tail pointer to a process queue */
+	pcb_t		*s_procQ;	/* Tail pointer to a process queue */
 } semd_t;
 
 
