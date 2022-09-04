@@ -150,7 +150,24 @@ If the desired entry is not in the indicated queue (an error condition),
 return NULL; otherwise, return p. Note that p can point to any element of
 the process queue */
 pcb_t *removeProcQ(pcb_t **tp){
-  // code
+	pcb_PTR pointerOfRemovedNode;
+	/* If queue is empty */
+	if(*tp = NULL) {
+		return NULL;
+
+	/* If the queue has only one node */
+	}
+	if ((*tp) -> p_next == (*tp)) {
+		pointerOfRemovedNode = (*tp);
+		(*tp) = mkEmptyProcQ();
+		return pointerOfRemovedNode;
+	} 
+
+	/* If there are multiple nodes in the queue */
+	pointerOfRemovedNode = (*tp) -> p_next;
+  // more to come...
+
+	return pointerOfRemovedNode;
 }
 
 /* Remove the pcb pointed to by p from the process queue whose
