@@ -66,7 +66,6 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_child = NULL;
 	p_pcbTemp -> p_sib = NULL;
 	p_pcbTemp -> p_sibPrev = NULL;
-
 	/* process status information */
 	p_pcbTemp -> p_s = NULL;
 	p_pcbTemp -> p_time = 0;
@@ -82,9 +81,10 @@ pcb_t *allocPcb(){
 MAXPROC pcbs. This method will be called only once during data structure initialization. */
 void initPcbs() {
   pcbFree_h = NULL; // initialize the head pointer to null.
+	int i = 0;
 	static pcb_t pcbArray[MAXPROC]; // create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h
 	// add each pcb in MAXPROC, add it to the freeList
-	for(int i = 0; i < MAXPROC; i++){
+	for(i = 0; i < MAXPROC; i++){
 			addressOfPcbArrayElement = &pcbArray[i]); // the & means get the address of that element of the array
 			                                         // we need to get an address because freePcb() takes a pointer
 																							 // and a pointer is an address
@@ -100,7 +100,7 @@ void initPcbs() {
 /* This method is used to initialize a variable to be tail pointer to a
 process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
 pcb_t *mkEmptyProcQ() {
-	return(NULL);
+	return NULL;
 }
 
 /* Return TRUE if the queue whose tail is pointed to by tp is empty.
@@ -117,21 +117,34 @@ int emptyProcQ (pcb_t *tp){ //*tp is the node that tp points to.
 /* Insert the pcb pointed to by p into the process queue whose
 tail-pointer is pointed to by tp. Note the double indirection through
 tp to allow for the possible updating of the tail pointer as well. */
-void insertProcQ(pcb_t **tp, pcb_t *p){ /* **tp is the pointer to the pointer of tp
-	                                       *p is the node that p points to */
-	if (*tp == NULL){ // if the queue is empty
+void insertProcQ(pcb_t **tp, pcb_t *p){
+	/*If the queue is empty */
+	if (*tp == NULL){
 		p -> p_prev = p;
 		p -> p_next = p;
+		// the tail pointer is set to the new node at the end.
 	}
-	else{
-		// to enqueue a new node to the "front" when the queue is not empty
-		p->p_next = (*tp)->p_next;
-		(*tp)->p_next = p;
-		(*tp)->p_next -> p_prev = p;
-		p -> p_prev = (*tp);
-		p->p_next = (*tp);
+	/* If there is only one node in the queue*/
+	if((*tp)->p_next == (*tp)){
+		// Pointer rearrangements to link the old lonely node to the new one
+		p->p_next = (*tp); // set the new node's next to the tail
+		p->p_prev = (*tp); // set the new node's pre to the tail
+		(*tp)->p_prev = p; // set the tail's prev to the new node
+		(*tp)->p_next = p; // set the tail's next to the new node
+		// the tail pointer is set to the new node at the end.
 	}
-	(*tp) = p;
+
+	/* If there are multiple nodes in the queue*/
+	else {
+		p->p_next = (*tp)->p_next; // the tail's next which is the address of the head is set to the next of the new node. 
+		p->p_next->p_prev = p; // the head's prev is set to the address of p.
+		// now the head and new node are linked
+		p->p_prev = (*tp); // set the new node's prev to the tail
+		(*tp)->p_next = p; // set the tail's next to the new node
+		// the tail pointer is set to the new node at the end.
+	}
+
+	(*tp) = p; // the tail pointer is set to the new node
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
@@ -183,8 +196,8 @@ pointer if necessary. If the desired entry is not in the indicated queue
 (an error condition), return NULL; otherwise, return p. Note that p
 can point to any element of the process queue. */
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
-	pcb_PTR removed;
-	pcb_PTR temp;
+	pcb_PTR p_removed;
+	pcb_PTR p_temp;
 		if((*tp) == NULL) {
 			return NULL;
 		} else if(p == NULL) {
@@ -194,9 +207,9 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 		if((*tp) == p){
 			/* If tp = p and there is only one node in the queue... so the tail's next points to itself*/
 			if ((((*tp) -> p_next) == (*tp))) {
-				removed = (*tp);
+				p_removed = (*tp);
 				(*tp) = mkEmptyProcQ();
-				return removed;
+				return p_removed;
 			}
 			/* If tp = p and there is not only one node in the queue. */
 			if ((((*tp) -> p_next) != (*tp))) {
@@ -214,16 +227,16 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 
 		/* If the tail pointer is different from the node to be removed. */
 		if((*tp) != p) {
-			temp = (*tp) -> p_prev; // begin looking for p at the thorax
-			if((temp == p) && (temp != (*tp))){ // if the thorax is p...
-				removed = temp;
-				removed -> p_prev -> p_next = removed -> p_next;
-				removed -> p_next -> p_prev = removed -> p_prev;
-				removed -> p_prev = NULL;
-				removed -> p_next = NULL;
-				return removed;
+			p_temp = (*tp) -> p_prev; // begin looking for p at the thorax
+			if((p_temp == p) && (p_temp != (*tp))){ // if the thorax is p...
+				p_removed = p_temp;
+				p_removed -> p_prev -> p_next = p_removed -> p_next;
+				p_removed -> p_next -> p_prev = p_removed -> p_prev;
+				p_removed -> p_prev = NULL;
+				p_removed -> p_next = NULL;
+				return p_removed;
 			}
-				temp = temp -> p_prev; // get the temp's prev to increment through
+				p_temp = p_temp -> p_prev; // get the temp's prev to increment through
 			}
 			/* node is not in the  list */
 			return NULL;
