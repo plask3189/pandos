@@ -228,7 +228,7 @@ int emptyChild(pcb_t *p){
 
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
-void insertChild(pcb t *prnt, pcb t *p) {
+void insertChild(pcb_t *prnt, pcb_t *p) {
 	if (emptyChild(prnt)) {		/* check if the pcb has no children, if so: */
 		prnt -> p_child = p;	/* create child (p) from parent (prnt) */
 		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
