@@ -67,6 +67,27 @@ typedef struct state_t {
 
 } state_t, *state_PTR;
 
+typedef struct pcb_t {
+	/* Process queue fields */
+	struct pcb_t		*p_next, 	/* Pointer to next entry */
+				*p_prev,	/* Pointer to prev entry */
+		
+	/* Process tree fields */
+				*p_prnt, 	/* Pointer to parent */
+				*p_child,	/* Pointer to first child */
+				*p_sib;		/* Pointer to sibling */
+	
+	/* Process status information */
+	struct state_t		p_s;		/* Processor state */
+	cpu_t			p_time;		/* CPU time used by the processor */
+	int			*p_semAdd;	/* Pointer to sema4 on which process blocked */
+	
+	/* Support layer information */
+	support_t		*p_supportStruct;	/* Pointer to support struct */
+	
+} pcb_t;
+
+/* Registry */
 #define	s_at	s_reg[0]
 #define	s_v0	s_reg[1]
 #define s_v1	s_reg[2]
