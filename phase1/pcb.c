@@ -1,4 +1,7 @@
 /************************* pcb.c *********************************************
+* Written by Kate Plas and Travis Wahl
+* For CSCI-320 Operating Systems
+*
 * pcb.c is a Queue Manager with a few parts:
 *
 *       1)  Allocate and deallocate pcbs
@@ -13,6 +16,7 @@
 *
 *
 */
+
 #include "../h/types.h"
 #include "../h/const.h"
 #include "../h/pcb.h"
@@ -304,7 +308,7 @@ pcb_t *outChild(pcb_t *p){
 	}
 
 	/* If p is the Head child */
-	if (p == p -> p_prnt -> p_child) {		/* Check if p is the Head child */
+	if (p -> p_prnt -> p_child == p) {		/* Check if p is the Head child */
 		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's Next sibling */
 		p -> p_sib -> p_sibPrev = NULL;		/* Previous sibling of p's Next sibling becomes NULL */
 		p -> p_prnt = NULL;			/* Parent of p becomes NULL */
