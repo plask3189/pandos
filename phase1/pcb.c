@@ -279,7 +279,7 @@ pcb_t *outChild(pcb_t *p){
 	
 	/* If p is the Last child */
 	if (p -> p_sibPrev == NULL) {	/* Check if p is the Last child */
-		p -> p_sib -> p_sibPrev = NULL;	/* If true, set previous sib of p's sibling to NULL */
+		p -> p_sib -> p_sibPrev = NULL;	/* If true, set previous sib of p's Next sibling to NULL */
 		p -> p_sib = NULL;		/* Set sib of p to NULL */
 		p -> p_prnt = NULL;		/* Set parent of p to NULL */
 		return p;
@@ -287,8 +287,8 @@ pcb_t *outChild(pcb_t *p){
 	
 	/* If p is the Head child */
 	if (p == p -> p_prnt -> p_child) {		/* Check if p is the Head child */
-		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's sibling */
-		p -> p_sib -> p_sibPrev = NULL;		/* Previous sibling of p's next sibling becomes NULL */
+		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's Next sibling */
+		p -> p_sib -> p_sibPrev = NULL;		/* Previous sibling of p's Next sibling becomes NULL */
 		p -> p_prnt = NULL;			/* Parent of p becomes NULL */
 		p -> p_sib = NULL;			/* Sibling of p becomes NULL */
 		return p;
