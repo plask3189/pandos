@@ -229,11 +229,17 @@ int emptyChild(pcb_t *p){
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
 void insertChild(pcb t *prnt, pcb t *p) {
-	if (emptyChild(prnt)) {
-		prnt -> p_child = p;
-		p -> p_prnt = prnt;
-		p -> p_sibPrev = NULL;
-		p -> p_sib
+	if (emptyChild(prnt)) {		/* check if the pcb has no children, if so: */
+		prnt -> p_child = p;	/* create child (p) from parent (prnt) */
+		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
+		p -> p_sibPrev = NULL;	/* We know parent had no children, thus p_sibPrev is NULL */
+		p -> p_sib = NULL;	/* We know parent had no children, thus p_sib is NULL */
+	} else {			
+		p -> p_prnt = prnt;			/* p_prnt becomes parent */
+		prnt -> p_child -> p_sibPrev = p;	/* Previous sibling of p_child under prnt becomes p */
+		p -> p_sib = prnt -> p_child;		/* Sibling of p equals p_child of parent */
+		p -> p_sibPrev = NULL;			/* Can now set the Previous sibling of p to NULL */
+		prnt -> p_child = p;			/* p is now a child of the pcb pointed to by prnt */
 }
 
 
