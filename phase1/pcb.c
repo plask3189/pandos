@@ -62,7 +62,6 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_prnt = NULL;
 	p_pcbTemp -> p_child = NULL;
 	p_pcbTemp -> p_sib = NULL;
-	p_pcbTemp -> p_sibNext = NULL;
 	p_pcbTemp -> p_sibPrev = NULL;
 	
 	/* process status information */
@@ -233,7 +232,8 @@ void insertChild(pcb t *prnt, pcb t *p) {
 	if (emptyChild(prnt)) {
 		prnt -> p_child = p;
 		p -> p_prnt = prnt;
-		p -> 
+		p -> p_sibPrev = NULL;
+		p -> p_sib
 }
 
 
