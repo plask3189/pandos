@@ -221,7 +221,7 @@ pcb_t *headProcQ(pcb_t *tp){
 /* Return TRUE if the pcb pointed to by p has no children. Return
 FALSE otherwise. */
 int emptyChild(pcb_t *p){
-	//code
+	return (p -> p_child == NULL); 
 }
 
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
