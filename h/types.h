@@ -87,6 +87,14 @@ typedef struct pcb_t {
 	
 } pcb_t;
 
+/* Semaphore descriptor type */
+typedef struct semd_t {
+	struct semd_t	*s_next;	/* Next element on the ASL */
+	int		*s_semADD;	/* Pointer to the semaphore */
+	pcb_t		*s_procQ;	/* tail pointer to a process queue */
+} semd_t;
+
+
 /* Registry */
 #define	s_at	s_reg[0]
 #define	s_v0	s_reg[1]
