@@ -114,10 +114,9 @@ tail-pointer is pointed to by tp. Note the double indirection through
 tp to allow for the possible updating of the tail pointer as well. */
 void insertProcQ(pcb_t **tp, pcb_t *p){ /* **tp is the pointer to the pointer of tp
 	                                       *p is the node that p points to */
-	if (*tp == NULL){ // if the queue is empty the address of the tail is NULL
-		// set p_prev and p_next to point to itself.
-		p -> p_prev = p;   // address of head's next to address of head
-		p -> p_next = p;   // address of head's prev to address of head
+	if (*tp == NULL){ // if the queue is empty
+		p -> p_prev = p;
+		p -> p_next = p;
 	}
 	else{
 		// to enqueue a new node to the "front" when the queue is not empty
@@ -139,7 +138,6 @@ void insertProcQ(pcb_t **tp, pcb_t *p){ /* **tp is the pointer to the pointer of
 		// set the new node's next to be the tail's address
 		p->p_next = tp;
 
-		// set the new node's prev to the
 	}
 
 }
@@ -149,25 +147,42 @@ is pointed to by tp. Update the process queue’s tail pointer if necessary.
 If the desired entry is not in the indicated queue (an error condition),
 return NULL; otherwise, return p. Note that p can point to any element of
 the process queue */
-pcb_t *removeProcQ(pcb_t **tp){
-	pcb_PTR pointerOfRemovedNode;
+pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
+	pcb_PTR removed;
 	/* If queue is empty */
 	if(*tp = NULL) {
 		return NULL;
+	}
 
 	/* If the queue has only one node */
-	}
-	if ((*tp) -> p_next == (*tp)) {
-		pointerOfRemovedNode = (*tp);
+	if (((*tp) -> p_next == (*tp)) | ((*tp) -> p_prev == (*tp))) {
+		removed = (*tp);
 		(*tp) = mkEmptyProcQ();
-		return pointerOfRemovedNode;
-	} 
+		return removed;
+	}
 
 	/* If there are multiple nodes in the queue */
-	pointerOfRemovedNode = (*tp) -> p_next;
-  // more to come...
+	// the tail's next is the head. This is what will be removed.
+	removed = (*tp) -> p_next;
 
-	return pointerOfRemovedNode;
+	// set the vice president node's prev to point to the tail
+	(*tp) -> p_next -> p_next -> p_prev = (*tp);
+		//***** Walk through of this crazy line: ***********
+		// 1. get the tail's next which is the head address (let' make it up. say 0xpa...)
+		// 2. Now we are at the head address. 0xpa...
+		// 3. Go to the head's next which is the vice president node. Let's say it is 0xge...)
+		// 4. Now we are at the vice president node. 0xge...
+		// 5. Get the vice president's prev field. This would be 0xpa, the head.
+		// 6. Since we're deleting the head, reset the vice president's prev field to the tail
+
+	// set the tail's next field to hold the address of the vice president
+	(*tp) -> p_next = ((*tp) -> p_next -> p_next);
+	   //***** Walk through of this crazy line: ***********
+		 // 1. get the tail's next field. (An address like 0xpa...)
+		 // 2. On the other side of the equals sign, get the tail's next which is the head.
+		 // 3. Get the head's next which is the address of the vice president, (with like 0xge...)]
+		 // 4. Set the address of the vice president to be held by the next field of the tail
+	return removed;
 }
 
 /* Remove the pcb pointed to by p from the process queue whose
@@ -176,7 +191,18 @@ pointer if necessary. If the desired entry is not in the indicated queue
 (an error condition), return NULL; otherwise, return p. Note that p
 can point to any element of the process queue. */
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
-  // code
+	pcb_PTR removed;
+
+	/* If queue is empty */
+	if(*tp = NULL) {
+		return NULL;
+	} else {
+		if ((*tp) == p) { // If the tp points to the same pcb we want to delete.
+			// more to come
+		} else { // Otherwise, the tp does not point to the same pcb we want to delete.
+			// more to come
+		}
+	}
 }
 
 /* Return a pointer to the first pcb from the process queue
