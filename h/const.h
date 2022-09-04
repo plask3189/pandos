@@ -25,6 +25,7 @@
 #define	FALSE			    0
 #define HIDDEN			  static
 #define EOS				    '\0'
+#define MAXPROC       20        /* Maximum concurrent processes */
 
 #define NULL 			    ((void *)0xFFFFFFFF)
 
