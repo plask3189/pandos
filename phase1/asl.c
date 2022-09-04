@@ -2,6 +2,11 @@
 /* Written by Kate Plas and Travis Wahl
  * For CSCI-320 Operating Systems */
 
+#include "../h/types.h"
+#include "../h/const.h"
+#include "../h/pcb.h"
+
+
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
 semaphore whose physical address is semAdd and set the semaphore address of p to semAdd.
 If the semaphore is currently not active (i.e. there is no descriptor for it in the ASL),
