@@ -14,9 +14,9 @@
 *       4) Active Semaphore List
 *
 */
-
+#include "../h/types.h"
 #include "../h/const.h"
-#include "../h/pcb.h" //pcb.h includes types.h
+#include "../h/pcb.h"
 
 HIDDEN pcb_PTR pcbFree_h; // declaration for private global variable that points
                           // to the head of the pcbFree list (pandos page 15)
@@ -77,10 +77,9 @@ pcb_t *allocPcb(){
 MAXPROC pcbs. This method will be called only once during data structure initialization. */
 void initPcbs() {
   pcbFree_h = NULL; // initialize the head pointer to null.
-	int i = 0;
 	static pcb_t pcbArray[MAXPROC]; // create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h
 	// add each pcb in MAXPROC, add it to the freeList
-	for(i = 0; i < MAXPROC; i++){
+	for(int i = 0; i < MAXPROC; i++){
 			addressOfPcbArrayElement = &pcbArray[i]); // the & means get the address of that element of the array
 			                                         // we need to get an address because freePcb() takes a pointer
 																							 // and a pointer is an address
@@ -101,13 +100,13 @@ pcb_t *mkEmptyProcQ() {
 
 /* Return TRUE if the queue whose tail is pointed to by tp is empty.
 Return FALSE otherwise. */
-int emptyProcQ (pcb_t *tp){
-	// NOT READABLE. I DON'T LIKE IT:    return (tp == NULL);
-  if (tp == NULL){
+int emptyProcQ (pcb_t *tp){ //*tp is the node that tp points to.
+	return (tp == NULL);
+  /* if (tp == NULL){
     return true;
   } else {
     return false;
-  }
+  }	*/
 }
 
 /* Insert the pcb pointed to by p into the process queue whose
@@ -115,19 +114,34 @@ tail-pointer is pointed to by tp. Note the double indirection through
 tp to allow for the possible updating of the tail pointer as well. */
 void insertProcQ(pcb_t **tp, pcb_t *p){ /* **tp is the pointer to the pointer of tp
 	                                       *p is the node that p points to */
-	if (emptyProcQ(*tp)){ // if the queue is empty (the tail pointer points to NULL)
+	if (*tp == NULL){ // if the queue is empty the address of the tail is NULL
 		// set p_prev and p_next to point to itself.
-		p -> p_prev = p; // p points to the whole new node where there is a field p_prev.
-		                 // By accessing p_prev through the whole node's pointer p, p_prev
-										 // is set to the address of it's own node, held by the pointer p.
-
-		p -> p_next = p; // The p_next field is set to the whole node's address
-		                 // Now the p_next and p_prev of the new node points to the whole new node's own address
+		p -> p_prev = p;   // address of head's next to address of head
+		p -> p_next = p;   // address of head's prev to address of head
 	}
 	else{
-		// more code to enqueue a new node.
+		// to enqueue a new node to the "front" when the queue is not empty
 
+		//----Lines involving the head----
+		//set the new node's prev to the tail node's prev. (which is the head. Want the actual head. Not just the pointer to the nead)
+		p->p_prev = (*tp)->p_prev;
+		// reset the tail's next address (which is the head) and get its next. change it to the address of the new node
+		(*tp)->p_next = p;
+		//--------------------------
+
+		// reset the tail's prev to be the address of the new node.
+		// now the tail's prev pointer points to the new node.
+		tp->p_prev = p;
+
+		//set the new node's next to be tail node's address
+		p->p_next= tp;
+
+		// set the new node's next to be the tail's address
+		p->p_next = tp;
+
+		// set the new node's prev to the
 	}
+
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
