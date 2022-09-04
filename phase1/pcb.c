@@ -251,17 +251,17 @@ pcb_t *removeChild (pcb_t *p){
 		return NULL;
 	}
 	else if (p -> p_child -> p_sibPrev == NULL) {	/* Check if there is only ONE child */
-		pcb_t *p_temp = p -> p_child;
-		p -> p_child = NULL;
+		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
+		p -> p_child = NULL;			/* child of p is NULL */
 		return p_temp;
 	}
 	else {				/* There is more than one child */
-		pcb_t *p_temp = p -> p_child;
-		p_temp -> p_sib -> p_sibPrev = NULL;
-		p -> p_child = p_temp -> p_sib;
-		p_temp -> p_sibPrev = NULL;
-		p -> p_prnt = NULL;
-		return p_temp;
+		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
+		p_temp -> p_sib -> p_sibPrev = NULL;	/* update previous sibling of the temp's sibling to NULL */
+		p -> p_child = p_temp -> p_sib;		/* p_child is set to p_temp sibling */
+		p_temp -> p_sibPrev = NULL;		/* Previous sibling of p_temp is NULL */
+		p -> p_prnt = NULL;			/* parent of p is NULL */
+		return p_temp;				
 	}
 }
 /* Make the pcb pointed to by p no longer the child of its parent. If the pcb pointed
