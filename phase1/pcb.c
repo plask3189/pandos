@@ -62,6 +62,9 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_prnt = NULL;
 	p_pcbTemp -> p_child = NULL;
 	p_pcbTemp -> p_sib = NULL;
+	p_pcbTemp -> p_sibNext = NULL;
+	p_pcbTemp -> p_sibPrev = NULL;
+	
 	/* process status information */
 	p_pcbTemp -> p_s = NULL;
 	p_pcbTemp -> p_time = 0;
@@ -221,12 +224,17 @@ pcb_t *headProcQ(pcb_t *tp){
 /* Return TRUE if the pcb pointed to by p has no children. Return
 FALSE otherwise. */
 int emptyChild(pcb_t *p){
-	return (p -> p_child == NULL); 
+	return (p -> p_child == NULL); 	/* check if the pointer to the child of p is NULL */
 }
 
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
-void insertChild(pcb t *prnt, pcb t *p)
+void insertChild(pcb t *prnt, pcb t *p) {
+	if (emptyChild(prnt)) {
+		prnt -> p_child = p;
+		p -> p_prnt = prnt;
+		p -> 
+}
 
 
 /* Make the first child of the pcb pointed to by p no longer a child of p.
