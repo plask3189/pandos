@@ -7,6 +7,8 @@
 #include "../h/pcb.h"
 #include "../h/asl.h"
 
+HIDDEN semd_t *semd_h, *semdFree_h;
+
 
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
 semaphore whose physical address is semAdd and set the semaphore address of p to semAdd.
