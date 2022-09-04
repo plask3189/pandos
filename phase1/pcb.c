@@ -1,4 +1,7 @@
 /************************* pcb.c *********************************************
+* Written by Kate Plas and Travis Wahl
+* For CSCI-320 Operating Systems
+*
 * pcb.c is a Queue Manager with a few parts:
 *
 *       1)  Allocate and deallocate pcbs
@@ -11,9 +14,8 @@
 *
 *       3) Process Tree Maintenance
 *
-*       4) Active Semaphore List
-*
 */
+
 #include "../h/types.h"
 #include "../h/const.h"
 #include "../h/pcb.h"
