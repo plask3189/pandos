@@ -11,7 +11,6 @@
 *
 *       3) Process Tree Maintenance
 *
-*       4) Active Semaphore List
 *
 */
 #include "../h/types.h"
@@ -63,7 +62,7 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_child = NULL;
 	p_pcbTemp -> p_sib = NULL;
 	p_pcbTemp -> p_sibPrev = NULL;
-	
+
 	/* process status information */
 	p_pcbTemp -> p_s = NULL;
 	p_pcbTemp -> p_time = 0;
@@ -253,7 +252,7 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
 		p -> p_sibPrev = NULL;	/* We know parent had no children, thus p_sibPrev is NULL */
 		p -> p_sib = NULL;	/* We know parent had no children, thus p_sib is NULL */
-	} else {			
+	} else {
 		p -> p_prnt = prnt;			/* p_prnt becomes parent */
 		prnt -> p_child -> p_sibPrev = p;	/* Previous sibling of p_child under prnt becomes p */
 		p -> p_sib = prnt -> p_child;		/* Sibling of p equals p_child of parent */
@@ -280,14 +279,14 @@ pcb_t *removeChild (pcb_t *p){
 		p -> p_child = p_temp -> p_sib;		/* p_child is set to p_temp sibling */
 		p_temp -> p_sibPrev = NULL;		/* Previous sibling of p_temp is NULL */
 		p -> p_prnt = NULL;			/* parent of p is NULL */
-		return p_temp;				
+		return p_temp;
 	}
 }
 /* Make the pcb pointed to by p no longer the child of its parent. If the pcb pointed
 to by p has no parent, return NULL; otherwise, return p. Note that the element pointed
 to by p need not be the first child of its parent. */
 pcb_t *outChild(pcb_t *p){
-	
+
 	/* If-Empty handlers */
 	if (p == NULL) {		/* If p is empty, return NULL */
 		return NULL;
@@ -295,7 +294,7 @@ pcb_t *outChild(pcb_t *p){
 	if (p -> p_prnt == NULL) {	/* If parent of p is empty, return NULL */
 		return NULL;
 	}
-	
+
 	/* If p is the Last child */
 	if (p -> p_sibPrev == NULL) {	/* Check if p is the Last child */
 		p -> p_sib -> p_sibPrev = NULL;	/* If true, set previous sib of p's Next sibling to NULL */
@@ -303,7 +302,7 @@ pcb_t *outChild(pcb_t *p){
 		p -> p_prnt = NULL;		/* Set parent of p to NULL */
 		return p;
 	}
-	
+
 	/* If p is the Head child */
 	if (p == p -> p_prnt -> p_child) {		/* Check if p is the Head child */
 		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's Next sibling */
@@ -311,8 +310,8 @@ pcb_t *outChild(pcb_t *p){
 		p -> p_prnt = NULL;			/* Parent of p becomes NULL */
 		p -> p_sib = NULL;			/* Sibling of p becomes NULL */
 		return p;
-	}	
-	
+	}
+
 	/* If p is a middle child */
 	if (p -> p_sib != NULL && p -> p_sibPrev != NULL) {	/* Check if there is a Next and Previous sibling to p */
 		p -> p_sibPrev -> p_sib = p -> p_sib;		/* If true, the Next sibling of p's Previous sibling equals the Next sibling of p  */
@@ -323,37 +322,5 @@ pcb_t *outChild(pcb_t *p){
 		return p;
 	}
 	return NULL;	/* if no conditions are met, useful for debugging as there should be a met condition */
-	
-}
 
-// ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
-
-/* Search the ASL for a descriptor of this semaphore. If none is found, return NULL;
-otherwise, remove the first (i.e. head) pcb from the process queue of the found semaphore descriptor and
-return a pointer to it. If the process queue for this semaphore becomes empty (emptyProcQ(s procq) is TRUE),
-remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
-pcb_t *removeBlocked(int *semAdd) {
-	//code
-}
-
-/* Remove the pcb pointed to by p from the process queue associated with p’s semaphore
-(p→ p semAdd) on the ASL. If pcb pointed to by p does not appear in the process queue associated
-with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
-pcb_t *outBlocked(pcb t *p) {
-	// code
-}
-
-
-
-/* Return a pointer to the pcb that is at the head of the process queue associated with the semaphore
-semAdd. Return NULL if semAdd is not found on the ASL or if the process queue associated with semAdd is empty. */
-pcb_t *headBlocked(int *semAdd){
-	//code
-}
-
-
-/* Initialize the semdFree list to contain all the elements of the array
-static semd t semdTable[MAXPROC] This method will be only called once during data structure initializa- tion. */
-void initASL(){
-	//code
 }
