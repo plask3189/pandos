@@ -271,7 +271,9 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
 		p -> p_sibPrev = NULL;	/* We know parent had no children, thus p_sibPrev is NULL */
 		p -> p_sib = NULL;	/* We know parent had no children, thus p_sib is NULL */
-	} else {
+	} 
+	/* If PCB has children */
+	else {
 		p -> p_prnt = prnt;			/* p_prnt becomes parent */
 		prnt -> p_child -> p_sibPrev = p;	/* Previous sibling of p_child under prnt becomes p */
 		p -> p_sib = prnt -> p_child;		/* Sibling of p equals p_child of parent */
