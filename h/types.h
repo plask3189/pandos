@@ -1,10 +1,10 @@
 #ifndef TYPES
 #define TYPES
 
-/**************************************************************************** 
+/****************************************************************************
  *
  * This header file contains utility types definitions.
- * 
+ *
  ****************************************************************************/
 
 #include "../h/const.h"
@@ -72,20 +72,20 @@ typedef struct pcb_t {
 	/* Process queue fields */
 	struct pcb_t		*p_next, 	/* Pointer to next entry */
 				*p_prev,	/* Pointer to prev entry */
-		
+
 	/* Process tree fields */
 				*p_prnt, 	/* Pointer to parent */
 				*p_child,	/* Pointer to first child */
 				*p_sib;		/* Pointer to sibling */
-	
+
 	/* Process status information */
 	struct state_t		p_s;		/* Processor state */
 	cpu_t			p_time;		/* CPU time used by the processor */
 	int			*p_semAdd;	/* Pointer to sema4 on which process blocked */
-	
+
 	/* Support layer information */
 	support_t		*p_supportStruct;	/* Pointer to support struct */
-	
+
 } pcb_t;
 
 /* Semaphore descriptor type */
@@ -129,5 +129,33 @@ typedef struct semd_t {
 #define s_HI	s_reg[29]
 #define s_LO	s_reg[30]
 
+/* process control block type */
+typedef struct pcb_t {
+	/* process queue fields */
+	struct pcb_t *p_next,	/* pointer to next entry */
+				       *p_prev,	/* pointer to prev entry */
+
+	 /* process tree fields */
+				 *p_prnt,	/* pointer to parent */
+				 *p_child,	/* pointer to 1st child */
+				 *p_sibNext,	/* pointer to the next sibling */
+				 *p_sibPrev; /* pointer to the next sibling */
+
+  /* process status information */
+	state_t		p_s;		/* processor state */
+	cpu_t     p_time; /* cpu time used by proc */
+	int 		  *p_semAdd;	/* pointer to semaphore on which process blocked  */
+
+	/*support layer information */
+	support_t  *p_supportStruct; /* ptr to support struct */
+} pcb_t;
+
+/* semaphor descriptor type */
+typedef struct semd_t {
+	struct semd_t	*s_next; /* next element on the ASL */
+	int 			*s_semAdd; /* pointer to the semaphore */
+	pcb_t			*s_procQ; /* tail list to a process queue */
+
+} semd_t;
 
 #endif
