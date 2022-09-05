@@ -1,6 +1,11 @@
 // ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
 /* Written by Kate Plas and Travis Wahl
- * For CSCI-320 Operating Systems */
+ * For CSCI-320 Operating Systems
+ * ----- Includes two main parts: -------------------
+ *   1. The ASL is a null-terminated single, linearly lined list whose nodes each have a s_next field.
+ *      The ASL has a head pointer called semd_h. A semaphore is active if there is at least one pcb on the process queue associated with it.
+ *   2. The semdFree list which is also a single linearly linked list. It keeps the semaphores that are free.
+*/
 
 #include "../h/types.h"
 #include "../h/const.h"
@@ -8,7 +13,8 @@
 #include "../h/asl.h"
 
 HIDDEN semd_t *semd_h, *semdFree_h;
-
+// semd_h is the head pointer of the active semaphore list .
+// semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
 
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
 semaphore whose physical address is semAdd and set the semaphore address of p to semAdd.
@@ -18,7 +24,12 @@ position), initialize all of the fields (i.e. set s_semAdd to semAdd, and s_proc
 mkEmptyProcQ()), and proceed as above. If a new semaphore descriptor needs to be allocated
 and the semdFree list is empty, return TRUE. In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
-	//code
+	/* Insert the pcb pointed to by p
+	at the tail of the process queue associated with the
+	semaphore whose physical address is semAdd */
+
+	/* find the process queue associated with the semaphore whose physical address is semAdd. */
+
 }
 
 
@@ -30,7 +41,7 @@ pcb_t *removeBlocked(int *semAdd) {
 	//code
 }
 
-	
+
 /* Remove the pcb pointed to by p from the process queue associated with p’s semaphore
 (p→ p semAdd) on the ASL. If pcb pointed to by p does not appear in the process queue associated
 with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
@@ -47,7 +58,28 @@ pcb_t *headBlocked(int *semAdd){
 
 
 /* Initialize the semdFree list to contain all the elements of the array
-static semd t semdTable[MAXPROC] This method will be only called once during data structure initializa- tion. */
+static semd_t semdTable[MAXPROC]
+This method will be only called once during data structure initialization. */
 void initASL(){
-	//code
+	static semd_t semdTableArray[MAXPROC + 2]; // need two more bc of dumb nodes on either end
+	semd_h = NULL; // the head of the active semaphore list is set to NULL
+	semdFreeList_h = NULL; // the head of the free list is set to NULL
+	int i = 0;
+	/* increment through nodes of semdTableArray and insert MAXPROC nodes onto the semdFreeList */
+	while(i < MAXPROC){
+		freeSemd(&(semdTableArray[i]));
+		i++;
+	}
+	// STILL NEED INITIALIZATIONS
+}
+
+/* Pushes a node pointed to by s onto the stack that is the semdFreeList
+   Note that the next pointer of each node points downwards in the stack */
+void freeSemd(semd_t *s){
+	if (semdFreeList_h == NULL){ // if the freeList is empty:
+				s -> s_next = NULL; // set the new node's next to NULL since there is no other node in the stack
+  if (semdFreeList_h != NULL){ // if the freeList is not empty:
+        s -> s_next = semdFreeList_h; // set the new node's next to hold the head address because the head will be below the new node on the stack.
+    }
+	semdFreeList_h = s;  // the head points to the new node.
 }
