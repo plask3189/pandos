@@ -264,6 +264,8 @@ int emptyChild(pcb_t *p){
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
 void insertChild(pcb_t *prnt, pcb_t *p) {
+	
+	/* If PCB has no children */
 	if (emptyChild(prnt)) {		/* check if the pcb has no children, if so: */
 		prnt -> p_child = p;	/* create child (p) from parent (prnt) */
 		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
@@ -282,15 +284,19 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 Return NULL if initially there were no children of p. Otherwise, return a pointer
 to this removed first child pcb. */
 pcb_t *removeChild (pcb_t *p){
+	
+	/* If-Empty Handler */
 	if (emptyChild(p)) {		/* Check if p has children, if not then return NULL */
 		return NULL;
 	}
+	/* If there is only one child */
 	else if (p -> p_child -> p_sibPrev == NULL) {	/* Check if there is only ONE child */
 		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
 		p -> p_child = NULL;			/* child of p is NULL */
 		return p_temp;
 	}
-	else {				/* There is more than one child */
+	/* If there is more than one child */
+	else {				
 		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
 		p_temp -> p_sib -> p_sibPrev = NULL;	/* update previous sibling of the temp's sibling to NULL */
 		p -> p_child = p_temp -> p_sib;		/* p_child is set to p_temp sibling */
