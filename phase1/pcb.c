@@ -264,12 +264,16 @@ int emptyChild(pcb_t *p){
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
 void insertChild(pcb_t *prnt, pcb_t *p) {
+	
+	/* If PCB has no children */
 	if (emptyChild(prnt)) {		/* check if the pcb has no children, if so: */
 		prnt -> p_child = p;	/* create child (p) from parent (prnt) */
 		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
 		p -> p_sibPrev = NULL;	/* We know parent had no children, thus p_sibPrev is NULL */
 		p -> p_sib = NULL;	/* We know parent had no children, thus p_sib is NULL */
-	} else {
+	} 
+	/* If PCB has children */
+	else {
 		p -> p_prnt = prnt;			/* p_prnt becomes parent */
 		prnt -> p_child -> p_sibPrev = p;	/* Previous sibling of p_child under prnt becomes p */
 		p -> p_sib = prnt -> p_child;		/* Sibling of p equals p_child of parent */
@@ -282,15 +286,19 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 Return NULL if initially there were no children of p. Otherwise, return a pointer
 to this removed first child pcb. */
 pcb_t *removeChild (pcb_t *p){
+	
+	/* If-Empty Handler */
 	if (emptyChild(p)) {		/* Check if p has children, if not then return NULL */
 		return NULL;
 	}
+	/* If there is only one child */
 	else if (p -> p_child -> p_sibPrev == NULL) {	/* Check if there is only ONE child */
 		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
 		p -> p_child = NULL;			/* child of p is NULL */
 		return p_temp;
 	}
-	else {				/* There is more than one child */
+	/* If there is more than one child */
+	else {				
 		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
 		p_temp -> p_sib -> p_sibPrev = NULL;	/* update previous sibling of the temp's sibling to NULL */
 		p -> p_child = p_temp -> p_sib;		/* p_child is set to p_temp sibling */
@@ -304,10 +312,7 @@ to by p has no parent, return NULL; otherwise, return p. Note that the element p
 to by p need not be the first child of its parent. */
 pcb_t *outChild(pcb_t *p){
 
-	/* If-Empty handlers */
-	if (p == NULL) {		/* If p is empty, return NULL */
-		return NULL;
-	}
+	/* If-Empty handler */
 	if (p -> p_prnt == NULL) {	/* If parent of p is empty, return NULL */
 		return NULL;
 	}
