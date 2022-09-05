@@ -304,10 +304,7 @@ to by p has no parent, return NULL; otherwise, return p. Note that the element p
 to by p need not be the first child of its parent. */
 pcb_t *outChild(pcb_t *p){
 
-	/* If-Empty handlers */
-	if (p == NULL) {		/* If p is empty, return NULL */
-		return NULL;
-	}
+	/* If-Empty handler */
 	if (p -> p_prnt == NULL) {	/* If parent of p is empty, return NULL */
 		return NULL;
 	}
