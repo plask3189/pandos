@@ -54,7 +54,12 @@ pcb_t *outBlocked(pcb t *p) {
 /* Return a pointer to the pcb that is at the head of the process queue associated with the semaphore
 semAdd. Return NULL if semAdd is not found on the ASL or if the process queue associated with semAdd is empty. */
 pcb_t *headBlocked(int *semAdd){
-	//code
+	semd_t *temp = searchForActiveSemaphore(semADD);		/* Create a temp var using the searchForActiveSemaphore method on semADD */
+	if ((temp == NULL) || (emptyProcQ(temp -> s_next -> s_procQ)) { /* If the temp var is NULL OR if emptyProcQ returns false */
+		return NULL;
+	}
+	else {
+		return headProcQ(temp -> s_next -> s_procQ);		/* otherwise run headProcq (pcb.c) */
 }
 
 
