@@ -17,19 +17,20 @@ HIDDEN semd_t *semd_h, *semdFree_h;
 // semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
 
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
-semaphore whose physical address is semAdd and set the semaphore address of p to semAdd.
+semaphore whose physical address is semAdd ..... (Done my another method!! searchForActiveSemaphore())
+and set the semaphore address of p to semAdd
 If the semaphore is currently not active (i.e. there is no descriptor for it in the ASL),
-allocate a new descriptor from the semdFree list, insert it in the ASL (at the appropriate
-position), initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to
-mkEmptyProcQ()), and proceed as above. If a new semaphore descriptor needs to be allocated
-and the semdFree list is empty, return TRUE. In all other cases return FALSE. */
+   1. allocate a new descriptor from the semdFree list,
+	 2. insert it in the ASL (at the appropriate position),
+	 3. initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to
+mkEmptyProcQ()), and proceed as above.
+If a new semaphore descriptor needs to be allocated
+and the semdFree list is empty, return TRUE.
+In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
-	/* Insert the pcb pointed to by p
-	at the tail of the process queue associated with the
-	semaphore whose physical address is semAdd */
-
-	/* find the process queue associated with the semaphore whose physical address is semAdd. */
-
+	semd_t *temp = searchForActiveSemaphore(semAdd); // get the active semaphore and point temp to its address
+	if(temp == NULL){ // if semAdd was not found
+		// more to come
 }
 
 
@@ -70,9 +71,13 @@ void initASL(){
 		freeSemd(&(semdTableArray[i]));
 		i++;
 	}
-	// STILL NEED INITIALIZATIONS
+	// initialize dumb head
+	// initialize dumb tail
+
 }
 
+
+/**************************** semdFreeList Supporting Method(s) ***************************/
 /* Pushes a node pointed to by s onto the stack that is the semdFreeList
    Note that the next pointer of each node points downwards in the stack */
 void freeSemd(semd_t *s){
@@ -82,4 +87,25 @@ void freeSemd(semd_t *s){
         s -> s_next = semdFreeList_h; // set the new node's next to hold the head address because the head will be below the new node on the stack.
     }
 	semdFreeList_h = s;  // the head points to the new node.
+}
+
+
+/**************************** Active Semaphore List Supporting Methods ***************************/
+/* Look through the active semaphore list for the semAdd (pointer to the semaphore) */
+/* "A semaphore is active if there is at least one pcb on the process queue associated with it." p. 22 Pandos*/
+semd_t *searchForActiveSemaphore(int *semAdd){
+	semd_t *temp = semd_h;
+	if(semAdd == NULL || semd_h->s_next == NULL){
+		return NULL;
+	} else {
+		while(temp->s_next != NULL){ // Look through the list until we reach the ending dumb node whose next is null
+			if(temp->s_next->s_semAdd == semAdd){
+				return(temp->s_next); // oooo here it is
+			}
+			else{
+				temp = temp->s_next; // to increment through list
+			}
+		}
+		return NULL;
+	}
 }
