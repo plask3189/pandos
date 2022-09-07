@@ -79,7 +79,7 @@ pcb_t *removeBlocked(int *semAdd) {
 /* Remove the pcb pointed to by p from the process queue associated with p’s semaphore
 (p→ p semAdd) on the ASL. If pcb pointed to by p does not appear in the process queue associated
 with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
-pcb_t *outBlocked(pcb t *p) {
+pcb_t *outBlocked(pcb_t *p) {
 	semd_t *temp = searchForActiveSemaphore(p -> p_semAdd);	/* Set a temp var using the searchForActiveSemaphore method on p _> p_semADD */
 	if(temp -> s_next -> s_semAdd == p -> p_semAdd) {	/* If the pointer to the semaphore from temp's s_next equals p's blocked pointer */
 		pcb_t *outted = outProcQ(&temp -> s_next -> s_procQ, p);	/* Create outted to track the outProcQ pcb */
