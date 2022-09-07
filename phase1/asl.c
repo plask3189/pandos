@@ -12,7 +12,7 @@
 #include "../h/pcb.h"
 #include "../h/asl.h"
 
-HIDDEN semd_t *semd_h, *semdFree_h;
+HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semd_h is the head pointer of the active semaphore list .
 /* semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
 */
