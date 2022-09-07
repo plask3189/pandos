@@ -86,7 +86,7 @@ typedef struct pcb_t {
 	/* Support layer information */
 	struct support_t		*p_supportStruct;	/* Pointer to support struct */
 
-} pcb_t;
+} pcb_t, *pcb_PTR;
 
 /* Semaphore descriptor type */
 typedef struct semd_t {
