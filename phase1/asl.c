@@ -85,7 +85,7 @@ pcb_t *outBlocked(pcb_t *p) {
 		pcb_t *outted = outProcQ(&temp -> s_next -> s_procQ, p);	/* Create outted to track the outProcQ pcb */
 		if(emptyProcQ(temp -> s_next -> s_procQ)) {	/* if emptyProcQ returns True */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will later use freeSemd on */
-			temp -> s_next = emptySemd -> s_next;	/* Set s_next of temp qual to s-next of emptySemd */
+			temp -> s_next = emptySemd -> s_next;	/* Set s_next of temp equal to s-next of emptySemd */
 			freeSemd(emptySemd);			/* run FreeSemd on emptySemd */
 			return outted;
 		}
