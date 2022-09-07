@@ -87,7 +87,7 @@ void initPcbs() {
 	static pcb_t pcbArray[MAXPROC]; /* create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h */
 	/* add each pcb in MAXPROC, add it to the freeList */
 	for(i = 0; i < MAXPROC; i++){
-			addressOfPcbArrayElement = &pcbArray[i]); /* the & means get the address of that element of the array */
+			addressOfPcbArrayElement = &pcbArray[i]; /* the & means get the address of that element of the array */
 			                                         /* we need to get an address because freePcb() takes a pointer */
 								/* and a pointer is an address */
 			freePcb(addressOfPcbArrayElement); /* addressOfPcbArrayElement will be the pointer that freePcb takes as a parameter */
