@@ -65,7 +65,7 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_prnt = NULL;
 	p_pcbTemp -> p_child = NULL;
 	p_pcbTemp -> p_sib = NULL;
-	p_temp -> p_sibPrev = NULL;
+	p_pcbTemp -> p_sibPrev = NULL;
 	/* process status information */
 	p_pcbTemp -> p_s = NULL;
 	p_pcbTemp -> p_time = 0;
