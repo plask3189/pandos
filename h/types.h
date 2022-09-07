@@ -80,7 +80,7 @@ typedef struct pcb_t {
 				*p_sibPrev;	/* Pointer to previous sibling */
 
 	/* Process status information */
-	state_t			p_s;		/* Processor state */
+	state_t**			p_s;		/* Processor state */
 	cpu_t			p_time;		/* CPU time used by the processor */
 	int			*p_semAdd;	/* Pointer to sema4 on which process blocked */
 
