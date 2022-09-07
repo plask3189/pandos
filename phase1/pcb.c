@@ -72,7 +72,7 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_time = 0;
 	p_pcbTemp -> p_semAdd =NULL;
 	/* support layer information */
-	p_pcbTemp -> p_supportScruct = NULL;
+	p_pcbTemp -> p_supportStruct = NULL;
 
 	/*------------ Then return a pointer to the removed element.------------ */
 	return p_temp;
