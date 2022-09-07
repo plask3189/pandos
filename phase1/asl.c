@@ -1,4 +1,4 @@
-// ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
+/* ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
 /* Written by Kate Plas and Travis Wahl
  * For CSCI-320 Operating Systems
  * ----- Includes two main parts: -------------------
