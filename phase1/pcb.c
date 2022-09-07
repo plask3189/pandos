@@ -89,7 +89,7 @@ void initPcbs() {
 	for(i = 0; i < MAXPROC; i++){
 			addressOfPcbArrayElement = &pcbArray[i]); /* the & means get the address of that element of the array */
 			                                         /* we need to get an address because freePcb() takes a pointer */
-																							 // and a pointer is an address
+								/* and a pointer is an address */
 			freePcb(addressOfPcbArrayElement); /* addressOfPcbArrayElement will be the pointer that freePcb takes as a parameter */
 		}
 }
@@ -107,7 +107,7 @@ pcb_t *mkEmptyProcQ() {
 
 /* Return TRUE if the queue whose tail is pointed to by tp is empty.
 Return FALSE otherwise. */
-int emptyProcQ (pcb_t *tp){ //*tp is the node that tp points to.
+int emptyProcQ (pcb_t *tp){ /*tp is the node that tp points to. */
 	return (tp == NULL);
   /* if (tp == NULL){
     return true;
@@ -172,7 +172,7 @@ pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
 	/* the tail's next is the head. This is what will be removed. */
 	removed = (*tp) -> p_next;
 
-	// set the vice president node's prev to point to the tail
+	/* set the vice president node's prev to point to the tail */
 	(*tp) -> p_next -> p_next -> p_prev = (*tp);
 		/****** Walk through of this crazy line: ***********
 		/* 1. get the tail's next which is the head address (let' make it up. say 0xpa...)
@@ -221,7 +221,7 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 					 /* 2. Get the thorax's next (which is the tail) and reset it to be the address of the head */
 				(*tp)->p_next->p_prev = (*tp)->p_prev;
 				   /* 1. Get the head's prev and set it to be the tail's prev aka the thorax */
-				(*tp) = (*tp)->p_prev; // set the thorax to be the tail.
+				(*tp) = (*tp)->p_prev; /* set the thorax to be the tail. */
 			} else {
 			return NULL; /*idk what other case there would be, but just in case. */
 		  }
