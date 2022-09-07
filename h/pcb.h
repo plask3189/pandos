@@ -12,7 +12,7 @@
 #include "../h/types.h"
 
 extern void freePcb (pcb_PTR p);
-extern pcb_t allocPcb ();
+extern pcb_PTR allocPcb ();
 extern void initPcbs ();
 
 extern pcb_PTR mkEmptyProcQ ();
