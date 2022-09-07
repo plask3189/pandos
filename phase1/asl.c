@@ -16,21 +16,36 @@ HIDDEN semd_t *semd_h, *semdFree_h;
 // semd_h is the head pointer of the active semaphore list .
 // semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
 
+
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
-semaphore whose physical address is semAdd ..... (Done my another method!! searchForActiveSemaphore())
-and set the semaphore address of p to semAdd
+semaphore whose physical address is semAdd and set the semaphore address of p to semAdd
 If the semaphore is currently not active (i.e. there is no descriptor for it in the ASL),
-   1. allocate a new descriptor from the semdFree list,
-	 2. insert it in the ASL (at the appropriate position),
-	 3. initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to
-mkEmptyProcQ()), and proceed as above.
-If a new semaphore descriptor needs to be allocated
-and the semdFree list is empty, return TRUE.
+allocate a new descriptor from the semdFree list, insert it in the ASL (at the appropriate position),
+initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to mkEmptyProcQ()), and proceed as above.
+If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.
 In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
-	semd_t *temp = searchForActiveSemaphore(semAdd); // get the active semaphore and point temp to its address
-	if(temp == NULL){ // if semAdd was not found
-		// more to come
+	semd_t* temp = searchForActiveSemaphore(semAdd); // find what semaphore's queue to insert the pcb on.
+  /* If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.*/
+	if(temp -> s_next -> s_semAdd != semAdd) { // if a location to insert a new pcb does not exist
+		semd_t *semaphoreForPcb = popSemdFromFreeList();
+		if(semaphoreForPcb == NULL) {
+				return TRUE;
+	}
+	semaphoreForPcb -> s_next = temp -> s_next; 
+	temp -> s_next = semaphoreForPcb;
+	semaphoreForPcb -> s_procQ = mkEmptyProcQ();
+	insertProcQ(&(semaphoreForPcb -> s_procQ),p);
+	semaphoreForPcb -> s_semAdd = semAdd;
+	p -> p_semAdd = semAdd;
+	return FALSE;
+	}
+	else {
+	/* If the spot to insert a pcb is available*/
+		p -> p_semAdd = semAdd;
+		insertProcQ(&(temp -> s_next -> s_procQ), p);
+		return FALSE;
+	}
 }
 
 
@@ -40,24 +55,24 @@ return a pointer to it. If the process queue for this semaphore becomes empty (e
 remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
 pcb_t *removeBlocked(int *semAdd) {
 	semd_t *temp = searchForActiveSemaphore(semAdd);	/* Set a temp var using the searchForActiveSemaphore method on semADD */
-	if (temp -> s_next -> s_semADD == semADD) {		/* If pointer to sempahor (s_semAdd) of the next element on the ASL from temp == semADD */
+	if (temp -> s_next -> s_semAdd == semAdd) {		/* If pointer to sempahor (s_semAdd) of the next element on the ASL from temp == semADD */
 		pcb_t *removed = removeProcQ(&temp -> s_next -> sprocQ);	/* Creation of removed var to track removed pcb */
 		if (emptyProcQ(temp -> s_next -> s_procQ)){	/* run emptyProcQ to test if empty */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* next element from temp is equal to the next element of emptySemd */
 			freeSemd(emptySemd);			/* run freeSemd on emptySemd */
-			removed -> p_semADD = NULL;		/* reset p_semADD to NULL */
-			return removed;	
+			removed -> p_semAdd = NULL;		/* reset p_semADD to NULL */
+			return removed;
 		}
 		else {
-			removed -> p_semADD = NULL;		/* Otherwise set the blocked pointer to NULL */
+			removed -> p_semAdd = NULL;		/* Otherwise set the blocked pointer to NULL */
 			return removed;
 		}
 	}
 	else {							/* Otherwise return NULL */
 		return NULL;
 	}
-			
+
 }
 
 
@@ -72,11 +87,11 @@ pcb_t *outBlocked(pcb t *p) {
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will later use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* Set s_next of temp qual to s-next of emptySemd */
 			freeSemd(emptySemd);			/* run FreeSemd on emptySemd */
-			return outted;		
+			return outted;
 		}
 		else {
 			outted -> p_semAdd = NULL;		/* Otherwise set the blocked pointer to NULL */
-			return outted;				
+			return outted;
 		}
 	}
 	else {							/* Otherwise return NULL */
@@ -116,7 +131,9 @@ void initASL(){
 }
 
 
-/**************************** semdFreeList Supporting Method(s) ***************************/
+/**************************** semdFreeList Supporting Methods ***************************/
+/* semndFreeList is a singly linked NULL terminated stack that holds the free semnds.*/
+
 /* Pushes a node pointed to by s onto the stack that is the semdFreeList
    Note that the next pointer of each node points downwards in the stack */
 void freeSemd(semd_t *s){
@@ -126,6 +143,21 @@ void freeSemd(semd_t *s){
         s -> s_next = semdFreeList_h; // set the new node's next to hold the head address because the head will be below the new node on the stack.
     }
 	semdFreeList_h = s;  // the head points to the new node.
+}
+
+/* Pop a semd from the FreeList */
+semd_t *popSemdFromFreeList(){
+	semd_t *temp = semdFreeList_h;
+	if(semdFreeList_h != NULL){ // if the free list has nodes already
+		semdFreeList_h = semdFreeList_h -> s_next;
+		temp -> s_next = NULL;
+		temp -> s_semAdd = NULL;
+		temp -> s_procQ = mkEmptyProcQ(); // mkEMptyProcQ() Returns a pointer to the tail of an empty process queue; i.e. NULL.
+		return temp;
+	}
+	else { // if the free list is already empty, can't pop anything else, return NULL
+		return NULL;
+	}
 }
 
 
