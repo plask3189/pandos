@@ -17,6 +17,60 @@ HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
 */
 
+
+
+/**************************** semdFreeList Supporting Methods ***************************/
+/* semndFreeList is a singly linked NULL terminated stack that holds the free semnds.*/
+
+/* Pushes a node pointed to by s onto the stack that is the semdFreeList
+   Note that the next pointer of each node points downwards in the stack */
+void freeSemd(semd_t *s){
+	if (semdFreeList_h == NULL){ /* if the freeList is empty: */
+				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
+  if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
+        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
+    }
+	semdFreeList_h = s;  /* the head points to the new node. */
+	}
+}
+
+/* Pop a semd from the FreeList */
+semd_t *popSemdFromFreeList(){
+	semd_t *temp = semdFreeList_h;
+	if(semdFreeList_h != NULL){ /* if the free list has nodes already */
+		semdFreeList_h = semdFreeList_h -> s_next;
+		temp -> s_next = NULL;
+		temp -> s_semAdd = NULL;
+		temp -> s_procQ = mkEmptyProcQ(); /* mkEMptyProcQ() Returns a pointer to the tail of an empty process queue; i.e. NULL. */
+		return temp;
+	}
+	else { /* if the free list is already empty, can't pop anything else, return NULL */
+		return NULL;
+	}
+}
+
+
+/**************************** Active Semaphore List Supporting Methods ***************************/
+/* Look through the active semaphore list for the semAdd (pointer to the semaphore) */
+/* "A semaphore is active if there is at least one pcb on the process queue associated with it." p. 22 Pandos*/
+semd_t *searchForActiveSemaphore(int *semAdd){
+	semd_t *temp = semd_h;
+	if(semAdd == NULL || semd_h->s_next == NULL){
+		return NULL;
+	} else {
+		while(temp->s_next != NULL){ /* Look through the list until we reach the ending dumb node whose next is null */
+			if(temp->s_next->s_semAdd == semAdd){
+				return(temp->s_next); /* oooo here it is */
+			}
+			else{
+				temp = temp->s_next; /* to increment through list */
+			}
+		}
+		return NULL;
+	}
+}
+
+
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
 semaphore whose physical address is semAdd and set the semaphore address of p to semAdd
 If the semaphore is currently not active (i.e. there is no descriptor for it in the ASL),
@@ -129,56 +183,4 @@ void initASL(){
 	/* initialize dumb head */
 	/* initialize dumb tail */
 
-}
-
-
-/**************************** semdFreeList Supporting Methods ***************************/
-/* semndFreeList is a singly linked NULL terminated stack that holds the free semnds.*/
-
-/* Pushes a node pointed to by s onto the stack that is the semdFreeList
-   Note that the next pointer of each node points downwards in the stack */
-void freeSemd(semd_t *s){
-	if (semdFreeList_h == NULL){ /* if the freeList is empty: */
-				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
-  if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
-        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
-    }
-	semdFreeList_h = s;  /* the head points to the new node. */
-	}
-}
-
-/* Pop a semd from the FreeList */
-semd_t *popSemdFromFreeList(){
-	semd_t *temp = semdFreeList_h;
-	if(semdFreeList_h != NULL){ /* if the free list has nodes already */
-		semdFreeList_h = semdFreeList_h -> s_next;
-		temp -> s_next = NULL;
-		temp -> s_semAdd = NULL;
-		temp -> s_procQ = mkEmptyProcQ(); /* mkEMptyProcQ() Returns a pointer to the tail of an empty process queue; i.e. NULL. */
-		return temp;
-	}
-	else { /* if the free list is already empty, can't pop anything else, return NULL */
-		return NULL;
-	}
-}
-
-
-/**************************** Active Semaphore List Supporting Methods ***************************/
-/* Look through the active semaphore list for the semAdd (pointer to the semaphore) */
-/* "A semaphore is active if there is at least one pcb on the process queue associated with it." p. 22 Pandos*/
-semd_t *searchForActiveSemaphore(int *semAdd){
-	semd_t *temp = semd_h;
-	if(semAdd == NULL || semd_h->s_next == NULL){
-		return NULL;
-	} else {
-		while(temp->s_next != NULL){ /* Look through the list until we reach the ending dumb node whose next is null */
-			if(temp->s_next->s_semAdd == semAdd){
-				return(temp->s_next); /* oooo here it is */
-			}
-			else{
-				temp = temp->s_next; /* to increment through list */
-			}
-		}
-		return NULL;
-	}
 }
