@@ -49,7 +49,7 @@ pcb_t *allocPcb(){
   }
   else {
   /* -------- Otherwise, remove an element from the pcbFree list --------- */
-  pcb_PTR *p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
+  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
   p_temp = pcbFree_h; /* set address of current head to address of temp so that we */
 	                  /* can return the pointer to the removed element */
   pcbFree_h = p_temp -> p_next; /* access the head node's next that pcbFree_h */
