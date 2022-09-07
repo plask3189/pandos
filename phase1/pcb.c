@@ -21,19 +21,19 @@
 #include "../h/const.h"
 #include "../h/pcb.h"
 
-HIDDEN pcb_PTR pcbFree_h; // declaration for private global variable that points
-                          // to the head of the pcbFree list (pandos page 15)
+HIDDEN pcb_PTR pcbFree_h; /* declaration for private global variable that points */
+                          /* to the head of the pcbFree list (pandos page 15) */
 
-//------------2.1: The Allocation and Deallocation of pcbs--------------------
+/*------------2.1: The Allocation and Deallocation of pcbs--------------------
 
 /* Insert the element pointed to by p onto the pcbFree list.
 *  Pushing a node pointed to by p onto the pcbFree list stack. */
 void freePcb(pcb_t *p){
-	p -> p_next = pcbFree_h; // load the address of the current head into the next
-	                         // of the new node which is being pointed to by p
-	pcbFree_h = p; // set the address of the new node to the address that the head
-	             // holds. Now the head points to the new node that is on top
-							 // of the stack holding the free pcbs.
+	p -> p_next = pcbFree_h; /* load the address of the current head into the next */
+	                         /* of the new node which is being pointed to by p */
+	pcbFree_h = p; /* set the address of the new node to the address that the head */
+	             /* holds. Now the head points to the new node that is on top */
+							 /* of the stack holding the free pcbs. */
 }
 
 /* Return NULL if the pcbFree list is empty. Otherwise, remove
@@ -43,21 +43,21 @@ pointer to the removed element. pcbs get reused, so it is
 important that no previous value persist in a pcb's when it
 gets reallocated. */
 pcb_t *allocPcb(){
-	// -------- Return NULL if the pcbFree list is empty. -----
+	/* -------- Return NULL if the pcbFree list is empty. ----- */
   if(pcbFree_h == NULL){
     return NULL;
   }
-  // -------- Otherwise, remove an element from the pcbFree list ---------
-  pcb_PTR p_temp; // initialize p_temp pointer. We need temp pointer so we can keep track of old head.
-  p_temp = pcbFree_h; // set address of current head to address of temp so that we
-	                  // can return the pointer to the removed element
-  pcbFree_h = pcbFree_h -> p_next; // access the head node's next that pcbFree_h
-	                                 // points to. Set this next to pcbFree_h so that
-																	 // pcbFree_h points to the node below the old head.
+  /* -------- Otherwise, remove an element from the pcbFree list --------- */
+  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
+  p_temp = pcbFree_h; /* set address of current head to address of temp so that we */
+	                  /* can return the pointer to the removed element */
+  pcbFree_h = pcbFree_h -> p_next; /* access the head node's next that pcbFree_h */
+	                                 /* points to. Set this next to pcbFree_h so that */
+								/* pcbFree_h points to the node below the old head. */
 
-	// -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0)
-	p_PTR p_pcbTemp; // initialize another pointer to point to values for pcbs' fields.
-	// these fields are from page 8 of pandos
+	/* -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0) */
+	pcb_PTR p_pcbTemp; /* initialize another pointer to point to values for pcbs' fields. */
+	/* these fields are from page 8 of pandos */
   /* process queue fields */
 	p_pcbTemp -> p_next = NULL;
 	p_pcbTemp -> p_prev = NULL;
@@ -73,27 +73,27 @@ pcb_t *allocPcb(){
 	/* support layer information */
 	p_pcbTemp -> p_supportScruct = NULL;
 
-	//------------ Then return a pointer to the removed element.------------
+	/*------------ Then return a pointer to the removed element.------------ */
 	return p_temp;
 }
 
 /* Initialize the pcbFree list to contain all the elements of the static array of
 MAXPROC pcbs. This method will be called only once during data structure initialization. */
 void initPcbs() {
-  pcbFree_h = NULL; // initialize the head pointer to null.
+  pcbFree_h = NULL; /* initialize the head pointer to null. */
 	int i = 0;
-	static pcb_t pcbArray[MAXPROC]; // create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h
-	// add each pcb in MAXPROC, add it to the freeList
+	static pcb_t pcbArray[MAXPROC]; /* create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h */
+	/* add each pcb in MAXPROC, add it to the freeList */
 	for(i = 0; i < MAXPROC; i++){
-			addressOfPcbArrayElement = &pcbArray[i]); // the & means get the address of that element of the array
-			                                         // we need to get an address because freePcb() takes a pointer
+			addressOfPcbArrayElement = &pcbArray[i]); /* the & means get the address of that element of the array */
+			                                         /* we need to get an address because freePcb() takes a pointer */
 																							 // and a pointer is an address
-			freePcb(addressOfPcbArrayElement); // addressOfPcbArrayElement will be the pointer that freePcb takes as a parameter
+			freePcb(addressOfPcbArrayElement); /* addressOfPcbArrayElement will be the pointer that freePcb takes as a parameter */
 		}
 }
 
 
-//------------2.2: Process Queue Maintenance-----------------------------------
+/*------------2.2: Process Queue Maintenance-----------------------------------*/
 /* Generic queue manipulation methods. The queues that will be manipulated are
  double, circularly linked lists. */
 
@@ -122,29 +122,29 @@ void insertProcQ(pcb_t **tp, pcb_t *p){
 	if (*tp == NULL){
 		p -> p_prev = p;
 		p -> p_next = p;
-		// the tail pointer is set to the new node at the end.
+		/* the tail pointer is set to the new node at the end. */
 	}
 	/* If there is only one node in the queue*/
 	if((*tp)->p_next == (*tp)){
-		// Pointer rearrangements to link the old lonely node to the new one
-		p->p_next = (*tp); // set the new node's next to the tail
-		p->p_prev = (*tp); // set the new node's pre to the tail
-		(*tp)->p_prev = p; // set the tail's prev to the new node
-		(*tp)->p_next = p; // set the tail's next to the new node
-		// the tail pointer is set to the new node at the end.
+		/* Pointer rearrangements to link the old lonely node to the new one */
+		p->p_next = (*tp); /* set the new node's next to the tail */
+		p->p_prev = (*tp); /* set the new node's pre to the tail */
+		(*tp)->p_prev = p; /* set the tail's prev to the new node */
+		(*tp)->p_next = p; /* set the tail's next to the new node */
+		/* the tail pointer is set to the new node at the end. */
 	}
 
 	/* If there are multiple nodes in the queue*/
 	else {
-		p->p_next = (*tp)->p_next; // the tail's next which is the address of the head is set to the next of the new node. 
-		p->p_next->p_prev = p; // the head's prev is set to the address of p.
-		// now the head and new node are linked
-		p->p_prev = (*tp); // set the new node's prev to the tail
-		(*tp)->p_next = p; // set the tail's next to the new node
-		// the tail pointer is set to the new node at the end.
+		p->p_next = (*tp)->p_next; /* the tail's next which is the address of the head is set to the next of the new node. */
+		p->p_next->p_prev = p; /* the head's prev is set to the address of p. */
+		/* now the head and new node are linked */
+		p->p_prev = (*tp); /* set the new node's prev to the tail */
+		(*tp)->p_next = p; /* set the tail's next to the new node */
+		/* the tail pointer is set to the new node at the end. */
 	}
 
-	(*tp) = p; // the tail pointer is set to the new node
+	(*tp) = p; /* the tail pointer is set to the new node */
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
@@ -167,26 +167,26 @@ pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
 	}
 
 	/* If there are multiple nodes in the queue */
-	// the tail's next is the head. This is what will be removed.
+	/* the tail's next is the head. This is what will be removed. */
 	removed = (*tp) -> p_next;
 
 	// set the vice president node's prev to point to the tail
 	(*tp) -> p_next -> p_next -> p_prev = (*tp);
-		//***** Walk through of this crazy line: ***********
-		// 1. get the tail's next which is the head address (let' make it up. say 0xpa...)
-		// 2. Now we are at the head address. 0xpa...
-		// 3. Go to the head's next which is the vice president node. Let's say it is 0xge...)
-		// 4. Now we are at the vice president node. 0xge...
-		// 5. Get the vice president's prev field. This would be 0xpa, the head.
-		// 6. Since we're deleting the head, reset the vice president's prev field to the tail
+		/****** Walk through of this crazy line: ***********
+		/* 1. get the tail's next which is the head address (let' make it up. say 0xpa...)
+		/* 2. Now we are at the head address. 0xpa...
+		/* 3. Go to the head's next which is the vice president node. Let's say it is 0xge...)
+		/* 4. Now we are at the vice president node. 0xge...
+		/* 5. Get the vice president's prev field. This would be 0xpa, the head.
+		/* 6. Since we're deleting the head, reset the vice president's prev field to the tail */
 
-	// set the tail's next field to hold the address of the vice president
+	/* set the tail's next field to hold the address of the vice president */
 	(*tp) -> p_next = ((*tp) -> p_next -> p_next);
-	   //***** Walk through of this crazy line: ***********
-		 // 1. get the tail's next field. (An address like 0xpa...)
-		 // 2. On the other side of the equals sign, get the tail's next which is the head.
-		 // 3. Get the head's next which is the address of the vice president, (with like 0xge...)]
-		 // 4. Set the address of the vice president to be held by the next field of the tail
+	   /****** Walk through of this crazy line: ***********
+		 /* 1. get the tail's next field. (An address like 0xpa...)
+		 /* 2. On the other side of the equals sign, get the tail's next which is the head.
+		 /* 3. Get the head's next which is the address of the vice president, (with like 0xge...)]
+		 /* 4. Set the address of the vice president to be held by the next field of the tail */
 	return removed;
 }
 
@@ -215,20 +215,20 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 			if ((((*tp) -> p_next) != (*tp))) {
 				/* if tp = p and there is more than one node in the queue*/
 				(*tp)->p_prev->p_next = (*tp)->p_next;
-				   // 1. get the tail's prev which is like the thorax (if we say tail- thorax - abdomen - head)
-					 // 2. Get the thorax's next (which is the tail) and reset it to be the address of the head.
+				   /* 1. get the tail's prev which is like the thorax (if we say tail- thorax - abdomen - head)
+					 /* 2. Get the thorax's next (which is the tail) and reset it to be the address of the head */
 				(*tp)->p_next->p_prev = (*tp)->p_prev;
-				   // 1. Get the head's prev and set it to be the tail's prev aka the thorax
+				   /* 1. Get the head's prev and set it to be the tail's prev aka the thorax */
 				(*tp) = (*tp)->p_prev; // set the thorax to be the tail.
 			} else {
-			return NULL; //idk what other case there would be, but just in case.
+			return NULL; /*idk what other case there would be, but just in case. */
 		  }
 		}
 
 		/* If the tail pointer is different from the node to be removed. */
 		if((*tp) != p) {
-			p_temp = (*tp) -> p_prev; // begin looking for p at the thorax
-			if((p_temp == p) && (p_temp != (*tp))){ // if the thorax is p...
+			p_temp = (*tp) -> p_prev; /* begin looking for p at the thorax */
+			if((p_temp == p) && (p_temp != (*tp))){ /* if the thorax is p... */
 				p_removed = p_temp;
 				p_removed -> p_prev -> p_next = p_removed -> p_next;
 				p_removed -> p_next -> p_prev = p_removed -> p_prev;
@@ -236,7 +236,7 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 				p_removed -> p_next = NULL;
 				return p_removed;
 			}
-				p_temp = p_temp -> p_prev; // get the temp's prev to increment through
+				p_temp = p_temp -> p_prev; /* get the temp's prev to increment through */
 			}
 			/* node is not in the  list */
 			return NULL;
@@ -253,7 +253,7 @@ pcb_t *headProcQ(pcb_t *tp){
 }
 
 
-// ---------------2.3 Process Tree Maintenance ----------------------------
+/* ---------------2.3 Process Tree Maintenance ---------------------------- */
 
 /* Return TRUE if the pcb pointed to by p has no children. Return
 FALSE otherwise. */
