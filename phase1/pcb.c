@@ -124,7 +124,7 @@ void insertProcQ(pcb_t **tp, pcb_t *p){
 	if (*tp == NULL){
 		p -> p_prev = p;
 		p -> p_next = p;
-		/* the tail pointer is set to the new node at the end. */
+		(*tp) = p;		/* the tail pointer is set to the new node at the end. */
 	}
 	/* If there is only one node in the queue*/
 	if((*tp)->p_next == (*tp)){
