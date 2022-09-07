@@ -15,7 +15,7 @@
 HIDDEN semd_t *semd_h, *semdFree_h;
 /* semd_h is the head pointer of the active semaphore list .
 /* semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
-
+*/
 
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
 semaphore whose physical address is semAdd and set the semaphore address of p to semAdd
@@ -25,9 +25,9 @@ initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to mkEmpt
 If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.
 In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
-	semd_t* temp = searchForActiveSemaphore(semAdd); // find what semaphore's queue to insert the pcb on.
+	semd_t* temp = searchForActiveSemaphore(semAdd); /* find what semaphore's queue to insert the pcb on */
   /* If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.*/
-	if(temp -> s_next -> s_semAdd != semAdd) { // if a location to insert a new pcb does not exist
+	if(temp -> s_next -> s_semAdd != semAdd) { /* if a location to insert a new pcb does not exist */
 		semd_t *semaphoreForPcb = popSemdFromFreeList();
 		if(semaphoreForPcb == NULL) {
 				return TRUE;
@@ -116,17 +116,17 @@ pcb_t *headBlocked(int *semAdd){
 static semd_t semdTable[MAXPROC]
 This method will be only called once during data structure initialization. */
 void initASL(){
-	static semd_t semdTableArray[MAXPROC + 2]; // need two more bc of dumb nodes on either end
-	semd_h = NULL; // the head of the active semaphore list is set to NULL
-	semdFreeList_h = NULL; // the head of the free list is set to NULL
+	static semd_t semdTableArray[MAXPROC + 2]; /* need two more bc of dumb nodes on either end */
+	semd_h = NULL; /* the head of the active semaphore list is set to NULL */
+	semdFreeList_h = NULL; /* the head of the free list is set to NULL */
 	int i = 0;
 	/* increment through nodes of semdTableArray and insert MAXPROC nodes onto the semdFreeList */
 	while(i < MAXPROC){
 		freeSemd(&(semdTableArray[i]));
 		i++;
 	}
-	// initialize dumb head
-	// initialize dumb tail
+	/* initialize dumb head */
+	/* initialize dumb tail */
 
 }
 
@@ -137,25 +137,25 @@ void initASL(){
 /* Pushes a node pointed to by s onto the stack that is the semdFreeList
    Note that the next pointer of each node points downwards in the stack */
 void freeSemd(semd_t *s){
-	if (semdFreeList_h == NULL){ // if the freeList is empty:
-				s -> s_next = NULL; // set the new node's next to NULL since there is no other node in the stack
-  if (semdFreeList_h != NULL){ // if the freeList is not empty:
-        s -> s_next = semdFreeList_h; // set the new node's next to hold the head address because the head will be below the new node on the stack.
+	if (semdFreeList_h == NULL){ /* if the freeList is empty: */
+				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
+  if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
+        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
     }
-	semdFreeList_h = s;  // the head points to the new node.
+	semdFreeList_h = s;  /* the head points to the new node. */
 }
 
 /* Pop a semd from the FreeList */
 semd_t *popSemdFromFreeList(){
 	semd_t *temp = semdFreeList_h;
-	if(semdFreeList_h != NULL){ // if the free list has nodes already
+	if(semdFreeList_h != NULL){ /* if the free list has nodes already */
 		semdFreeList_h = semdFreeList_h -> s_next;
 		temp -> s_next = NULL;
 		temp -> s_semAdd = NULL;
-		temp -> s_procQ = mkEmptyProcQ(); // mkEMptyProcQ() Returns a pointer to the tail of an empty process queue; i.e. NULL.
+		temp -> s_procQ = mkEmptyProcQ(); /* mkEMptyProcQ() Returns a pointer to the tail of an empty process queue; i.e. NULL. */
 		return temp;
 	}
-	else { // if the free list is already empty, can't pop anything else, return NULL
+	else { /* if the free list is already empty, can't pop anything else, return NULL */
 		return NULL;
 	}
 }
@@ -169,12 +169,12 @@ semd_t *searchForActiveSemaphore(int *semAdd){
 	if(semAdd == NULL || semd_h->s_next == NULL){
 		return NULL;
 	} else {
-		while(temp->s_next != NULL){ // Look through the list until we reach the ending dumb node whose next is null
+		while(temp->s_next != NULL){ /* Look through the list until we reach the ending dumb node whose next is null */
 			if(temp->s_next->s_semAdd == semAdd){
-				return(temp->s_next); // oooo here it is
+				return(temp->s_next); /* oooo here it is */
 			}
 			else{
-				temp = temp->s_next; // to increment through list
+				temp = temp->s_next; /* to increment through list */
 			}
 		}
 		return NULL;
