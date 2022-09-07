@@ -39,7 +39,25 @@ otherwise, remove the first (i.e. head) pcb from the process queue of the found 
 return a pointer to it. If the process queue for this semaphore becomes empty (emptyProcQ(s procq) is TRUE),
 remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
 pcb_t *removeBlocked(int *semAdd) {
-	//code
+	semd_t *temp = searchForActiveSemaphore(semAdd);	/* Set a temp var using the searchForActiveSemaphore method on semADD */
+	if (temp -> s_next -> s_semADD == semADD) {		/* If pointer to sempahor (s_semAdd) of the next element on the ASL from temp == semADD */
+		pcb_t *removed = removeProcQ(&temp -> s_next -> sprocQ);	/* Creation of removed var to track removed pcb */
+		if (emptyProcQ(temp -> s_next -> s_procQ)){	/* run emptyProcQ to test if empty */
+			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will use freeSemd on */
+			temp -> s_next = emptySemd -> s_next;	/* next element from temp is equal to the next element of emptySemd */
+			freeSemd(emptySemd);			/* run freeSemd on emptySemd */
+			removed -> p_semADD = NULL;		/* reset p_semADD to NULL */
+			return removed;				/* return the removed pcb */
+		}
+		else {
+			removed -> p_semADD = NULL;		/* Otherwise, just reset p_semADD to NULL */
+			return removed;
+		}
+	}
+	else {							/* Otherwise return NULL */
+		return NULL;
+	}
+			
 }
 
 
