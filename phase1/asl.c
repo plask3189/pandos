@@ -144,6 +144,7 @@ void freeSemd(semd_t *s){
         s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
     }
 	semdFreeList_h = s;  /* the head points to the new node. */
+	}
 }
 
 /* Pop a semd from the FreeList */
