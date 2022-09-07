@@ -47,11 +47,12 @@ pcb_t *allocPcb(){
   if(pcbFree_h == NULL){
     return NULL;
   }
+  else {
   /* -------- Otherwise, remove an element from the pcbFree list --------- */
-  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
+  pcb_PTR *p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
   p_temp = pcbFree_h; /* set address of current head to address of temp so that we */
 	                  /* can return the pointer to the removed element */
-  pcbFree_h = pcbFree_h -> p_next; /* access the head node's next that pcbFree_h */
+  pcbFree_h = p_temp -> p_next; /* access the head node's next that pcbFree_h */
 	                                 /* points to. Set this next to pcbFree_h so that */
 								/* pcbFree_h points to the node below the old head. */
 
@@ -65,7 +66,7 @@ pcb_t *allocPcb(){
 	p_pcbTemp -> p_prnt = NULL;
 	p_pcbTemp -> p_child = NULL;
 	p_pcbTemp -> p_sib = NULL;
-	p_pcbTemp -> p_sibPrev = NULL;
+	p_temp -> p_sibPrev = NULL;
 	/* process status information */
 	p_pcbTemp -> p_s = NULL;
 	p_pcbTemp -> p_time = 0;
@@ -75,6 +76,7 @@ pcb_t *allocPcb(){
 
 	/*------------ Then return a pointer to the removed element.------------ */
 	return p_temp;
+	}
 }
 
 /* Initialize the pcbFree list to contain all the elements of the static array of
@@ -279,6 +281,7 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 		p -> p_sib = prnt -> p_child;		/* Sibling of p equals p_child of parent */
 		p -> p_sibPrev = NULL;			/* Can now set the Previous sibling of p to NULL */
 		prnt -> p_child = p;			/* p is now a child of the pcb pointed to by prnt */
+	}
 }
 
 
