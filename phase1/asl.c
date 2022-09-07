@@ -61,12 +61,8 @@ pcb_t *removeBlocked(int *semAdd) {
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* next element from temp is equal to the next element of emptySemd */
 			freeSemd(emptySemd);			/* run freeSemd on emptySemd */
-<<<<<<< HEAD
 			removed -> p_semAdd = NULL;		/* reset p_semADD to NULL */
-			return removed;
-=======
 			return removed;	
->>>>>>> 717f4e786b50fbe080d64ed96083d094625e12cc
 		}
 		else {
 			removed -> p_semAdd = NULL;		/* Otherwise set the blocked pointer to NULL */
