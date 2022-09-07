@@ -109,6 +109,7 @@ pcb_t *headBlocked(int *semAdd){
 	}
 	else {
 		return headProcQ(temp -> s_next -> s_procQ);		/* otherwise run headProcq (pcb.c) */
+	}
 }
 
 
