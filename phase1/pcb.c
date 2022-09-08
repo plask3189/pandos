@@ -280,16 +280,16 @@ pcb_t *removeChild (pcb_t *p){
 		return NULL;
 	}
 	/* If there is only one child */
-	else if (p -> p_child -> p_sibPrev == NULL) {	/* Check if there is only ONE child */
+	if (p -> p_child -> p_sib == NULL) {	/* Check if there is only ONE child */
 		p -> p_child = NULL;			/* child of p is split from p */
 		return removed;
 	}
 	/* If there is more than one child */
 	else {
-		removed -> p_sibPrev -> p_sib = NULL;	/* update previous sibling of the temp's sibling to NULL */
-		removed -> p_prnt -> p_child = removed -> p_sibPrev;
-		removed -> p_sibPrev = NULL;		/* Previous sibling of p_temp is NULL */
-		removed -> p_prnt = NULL;			/* parent of p is NULL */
+		removed -> p_sib -> p_sibPrev = NULL;	/* update previous sibling of the temp's sibling to NULL */
+		p -> p_child = removed -> p_sib;	/* p's child now becomes removed pcb's sibling */
+		removed -> p_sibPrev = NULL;			/* Previous sibling of removed is now NULL */
+		p -> p_prnt = NULL;				/* p is now split from its parent */
 		return removed;
 	}
 }
