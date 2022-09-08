@@ -157,7 +157,7 @@ the process queue */
 pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
 	pcb_PTR removed;
 	/* If queue is empty */
-	if(*tp = NULL) {
+	if((*tp) == NULL) {
 		return NULL;
 	}
 
