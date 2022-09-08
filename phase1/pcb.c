@@ -36,6 +36,7 @@ void freePcb(pcb_t *p){
 							 /* of the stack holding the free pcbs. */
 }
 
+
 /* Return NULL if the pcbFree list is empty. Otherwise, remove
 an element from the pcbFree list, provide initial values for ALL
 of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a
@@ -124,7 +125,7 @@ void insertProcQ(pcb_t **tp, pcb_t *p){
 	if (*tp == NULL){
 		p -> p_prev = p;
 		p -> p_next = p;
-		(*tp) = p;		/* the tail pointer is set to the new node at the end. */
+		(*tp) = p; 	/* the tail pointer is set to the new node at the end. */
 	}
 	/* If there is only one node in the queue*/
 	if((*tp)->p_next == (*tp)){
@@ -208,7 +209,7 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
 		/* If tail pointer is the same as the node we want pointed to by p*/
 		if((*tp) == p){
 			/* If tp = p and there is only one node in the queue... so the tail's next points to itself*/
-			if ((((*tp) -> p_next) == (*tp))) {
+			if ((*tp) -> p_next == (*tp)) {
 				p_removed = (*tp);
 				(*tp) = mkEmptyProcQ();
 				return p_removed;
