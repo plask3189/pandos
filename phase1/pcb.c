@@ -58,22 +58,21 @@ pcb_t *allocPcb(){
 								/* pcbFree_h points to the node below the old head. */
 
 	/* -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0) */
-	pcb_PTR p_pcbTemp; /* initialize another pointer to point to values for pcbs' fields. */
 	/* these fields are from page 8 of pandos */
-  /* process queue fields */
-	p_pcbTemp -> p_next = NULL;
-	p_pcbTemp -> p_prev = NULL;
+  	/* process queue fields */
+	p_temp -> p_next = NULL;
+	p_temp -> p_prev = NULL;
 	/* process tree fields */
-	p_pcbTemp -> p_prnt = NULL;
-	p_pcbTemp -> p_child = NULL;
-	p_pcbTemp -> p_sib = NULL;
-	p_pcbTemp -> p_sibPrev = NULL;
+	p_temp -> p_prnt = NULL;
+	p_temp -> p_child = NULL;
+	p_temp -> p_sib = NULL;
+	p_temp -> p_sibPrev = NULL;
 	/* process status information */
-	p_pcbTemp -> p_s = NULL;
-	p_pcbTemp -> p_time = 0;
-	p_pcbTemp -> p_semAdd =NULL;
+	p_temp -> p_s = NULL;
+	p_temp -> p_time = 0;
+	p_temp -> p_semAdd =NULL;
 	/* support layer information */
-	p_pcbTemp -> p_supportStruct = NULL;
+	p_temp -> p_supportStruct = NULL;
 
 	/*------------ Then return a pointer to the removed element.------------ */
 	return p_temp;
@@ -237,7 +236,12 @@ pcb_t *headProcQ(pcb_t *tp){
 /* Return TRUE if the pcb pointed to by p has no children. Return
 FALSE otherwise. */
 int emptyChild(pcb_t *p){
-	return (p -> p_child == NULL);
+	if(p -> p_child == NULL) {
+		return TRUE;
+	}
+	else {
+		return FALSE;
+	}
 }
 
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
