@@ -122,19 +122,19 @@ tail-pointer is pointed to by tp. Note the double indirection through
 tp to allow for the possible updating of the tail pointer as well. */
 void insertProcQ(pcb_t **tp, pcb_t *p){
 	/*If the queue is empty */
-	if (*tp == NULL){
+	if (emptyProcQ(*tp)){
+		(*tp) = p; 
 		p -> p_prev = p;
 		p -> p_next = p;
-		(*tp) = p; 	/* the tail pointer is set to the new node at the end. */
 	}
 	/* If there is only one node in the queue*/
-	if((*tp)->p_next == (*tp)){
+	else if((*tp)->p_next == (*tp)){
 		/* Pointer rearrangements to link the old lonely node to the new one */
 		p->p_next = (*tp); /* set the new node's next to the tail */
 		p->p_prev = (*tp); /* set the new node's pre to the tail */
 		(*tp)->p_prev = p; /* set the tail's prev to the new node */
 		(*tp)->p_next = p; /* set the tail's next to the new node */
-		/* the tail pointer is set to the new node at the end. */
+		(*tp) = p; /* the tail pointer is set to the new node */
 	}
 
 	/* If there are multiple nodes in the queue*/
@@ -144,10 +144,9 @@ void insertProcQ(pcb_t **tp, pcb_t *p){
 		/* now the head and new node are linked */
 		p->p_prev = (*tp); /* set the new node's prev to the tail */
 		(*tp)->p_next = p; /* set the tail's next to the new node */
-		/* the tail pointer is set to the new node at the end. */
+		(*tp) = p; /* the tail pointer is set to the new node */
 	}
 
-	(*tp) = p; /* the tail pointer is set to the new node */
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
@@ -267,14 +266,14 @@ int emptyChild(pcb_t *p){
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
 void insertChild(pcb_t *prnt, pcb_t *p) {
-	
+
 	/* If PCB has no children */
 	if (emptyChild(prnt)) {		/* check if the pcb has no children, if so: */
 		prnt -> p_child = p;	/* create child (p) from parent (prnt) */
 		p -> p_prnt = prnt;	/* give child (p) a parent from p_prnt */
 		p -> p_sibPrev = NULL;	/* We know parent had no children, thus p_sibPrev is NULL */
 		p -> p_sib = NULL;	/* We know parent had no children, thus p_sib is NULL */
-	} 
+	}
 	/* If PCB has children */
 	else {
 		p -> p_prnt = prnt;			/* p_prnt becomes parent */
@@ -290,7 +289,7 @@ void insertChild(pcb_t *prnt, pcb_t *p) {
 Return NULL if initially there were no children of p. Otherwise, return a pointer
 to this removed first child pcb. */
 pcb_t *removeChild (pcb_t *p){
-	
+
 	/* If-Empty Handler */
 	if (emptyChild(p)) {		/* Check if p has children, if not then return NULL */
 		return NULL;
@@ -302,7 +301,7 @@ pcb_t *removeChild (pcb_t *p){
 		return p_temp;
 	}
 	/* If there is more than one child */
-	else {				
+	else {
 		pcb_t *p_temp = p -> p_child;		/* setup a temp holder */
 		p_temp -> p_sib -> p_sibPrev = NULL;	/* update previous sibling of the temp's sibling to NULL */
 		p -> p_child = p_temp -> p_sib;		/* p_child is set to p_temp sibling */
