@@ -45,7 +45,7 @@ important that no previous value persist in a pcb's when it
 gets reallocated. */
 pcb_t *allocPcb(){
 	/* -------- Return NULL if the pcbFree list is empty. ----- */
-  if(pcbFree_h == NULL){
+  if (pcbFree_h == NULL){
     return NULL;
   }
   else {
@@ -86,7 +86,7 @@ void initPcbs() {
 	int i = 0;
 	static pcb_t pcbArray[MAXPROC]; /* create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h */
 	/* add each pcb in MAXPROC, add it to the freeList */
-	for(i = 0; i < MAXPROC; i++){
+	for (i = 0; i < MAXPROC; i++){
 			pcb_PTR addressOfPcbArrayElement = &pcbArray[i]; /* the & means get the address of that element of the array */
 			                                         /* we need to get an address because freePcb() takes a pointer */
 								/* and a pointer is an address */
@@ -127,7 +127,7 @@ void insertProcQ(pcb_t **tp, pcb_t *p){
 		p -> p_next = p;
 	}
 	/* If there is only one node in the queue*/
-	else if((*tp)->p_next == (*tp)){
+	else if ((*tp)->p_next == (*tp)){
 		/* Pointer rearrangements to link the old lonely node to the new one */
 		p->p_next = (*tp); /* set the new node's next to the tail */
 		p->p_prev = (*tp); /* set the new node's pre to the tail */
@@ -156,7 +156,7 @@ the process queue */
 pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
 	pcb_PTR removed;
 	/* If queue is empty */
-	if((*tp) == NULL) {
+	if ((*tp) == NULL) {
 		return NULL;
 	}
 
@@ -197,16 +197,16 @@ pointer if necessary. If the desired entry is not in the indicated queue
 (an error condition), return NULL; otherwise, return p. Note that p
 can point to any element of the process queue. */
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
-	if((*tp) == NULL){	/* Null handler */
+	if ((*tp) == NULL){	/* Null handler */
 		return NULL;
 	}
-	if((*tp) == p) {		/* if the tail pointer is p, just run removeProcQ */
+	if ((*tp) == p) {		/* if the tail pointer is p, just run removeProcQ */
 		return removeProcQ(tp);
 	}
 	pcb_t *tail = (*tp);		/* Keep track of the tail pointer */
 	pcb_t *p_temp = p;		/* Create a temp pointer */
-	while(tail -> p_next != (*tp)){	/* While loop if removing from middle */
-		if(tail -> p_next == p) { /* if the next pcb from the tail is p: */
+	while (tail -> p_next != (*tp)){	/* While loop if removing from middle */
+		if (tail -> p_next == p) { /* if the next pcb from the tail is p: */
 			p_temp -> p_prev -> p_next = p_temp -> p_next;
 			p_temp -> p_next -> p_prev = p_temp -> p_prev;
 			p_temp -> p_next = NULL;
@@ -236,7 +236,7 @@ pcb_t *headProcQ(pcb_t *tp){
 /* Return TRUE if the pcb pointed to by p has no children. Return
 FALSE otherwise. */
 int emptyChild(pcb_t *p){
-	if(p -> p_child == NULL) {
+	if (p -> p_child == NULL) {
 		return TRUE;
 	}
 	else {
@@ -302,13 +302,13 @@ pcb_t *outChild(pcb_t *p){
 	}
 
 	/* If p is the Last child */
-	if (p -> p_sibPrev == NULL) {	/* Check if p is the Last child */
-		p -> p_sib -> p_sibPrev = NULL;	/* If true, set previous sib of p's Next sibling to NULL */
-		p -> p_sib = NULL;		/* Set sib of p to NULL */
-		p -> p_prnt = NULL;		/* Set parent of p to NULL */
+	if (p -> p_sib == NULL) {	/* Check if p is the Last child */
+		p -> p_sibPrev -> p_sib = NULL;	/* If true, set previous sib of p's Next sibling to NULL */
+		p -> p_prnt = NULL;		/* Set parent of p to NULL */		
+		p -> p_sibPrev = NULL;		/* Set sib of p to NULL */
 		return p;
-	}
-
+	}	
+	
 	/* If p is the Head child */
 	if (p -> p_prnt -> p_child == p) {		/* Check if p is the Head child */
 		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's Next sibling */
@@ -316,17 +316,16 @@ pcb_t *outChild(pcb_t *p){
 		p -> p_prnt = NULL;			/* Parent of p becomes NULL */
 		p -> p_sib = NULL;			/* Sibling of p becomes NULL */
 		return p;
-	}
+	}	
 
 	/* If p is a middle child */
 	if (p -> p_sib != NULL && p -> p_sibPrev != NULL) {	/* Check if there is a Next and Previous sibling to p */
-		p -> p_sibPrev -> p_sib = p -> p_sib;		/* If true, the Next sibling of p's Previous sibling equals the Next sibling of p  */
 		p -> p_sib -> p_sibPrev = p -> p_sibPrev;	/* The Previous sibling of p's Next sibling equals the Previous sibling of p */
+		p -> p_sibPrev -> p_sib = p -> p_sib;		/* If true, the Next sibling of p's Previous sibling equals the Next sibling of p  */
 		p -> p_prnt = NULL;				/* p's parent set to NULL */
 		p -> p_sib = NULL;				/* p's Next sibling set to NULL */
 		p -> p_sibPrev = NULL;				/* p's Previous sibling set NULL */
 		return p;
 	}
 	return NULL;	/* if no conditions are met, useful for debugging as there should be a met condition */
-
 }
