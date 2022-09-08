@@ -198,50 +198,27 @@ pointer if necessary. If the desired entry is not in the indicated queue
 (an error condition), return NULL; otherwise, return p. Note that p
 can point to any element of the process queue. */
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
-	pcb_PTR p_removed;
-	pcb_PTR p_temp;
-		if((*tp) == NULL) {
-			return NULL;
-		} else if(p == NULL) {
-			return NULL;
+	if((*tp) == NULL){	/* Null handler */
+		return NULL;
+	}
+	if((*tp) == p) {		/* if the tail pointer is p, just run removeProcQ */
+		return removeProcQ(tp);
+	}
+	pcb_t *tail = (*tp);		/* Keep track of the tail pointer */
+	pcb_t *p_temp = p;		/* Create a temp pointer */
+	while(tail -> p_next != (*tp)){	/* While loop if removing from middle */
+		if(tail -> p_next == p) { /* if the next pcb from the tail is p: */
+			p_temp -> p_prev -> p_next = p_temp -> p_next;
+			p_temp -> p_next -> p_prev = p_temp -> p_prev;
+			p_temp -> p_next = NULL;
+			p_temp -> p_prev = NULL;
+			return p_temp;
 		}
-		/* If tail pointer is the same as the node we want pointed to by p*/
-		if((*tp) == p){
-			/* If tp = p and there is only one node in the queue... so the tail's next points to itself*/
-			if ((*tp) -> p_next == (*tp)) {
-				p_removed = (*tp);
-				(*tp) = mkEmptyProcQ();
-				return p_removed;
-			}
-			/* If tp = p and there is not only one node in the queue. */
-			if ((((*tp) -> p_next) != (*tp))) {
-				/* if tp = p and there is more than one node in the queue*/
-				(*tp)->p_prev->p_next = (*tp)->p_next;
-				   /* 1. get the tail's prev which is like the thorax (if we say tail- thorax - abdomen - head)
-					 /* 2. Get the thorax's next (which is the tail) and reset it to be the address of the head */
-				(*tp)->p_next->p_prev = (*tp)->p_prev;
-				   /* 1. Get the head's prev and set it to be the tail's prev aka the thorax */
-				(*tp) = (*tp)->p_prev; /* set the thorax to be the tail. */
-			} else {
-			return NULL; /*idk what other case there would be, but just in case. */
-		  }
+		else {				/* Otherwise, adjust the tail var and return to the loop */
+			tail = tail -> p_next;
 		}
-
-		/* If the tail pointer is different from the node to be removed. */
-		if((*tp) != p) {
-			p_temp = (*tp) -> p_prev; /* begin looking for p at the thorax */
-			if((p_temp == p) && (p_temp != (*tp))){ /* if the thorax is p... */
-				p_removed = p_temp;
-				p_removed -> p_prev -> p_next = p_removed -> p_next;
-				p_removed -> p_next -> p_prev = p_removed -> p_prev;
-				p_removed -> p_prev = NULL;
-				p_removed -> p_next = NULL;
-				return p_removed;
-			}
-				p_temp = p_temp -> p_prev; /* get the temp's prev to increment through */
-			}
-			/* node is not in the  list */
-			return NULL;
+	}
+	return NULL;
 }
 
 /* Return a pointer to the first pcb from the process queue
