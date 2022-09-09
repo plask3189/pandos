@@ -25,7 +25,7 @@ HIDDEN semd_t *semd_h, *semdFreeList_h;
 
 /* Pushes a node pointed to by s onto the stack that is the semdFreeList
    Note that the next pointer of each node points downwards in the stack */
-void freeSemd(semd_t *s){
+void freeSemdFromSemdFreeList(semd_t *s){
 	if (semdFreeList_h == NULL){ /* if the freeList is empty: */
 				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
   if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
@@ -52,23 +52,17 @@ semd_t *popSemdFromFreeList(){
 
 
 /**************************** Active Semaphore List Supporting Methods ***************************/
-/* Look through the active semaphore list for the semAdd (pointer to the semaphore) */
-/* "A semaphore is active if there is at least one pcb on the process queue associated with it." p. 22 Pandos*/
+/* Look through the active semaphore list for the semAdd that is given as a parameter.
+Return the address of the parent whose child's semaphore had the semAdd that was the one we wanted.
+Remember the ASL is "sorted in ascending order using the s_semAdd field as a sort key." p. 13 pandos*/
 semd_t *search(int *semAdd){
 	semd_t *temp = semd_h;
-	if(semAdd == NULL || semd_h->s_next == NULL){
-		return NULL;
-	} else {
-		while(temp->s_next != NULL){ /* Look through the list until we reach the ending dumb node whose next is null */
-			if(temp->s_next->s_semAdd == semAdd){
-				return(temp->s_next); /* oooo here it is */
-			}
-			else{
-				temp = temp->s_next; /* to increment through list */
-			}
-		}
-		return NULL;
+	/* Continue the search while the search's semAdd is greater than temp's next's semAdd*/
+	while (s_semAdd > (temp->s_next->s_semAdd)){
+			temp = temp -> s_next;
 	}
+	/* Returns the address of the node whose child has the correct semAdd */
+	return temp;
 }
 
 
@@ -80,27 +74,37 @@ initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to mkEmpt
 If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.
 In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
-	semd_t* temp = search(semAdd); /* find what semaphore's queue to insert the pcb on */
-  /* If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.*/
-	if(temp -> s_next -> s_semAdd != semAdd) { /* if a location to insert a new pcb does not exist */
-		semd_t *semaphoreForPcb = popSemdFromFreeList();
-		if(semaphoreForPcb == NULL) {
-				return TRUE;
-	}
-	semaphoreForPcb -> s_next = temp -> s_next;
-	temp -> s_next = semaphoreForPcb;
-	semaphoreForPcb -> s_procQ = mkEmptyProcQ();
-	insertProcQ(&(semaphoreForPcb -> s_procQ),p);
-	semaphoreForPcb -> s_semAdd = semAdd;
-	p -> p_semAdd = semAdd;
-	return FALSE;
+	/* The search() gets the address of the parent whose kid has the correct semAdd.
+	Then this addres is set to be held by temp */
+	semd_t *temp = search(semAdd);
+	/* If temp's kid actually does hold the correct semAdd and the node exists */
+	if (temp -> s_next -> s_semAdd == semAdd) {
+		/* Remember that p_semAdd was defined in types.h. It is the "pointer to
+		a semaphore on which the process is blocked." p.8 pandos
+		Get the pcb pointed to by p and get its semAdd.
+		Set the correct semaphore's semAdd to be the address that the pcb's
+		pointer to its semaphore holds. */
+			p -> p_semAdd = semAdd;
+			/* Insert the pcb pointed to by p onto the semaphore's process queue. */
+			insertProcQ(&(temp -> s_next -> s_procQ), p);
 	}
 	else {
-	/* If the spot to insert a pcb is available*/
-		p -> p_semAdd = semAdd;
-		insertProcQ(&(temp -> s_next -> s_procQ), p);
-		return FALSE;
+		/* Remove a semd from the free list so that we can make a new semaphore */
+			semd_t *newSemaphore = popSemdFromFreeList();
+			if (newSemaphore == NULL) {
+					return TRUE;
+			}
+			/* set the new semaphore's semAdd to hold the correct semAdd */
+			newSemaphore -> s_semAdd = semAdd;
+			/* set the new semaphore's s_procQ to be initialized */
+			newSemaphore -> s_procQ = mkEmptyProcQ();
+			/* link the semAdd and the pcb */
+			p -> p_semAdd = semAdd;
+			insertProcQ(&(newSemaphore->s_procQ), p);
+			newSemaphore->s_next = temp->s_next;
+			temp->s_next = newSemaphore;
 	}
+	return FALSE;
 }
 
 
@@ -115,7 +119,7 @@ pcb_t *removeBlocked(int *semAdd) {
 		if (emptyProcQ(temp -> s_next -> s_procQ)){	/* run emptyProcQ to test if empty */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* next element from temp is equal to the next element of emptySemd */
-			freeSemd(emptySemd);			/* run freeSemd on emptySemd */
+			freeSemdFromSemdFreeList(emptySemd);			/* run freeSemd on emptySemd */
 			removed -> p_semAdd = NULL;		/* reset p_semADD to NULL */
 			return removed;
 		}
@@ -178,10 +182,30 @@ void initASL(){
 	int i = 0;
 	/* increment through nodes of semdTableArray and insert MAXPROC nodes onto the semdFreeList */
 	while(i < MAXPROC){
-		freeSemd(&(semdTableArray[i]));
+		freeSemdFromSemdFreeList(&(semdTableArray[i])); /* pop a node off of the free List */
 		i++;
 	}
-	/* initialize dumb head */
-	/* initialize dumb tail */
+	/* Initialize dumb nodes */
+		/******* Initializing the first dumb node */
+		/* Get the address of the first node in the array of semaphores*/
+		semd_h = (&semdTableArray[0]);
+		/* Set the semAdd of the semaphore that the head points to and set it to 0 */
+		semd_h -> s_semAdd = 0;
+		/* Set the next of the semaphore that the head points to and
+		set it to hold the address of the ending dumb node*/
+    semd_h -> s_next = (&semdTableArray[MAXPROC + 1]);
+		/* Set the s_procQ of the semaphore that the head points to and
+		set it to hold NULL */
+		semd_h -> s_procQ = NULL;
 
+		/******* Initializing the last dumb node */
+		/* Get the node that head points to. Get it's next which should be the
+		last node in the array right now. Get this node's semAdd and set it to MAXINT*/
+    semd_h -> s_next -> s_semAdd = (int *)(MAXINT);
+		/* Get the node that head points to. Get it's next which should be the
+		last node in the array right now. Get this node's procQ and set it to NULL*/
+		semd_h->s_next-> s_procQ = NULL;
+		/* Get the node that head points to. Get it's next which should be the
+		last node in the array right now. Get this node's next and set it to NULL*/
+		semd_h -> s_next -> s_next = NULL;
 }
