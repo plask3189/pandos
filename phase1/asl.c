@@ -1,5 +1,5 @@
 /* ---------------- 2.4 The Active Semaphore List (ASL) ------------------------
-/* Written by Kate Plas and Travis Wahl
+ * Written by Kate Plas and Travis Wahl
  * For CSCI-320 Operating Systems
  * ----- Includes two main parts: -------------------
  *   1. The ASL is a null-terminated single, linearly lined list whose nodes each have a s_next field.
@@ -14,7 +14,7 @@
 
 HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semd_h is the head pointer of the active semaphore list .
-/* semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
+ * semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
 */
 
 
@@ -177,35 +177,27 @@ static semd_t semdTable[MAXPROC]
 This method will be only called once during data structure initialization. */
 void initASL(){
 	static semd_t semdTableArray[MAXPROC + 2]; /* need two more bc of dumb nodes on either end */
-	semd_h = NULL; /* the head of the active semaphore list is set to NULL */
 	semdFreeList_h = NULL; /* the head of the free list is set to NULL */
-	int i = 0;
-	/* increment through nodes of semdTableArray and insert MAXPROC nodes onto the semdFreeList */
-	while(i < MAXPROC){
-		freeSemdFromSemdFreeList(&(semdTableArray[i])); /* pop a node off of the free List */
+	
+	/* Initialize dumb nodes */
+	semd_t *dumbFirst = &(semdTableArray[0]); /* Head Dummy */
+	semd_t *dumbLast = &(semdTableArray[1]);  /* Tail Dummy */
+	
+	/* Initialize  the first dumb node */
+	semd_h = dumbFirst;		/* the head pointer needs to be set to the first dummy */	
+	dumbFirst -> s_semAdd = 0;	/* Set the semAdd of the semaphore that the head points (first dummy) and set it to 0 */
+	dumbFirst -> s_next = dumbLast;	/* Set the Last Dummy as next to the Head Dummy */
+	dumbFirst -> s_procQ = mkEmptyProcQ();	/* clear s_procQ (sets to NULL) */
+
+	
+	/* Initialize the last dumb node */
+	dumbLast -> s_semAdd = MAXINT; 	/* Tail dummy gets set to the MAXINT value, defined in const.h */
+	dumbLast -> s_next = NULL;	/* Nothing comes after the Tail dummy, so we set the last dummy's next to NULL */
+	dumbLast -> s_procQ = mkEmptyProcQ();	/* clear s_procQ (sets to NULL) */
+	
+	int i = 2;	/* Set the loop variable i to 2 (we have 2 dummies in there already */
+	while (i < MAXPROC + 2) {
+		freeSemdFromSemdFreeList(&semdTableArray[i]);	/* take a node off the free list */
 		i++;
 	}
-	/* Initialize dumb nodes */
-		/******* Initializing the first dumb node */
-		/* Get the address of the first node in the array of semaphores*/
-		semd_h = (&semdTableArray[0]);
-		/* Set the semAdd of the semaphore that the head points to and set it to 0 */
-		semd_h -> s_semAdd = 0;
-		/* Set the next of the semaphore that the head points to and
-		set it to hold the address of the ending dumb node*/
-    semd_h -> s_next = (&semdTableArray[MAXPROC + 1]);
-		/* Set the s_procQ of the semaphore that the head points to and
-		set it to hold NULL */
-		semd_h -> s_procQ = NULL;
-
-		/******* Initializing the last dumb node */
-		/* Get the node that head points to. Get it's next which should be the
-		last node in the array right now. Get this node's semAdd and set it to MAXINT*/
-    semd_h -> s_next -> s_semAdd = (int *)(MAXINT);
-		/* Get the node that head points to. Get it's next which should be the
-		last node in the array right now. Get this node's procQ and set it to NULL*/
-		semd_h->s_next-> s_procQ = NULL;
-		/* Get the node that head points to. Get it's next which should be the
-		last node in the array right now. Get this node's next and set it to NULL*/
-		semd_h -> s_next -> s_next = NULL;
 }
