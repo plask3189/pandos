@@ -11,7 +11,6 @@
 #include "../h/const.h"
 #include "../h/pcb.h"
 #include "../h/asl.h"
-#include "pcb.c"
 
 HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semd_h is the head pointer of the active semaphore list .
@@ -28,10 +27,11 @@ HIDDEN semd_t *semd_h, *semdFreeList_h;
 void freeSemdFromSemdFreeList(semd_t *s){
 	if (semdFreeList_h == NULL){ /* if the freeList is empty: */
 				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
-  if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
+				semdFreeList_h = s;
+	} 
+  	else if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
         s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
-    }
-	semdFreeList_h = s;  /* the head points to the new node. */
+        semdFreeList_h = s;  /* the head points to the new node. */
 	}
 }
 
@@ -145,7 +145,7 @@ pcb_t *outBlocked(pcb_t *p) {
 		if(emptyProcQ(temp -> s_next -> s_procQ)) {	/* if emptyProcQ returns True */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will later use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* Set s_next of temp equal to s-next of emptySemd */
-			freeSemd(emptySemd);			/* run FreeSemd on emptySemd */
+			freeSemdFromSemdFreeList(emptySemd);			/* run FreeSemd on emptySemd */
 			return outted;
 		}
 		else {
