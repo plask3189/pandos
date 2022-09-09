@@ -58,7 +58,7 @@ Remember the ASL is "sorted in ascending order using the s_semAdd field as a sor
 semd_t *search(int *semAdd){
 	semd_t *temp = semd_h;
 	/* Continue the search while the search's semAdd is greater than temp's next's semAdd*/
-	while (s_semAdd > (temp->s_next->s_semAdd)){
+	while (semAdd > (temp->s_next->s_semAdd)){
 			temp = temp -> s_next;
 	}
 	/* Returns the address of the node whose child has the correct semAdd */
