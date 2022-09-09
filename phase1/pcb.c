@@ -26,7 +26,7 @@ HIDDEN pcb_PTR pcbFree_h; /* declaration for private global variable that points
 
 /*------------2.1: The Allocation and Deallocation of pcbs--------------------
 
-/* Insert the element pointed to by p onto the pcbFree list.
+* Insert the element pointed to by p onto the pcbFree list.
 *  Pushing a node pointed to by p onto the pcbFree list stack. */
 void freePcb(pcb_t *p){
 	p -> p_next = pcbFree_h; /* load the address of the current head into the next */
@@ -172,20 +172,20 @@ pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
 	/* set the vice president node's prev to point to the tail */
 	(*tp) -> p_next -> p_next -> p_prev = (*tp);
 		/****** Walk through of this crazy line: ***********
-		/* 1. get the tail's next which is the head address (let' make it up. say 0xpa...)
-		/* 2. Now we are at the head address. 0xpa...
-		/* 3. Go to the head's next which is the vice president node. Let's say it is 0xge...)
-		/* 4. Now we are at the vice president node. 0xge...
-		/* 5. Get the vice president's prev field. This would be 0xpa, the head.
-		/* 6. Since we're deleting the head, reset the vice president's prev field to the tail */
+		 * 1. get the tail's next which is the head address (let' make it up. say 0xpa...)
+		 * 2. Now we are at the head address. 0xpa...
+		 * 3. Go to the head's next which is the vice president node. Let's say it is 0xge...)
+		 * 4. Now we are at the vice president node. 0xge...
+		 * 5. Get the vice president's prev field. This would be 0xpa, the head.
+		 * 6. Since we're deleting the head, reset the vice president's prev field to the tail */
 
 	/* set the tail's next field to hold the address of the vice president */
 	(*tp) -> p_next = ((*tp) -> p_next -> p_next);
 	   /****** Walk through of this crazy line: ***********
-		 /* 1. get the tail's next field. (An address like 0xpa...)
-		 /* 2. On the other side of the equals sign, get the tail's next which is the head.
-		 /* 3. Get the head's next which is the address of the vice president, (with like 0xge...)]
-		 /* 4. Set the address of the vice president to be held by the next field of the tail */
+		  * 1. get the tail's next field. (An address like 0xpa...)
+		  * 2. On the other side of the equals sign, get the tail's next which is the head.
+		  * 3. Get the head's next which is the address of the vice president, (with like 0xge...)]
+		  * 4. Set the address of the vice president to be held by the next field of the tail */
 	return removed;
 }
 
