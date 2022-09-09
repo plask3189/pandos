@@ -11,6 +11,7 @@
 #include "../h/const.h"
 #include "../h/pcb.h"
 #include "../h/asl.h"
+#include "pcb.c"
 
 HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semd_h is the head pointer of the active semaphore list .
@@ -53,7 +54,7 @@ semd_t *popSemdFromFreeList(){
 /**************************** Active Semaphore List Supporting Methods ***************************/
 /* Look through the active semaphore list for the semAdd (pointer to the semaphore) */
 /* "A semaphore is active if there is at least one pcb on the process queue associated with it." p. 22 Pandos*/
-semd_t *searchForActiveSemaphore(int *semAdd){
+semd_t *search(int *semAdd){
 	semd_t *temp = semd_h;
 	if(semAdd == NULL || semd_h->s_next == NULL){
 		return NULL;
@@ -79,14 +80,14 @@ initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to mkEmpt
 If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.
 In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
-	semd_t* temp = searchForActiveSemaphore(semAdd); /* find what semaphore's queue to insert the pcb on */
+	semd_t* temp = search(semAdd); /* find what semaphore's queue to insert the pcb on */
   /* If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.*/
 	if(temp -> s_next -> s_semAdd != semAdd) { /* if a location to insert a new pcb does not exist */
 		semd_t *semaphoreForPcb = popSemdFromFreeList();
 		if(semaphoreForPcb == NULL) {
 				return TRUE;
 	}
-	semaphoreForPcb -> s_next = temp -> s_next; 
+	semaphoreForPcb -> s_next = temp -> s_next;
 	temp -> s_next = semaphoreForPcb;
 	semaphoreForPcb -> s_procQ = mkEmptyProcQ();
 	insertProcQ(&(semaphoreForPcb -> s_procQ),p);
@@ -108,7 +109,7 @@ otherwise, remove the first (i.e. head) pcb from the process queue of the found 
 return a pointer to it. If the process queue for this semaphore becomes empty (emptyProcQ(s procq) is TRUE),
 remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
 pcb_t *removeBlocked(int *semAdd) {
-	semd_t *temp = searchForActiveSemaphore(semAdd);	/* Set a temp var using the searchForActiveSemaphore method on semADD */
+	semd_t *temp = search(semAdd);	/* Set a temp var using the search method on semADD */
 	if (temp -> s_next -> s_semAdd == semAdd) {		/* If pointer to sempahor (s_semAdd) of the next element on the ASL from temp == semADD */
 		pcb_t *removed = removeProcQ(&temp -> s_next -> s_procQ);	/* Creation of removed var to track removed pcb */
 		if (emptyProcQ(temp -> s_next -> s_procQ)){	/* run emptyProcQ to test if empty */
@@ -116,7 +117,7 @@ pcb_t *removeBlocked(int *semAdd) {
 			temp -> s_next = emptySemd -> s_next;	/* next element from temp is equal to the next element of emptySemd */
 			freeSemd(emptySemd);			/* run freeSemd on emptySemd */
 			removed -> p_semAdd = NULL;		/* reset p_semADD to NULL */
-			return removed;	
+			return removed;
 		}
 		else {
 			removed -> p_semAdd = NULL;		/* Otherwise set the blocked pointer to NULL */
@@ -134,7 +135,7 @@ pcb_t *removeBlocked(int *semAdd) {
 (p→ p semAdd) on the ASL. If pcb pointed to by p does not appear in the process queue associated
 with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
 pcb_t *outBlocked(pcb_t *p) {
-	semd_t *temp = searchForActiveSemaphore(p -> p_semAdd);	/* Set a temp var using the searchForActiveSemaphore method on p _> p_semADD */
+	semd_t *temp = search(p -> p_semAdd);	/* Set a temp var using the search method on p _> p_semADD */
 	if(temp -> s_next -> s_semAdd == p -> p_semAdd) {	/* If the pointer to the semaphore from temp's s_next equals p's blocked pointer */
 		pcb_t *outted = outProcQ(&temp -> s_next -> s_procQ, p);	/* Create outted to track the outProcQ pcb */
 		if(emptyProcQ(temp -> s_next -> s_procQ)) {	/* if emptyProcQ returns True */
@@ -157,7 +158,7 @@ pcb_t *outBlocked(pcb_t *p) {
 /* Return a pointer to the pcb that is at the head of the process queue associated with the semaphore
 semAdd. Return NULL if semAdd is not found on the ASL or if the process queue associated with semAdd is empty. */
 pcb_t *headBlocked(int *semAdd){
-	semd_t *temp = searchForActiveSemaphore(semAdd);		/* Create a temp var using the searchForActiveSemaphore method on semADD */
+	semd_t *temp = search(semAdd);		/* Create a temp var using the search method on semADD */
 	if ((temp == NULL) || (emptyProcQ(temp -> s_next -> s_procQ))) { /* If the temp var is NULL OR if emptyProcQ returns false */
 		return NULL;
 	}

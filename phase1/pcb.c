@@ -45,37 +45,38 @@ important that no previous value persist in a pcb's when it
 gets reallocated. */
 pcb_t *allocPcb(){
 	/* -------- Return NULL if the pcbFree list is empty. ----- */
-  if (pcbFree_h == NULL){
-    return NULL;
+  if (pcbFree_h != NULL){
+		/* -------- Otherwise, remove an element from the pcbFree list --------- */
+	  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
+	  p_temp = pcbFree_h; /* set address of current head to address of temp so that we */
+		                  /* can return the pointer to the removed element */
+	  pcbFree_h = p_temp -> p_next; /* access the head node's next that pcbFree_h */
+		                                 /* points to. Set this next to pcbFree_h so that */
+									/* pcbFree_h points to the node below the old head. */
+
+		/* -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0) */
+		/* these fields are from page 8 of pandos */
+	  	/* process queue fields */
+		p_temp -> p_next = NULL;
+		p_temp -> p_prev = NULL;
+		/* process tree fields */
+		p_temp -> p_prnt = NULL;
+		p_temp -> p_child = NULL;
+		p_temp -> p_sib = NULL;
+		p_temp -> p_sibPrev = NULL;
+		/* process status information */
+		p_temp -> p_s = NULL;
+		p_temp -> p_time = 0;
+		p_temp -> p_semAdd =NULL;
+		/* support layer information */
+		p_temp -> p_supportStruct = NULL;
+
+		/*------------ Then return a pointer to the removed element.------------ */
+		return p_temp;
   }
   else {
-  /* -------- Otherwise, remove an element from the pcbFree list --------- */
-  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
-  p_temp = pcbFree_h; /* set address of current head to address of temp so that we */
-	                  /* can return the pointer to the removed element */
-  pcbFree_h = p_temp -> p_next; /* access the head node's next that pcbFree_h */
-	                                 /* points to. Set this next to pcbFree_h so that */
-								/* pcbFree_h points to the node below the old head. */
+		return NULL;
 
-	/* -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0) */
-	/* these fields are from page 8 of pandos */
-  	/* process queue fields */
-	p_temp -> p_next = NULL;
-	p_temp -> p_prev = NULL;
-	/* process tree fields */
-	p_temp -> p_prnt = NULL;
-	p_temp -> p_child = NULL;
-	p_temp -> p_sib = NULL;
-	p_temp -> p_sibPrev = NULL;
-	/* process status information */
-	p_temp -> p_s = NULL;
-	p_temp -> p_time = 0;
-	p_temp -> p_semAdd =NULL;
-	/* support layer information */
-	p_temp -> p_supportStruct = NULL;
-
-	/*------------ Then return a pointer to the removed element.------------ */
-	return p_temp;
 	}
 }
 
@@ -122,30 +123,27 @@ tp to allow for the possible updating of the tail pointer as well. */
 void insertProcQ(pcb_t **tp, pcb_t *p){
 	/*If the queue is empty */
 	if (emptyProcQ(*tp)){
-		(*tp) = p; 
 		p -> p_prev = p;
 		p -> p_next = p;
 	}
-	/* If there is only one node in the queue*/
-	else if ((*tp)->p_next == (*tp)){
-		/* Pointer rearrangements to link the old lonely node to the new one */
-		p->p_next = (*tp); /* set the new node's next to the tail */
-		p->p_prev = (*tp); /* set the new node's pre to the tail */
-		(*tp)->p_prev = p; /* set the tail's prev to the new node */
-		(*tp)->p_next = p; /* set the tail's next to the new node */
-		(*tp) = p; /* the tail pointer is set to the new node */
-	}
-
 	/* If there are multiple nodes in the queue*/
-	else {
+	else if ((*tp)->p_next != (*tp)){
 		p->p_next = (*tp)->p_next; /* the tail's next which is the address of the head is set to the next of the new node. */
 		p->p_next->p_prev = p; /* the head's prev is set to the address of p. */
 		/* now the head and new node are linked */
 		p->p_prev = (*tp); /* set the new node's prev to the tail */
 		(*tp)->p_next = p; /* set the tail's next to the new node */
-		(*tp) = p; /* the tail pointer is set to the new node */
 	}
 
+	/* If there is one node in the queue*/
+	else {
+		/* Pointer rearrangements to link the old lonely node to the new one */
+		p->p_next = (*tp); /* set the new node's next to the tail */
+		p->p_prev = (*tp); /* set the new node's pre to the tail */
+		(*tp)->p_prev = p; /* set the tail's prev to the new node */
+		(*tp)->p_next = p; /* set the tail's next to the new node */
+	}
+(*tp) = p; /* the tail pointer is set to the new node */
 }
 
 /* Remove the pcb pointed to by p from the process queue whose tail- pointer
@@ -237,8 +235,8 @@ pcb_t *headProcQ(pcb_t *tp){
 FALSE otherwise. */
 int emptyChild(pcb_t *p){
 	return (p -> p_child == NULL);
-	
-	
+
+
 	/*if (p -> p_child == NULL) {
 		return TRUE;
 	}
@@ -274,7 +272,7 @@ Return NULL if initially there were no children of p. Otherwise, return a pointe
 to this removed first child pcb. */
 pcb_t *removeChild (pcb_t *p){
 	pcb_t *removed = p -> p_child;
-	
+
 	/* If-Empty Handler */
 	if (emptyChild(p)) {		/* Check if p has children, if not then return NULL */
 		return NULL;
@@ -306,11 +304,11 @@ pcb_t *outChild(pcb_t *p){
 	/* If p is the Last child */
 	if (p -> p_sib == NULL) {	/* Check if p is the Last child */
 		p -> p_sibPrev -> p_sib = NULL;	/* If true, set previous sib of p's Next sibling to NULL */
-		p -> p_prnt = NULL;		/* Set parent of p to NULL */		
+		p -> p_prnt = NULL;		/* Set parent of p to NULL */
 		p -> p_sibPrev = NULL;		/* Set sib of p to NULL */
 		return p;
-	}	
-	
+	}
+
 	/* If p is the Head child */
 	if (p -> p_prnt -> p_child == p) {		/* Check if p is the Head child */
 		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's Next sibling */
@@ -318,7 +316,7 @@ pcb_t *outChild(pcb_t *p){
 		p -> p_prnt = NULL;			/* Parent of p becomes NULL */
 		p -> p_sib = NULL;			/* Sibling of p becomes NULL */
 		return p;
-	}	
+	}
 
 	/* If p is a middle child */
 	if (p -> p_sib != NULL && p -> p_sibPrev != NULL) {	/* Check if there is a Next and Previous sibling to p */
