@@ -14,22 +14,19 @@
 
 HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semd_h is the head pointer of the active semaphore list .
- * semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors.
-*/
-
-
+   semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors. */
 
 /**************************** semdFreeList Supporting Methods ***************************/
-/* semndFreeList is a singly linked NULL terminated stack that holds the free semnds.*/
+/* semdFreeList is a singly linked NULL terminated stack that holds the free semds.*/
 
 /* Pushes a node pointed to by s onto the stack that is the semdFreeList
    Note that the next pointer of each node points downwards in the stack */
 void freeSemdFromSemdFreeList(semd_t *s){
-	if (semdFreeList_h == NULL){ /* if the freeList is empty: */
+	if (semdFreeList_h == NULL){ /* If the freeList is empty */
 				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
 				semdFreeList_h = s;
-	} 
-  	else if (semdFreeList_h != NULL){ /* if the freeList is not empty: */
+	}
+  	else if (semdFreeList_h != NULL){ /* If the freeList is not empty: */
         s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
         semdFreeList_h = s;  /* the head points to the new node. */
 	}
@@ -80,7 +77,7 @@ int insertBlocked (int *semAdd, pcb_t *p) {
 	/* If temp's kid actually does hold the correct semAdd and the node exists */
 	if (temp -> s_next -> s_semAdd == semAdd) {
 		/* Remember that p_semAdd was defined in types.h. It is the "pointer to
-		a semaphore on which the process is blocked." p.8 pandos
+		a semaphore on which the process is blocked," (p.8 pandos).
 		Get the pcb pointed to by p and get its semAdd.
 		Set the correct semaphore's semAdd to be the address that the pcb's
 		pointer to its semaphore holds. */
@@ -178,23 +175,23 @@ This method will be only called once during data structure initialization. */
 void initASL(){
 	static semd_t semdTableArray[MAXPROC + 2]; /* need two more bc of dumb nodes on either end */
 	semdFreeList_h = NULL; /* the head of the free list is set to NULL */
-	
+
 	/* Initialize dumb nodes */
 	semd_t *dumbFirst = &(semdTableArray[0]); /* Head Dummy */
 	semd_t *dumbLast = &(semdTableArray[1]);  /* Tail Dummy */
-	
+
 	/* Initialize  the first dumb node */
-	semd_h = dumbFirst;		/* the head pointer needs to be set to the first dummy */	
+	semd_h = dumbFirst;		/* the head pointer needs to be set to the first dummy */
 	dumbFirst -> s_semAdd = 0;	/* Set the semAdd of the semaphore that the head points (first dummy) and set it to 0 */
 	dumbFirst -> s_next = dumbLast;	/* Set the Last Dummy as next to the Head Dummy */
 	dumbFirst -> s_procQ = mkEmptyProcQ();	/* clear s_procQ (sets to NULL) */
 
-	
+
 	/* Initialize the last dumb node */
 	dumbLast -> s_semAdd = MAXINT; 	/* Tail dummy gets set to the MAXINT value, defined in const.h */
 	dumbLast -> s_next = NULL;	/* Nothing comes after the Tail dummy, so we set the last dummy's next to NULL */
 	dumbLast -> s_procQ = mkEmptyProcQ();	/* clear s_procQ (sets to NULL) */
-	
+
 	int i = 2;	/* Set the loop variable i to 2 (we have 2 dummies in there already */
 	while (i < MAXPROC + 2) {
 		freeSemdFromSemdFreeList(&semdTableArray[i]);	/* take a node off the free list */

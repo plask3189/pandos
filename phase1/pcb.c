@@ -26,14 +26,13 @@ HIDDEN pcb_PTR pcbFree_h; /* declaration for private global variable that points
 
 /*------------2.1: The Allocation and Deallocation of pcbs--------------------
 
-* Insert the element pointed to by p onto the pcbFree list.
-*  Pushing a node pointed to by p onto the pcbFree list stack. */
+* freePcb() pushes a node pointed to by p onto the pcbFree list stack. */
 void freePcb(pcb_t *p){
-	p -> p_next = pcbFree_h; /* load the address of the current head into the next */
-	                         /* of the new node which is being pointed to by p */
-	pcbFree_h = p; /* set the address of the new node to the address that the head */
-	             /* holds. Now the head points to the new node that is on top */
-							 /* of the stack holding the free pcbs. */
+	/* Load the address of the current head into the next of the new node which is being pointed to by p */
+	p -> p_next = pcbFree_h;
+	/* Set the address of the new node to the address that the head holds. Now the head points to the new
+	node that is on top  of the stack holding the free pcbs. */
+	pcbFree_h = p;
 }
 
 
@@ -49,55 +48,56 @@ pcb_t *allocPcb(){
 		/* -------- Otherwise, remove an element from the pcbFree list --------- */
 	  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
 	  p_temp = pcbFree_h; /* set address of current head to address of temp so that we */
-		                  /* can return the pointer to the removed element */
+		                    /* can return the pointer to the removed element */
 	  pcbFree_h = p_temp -> p_next; /* access the head node's next that pcbFree_h */
-		                                 /* points to. Set this next to pcbFree_h so that */
-									/* pcbFree_h points to the node below the old head. */
+		                              /* points to. Set this next to pcbFree_h so that */
+									                /* pcbFree_h points to the node below the old head. */
 
-		/* -----------Provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0) */
-		/* these fields are from page 8 of pandos */
-	  	/* process queue fields */
+		/* The below assignments provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0).
+		   These fields are from page 8 of pandos. */
+	  /* The below assignments are process queue fields */
 		p_temp -> p_next = NULL;
 		p_temp -> p_prev = NULL;
-		/* process tree fields */
+		/* The below assignments are process tree fields */
 		p_temp -> p_prnt = NULL;
 		p_temp -> p_child = NULL;
 		p_temp -> p_sib = NULL;
 		p_temp -> p_sibPrev = NULL;
-		/* process status information */
+		/* The below assignments are process status information */
 		p_temp -> p_s = NULL;
 		p_temp -> p_time = 0;
 		p_temp -> p_semAdd =NULL;
-		/* support layer information */
+		/* The below assignments are support layer information */
 		p_temp -> p_supportStruct = NULL;
-
-		/*------------ Then return a pointer to the removed element.------------ */
+		/*Then return a pointer to the removed element. */
 		return p_temp;
   }
   else {
 		return NULL;
-
 	}
 }
 
 /* Initialize the pcbFree list to contain all the elements of the static array of
 MAXPROC pcbs. This method will be called only once during data structure initialization. */
 void initPcbs() {
-  pcbFree_h = NULL; /* initialize the head pointer to null. */
+  pcbFree_h = NULL;
 	int i = 0;
-	static pcb_t pcbArray[MAXPROC]; /* create an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h */
-	/* add each pcb in MAXPROC, add it to the freeList */
+	/* This initialization creates an array that holds pcbs with a size of MAXPROC. Set to 20 in const.h */
+	static pcb_t pcbArray[MAXPROC];
+	/* The for loop adds each pcb in the pcbArray to the freeList. */
 	for (i = 0; i < MAXPROC; i++){
-			pcb_PTR addressOfPcbArrayElement = &pcbArray[i]; /* the & means get the address of that element of the array */
-			                                         /* we need to get an address because freePcb() takes a pointer */
-								/* and a pointer is an address */
-			freePcb(addressOfPcbArrayElement); /* addressOfPcbArrayElement will be the pointer that freePcb takes as a parameter */
+		  /* The & means get the address of that element of the array. We need to get an
+		  address because freePcb() takes a pointer. So we create a pointer called addressOfPcbArrayElement
+		  set it to be an element's address in the pcbArray. */
+			pcb_PTR addressOfPcbArrayElement = &pcbArray[i];
+			/* Calling freePcb() on each element's address in pcbArray(). */
+			freePcb(addressOfPcbArrayElement);
 		}
 }
 
 
 /*------------2.2: Process Queue Maintenance-----------------------------------*/
-/* Generic queue manipulation methods. The queues that will be manipulated are
+/* This section contains queue manipulation methods. The queues that will be manipulated are
  double, circularly linked lists. */
 
 /* This method is used to initialize a variable to be tail pointer to a
@@ -108,13 +108,8 @@ pcb_t *mkEmptyProcQ() {
 
 /* Return TRUE if the queue whose tail is pointed to by tp is empty.
 Return FALSE otherwise. */
-int emptyProcQ (pcb_t *tp){ /*tp is the node that tp points to. */
+int emptyProcQ (pcb_t *tp){
 	return (tp == NULL);
-  /* if (tp == NULL){
-    return true;
-  } else {
-    return false;
-  }	*/
 }
 
 /* Insert the pcb pointed to by p into the process queue whose
@@ -157,7 +152,6 @@ pcb_t *removeProcQ(pcb_t **tp){ /* Dequeuing */
 	if ((*tp) == NULL) {
 		return NULL;
 	}
-
 	/* If the queue has only one node */
 	if (((*tp) -> p_next == (*tp)) | ((*tp) -> p_prev == (*tp))) {
 		removed = (*tp);
@@ -235,20 +229,11 @@ pcb_t *headProcQ(pcb_t *tp){
 FALSE otherwise. */
 int emptyChild(pcb_t *p){
 	return (p -> p_child == NULL);
-
-
-	/*if (p -> p_child == NULL) {
-		return TRUE;
-	}
-	else {
-		return FALSE;
-	} */
 }
 
 /* Make the pcb pointed to by p a child of the pcb pointed to by prnt.
 */
 void insertChild(pcb_t *prnt, pcb_t *p) {
-
 	/* If PCB has no children */
 	if (emptyChild(prnt)) {		/* check if the pcb has no children, if so: */
 		prnt -> p_child = p;	/* create child (p) from parent (prnt) */
@@ -272,7 +257,6 @@ Return NULL if initially there were no children of p. Otherwise, return a pointe
 to this removed first child pcb. */
 pcb_t *removeChild (pcb_t *p){
 	pcb_t *removed = p -> p_child;
-
 	/* If-Empty Handler */
 	if (emptyChild(p)) {		/* Check if p has children, if not then return NULL */
 		return NULL;
@@ -295,12 +279,10 @@ pcb_t *removeChild (pcb_t *p){
 to by p has no parent, return NULL; otherwise, return p. Note that the element pointed
 to by p need not be the first child of its parent. */
 pcb_t *outChild(pcb_t *p){
-
 	/* If-Empty handler */
 	if (p -> p_prnt == NULL) {	/* If parent of p is empty, return NULL */
 		return NULL;
 	}
-
 	/* If p is the Last child */
 	if (p -> p_sib == NULL) {	/* Check if p is the Last child */
 		p -> p_sibPrev -> p_sib = NULL;	/* If true, set previous sib of p's Next sibling to NULL */
@@ -308,7 +290,6 @@ pcb_t *outChild(pcb_t *p){
 		p -> p_sibPrev = NULL;		/* Set sib of p to NULL */
 		return p;
 	}
-
 	/* If p is the Head child */
 	if (p -> p_prnt -> p_child == p) {		/* Check if p is the Head child */
 		p -> p_prnt -> p_child = p -> p_sib;	/* If true, the child of p's parent becomes p's Next sibling */
@@ -317,7 +298,6 @@ pcb_t *outChild(pcb_t *p){
 		p -> p_sib = NULL;			/* Sibling of p becomes NULL */
 		return p;
 	}
-
 	/* If p is a middle child */
 	if (p -> p_sib != NULL && p -> p_sibPrev != NULL) {	/* Check if there is a Next and Previous sibling to p */
 		p -> p_sib -> p_sibPrev = p -> p_sibPrev;	/* The Previous sibling of p's Next sibling equals the Previous sibling of p */
