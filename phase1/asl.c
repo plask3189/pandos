@@ -13,8 +13,7 @@
 #include "../h/asl.h"
 
 HIDDEN semd_t *semd_h, *semdFreeList_h;
-/* semd_h is the head pointer of the active semaphore list .
-   semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors. */
+/* semd_h is the head pointer of the active semaphore list. semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors. */
 
 /**************************** semdFreeList Supporting Methods ***************************/
 /* semdFreeList is a singly linked NULL terminated stack that holds the free semds.*/
@@ -66,10 +65,8 @@ semd_t *search(int *semAdd){
 /* Insert the pcb pointed to by p at the tail of the process queue associated with the
 semaphore whose physical address is semAdd and set the semaphore address of p to semAdd
 If the semaphore is currently not active (i.e. there is no descriptor for it in the ASL),
-allocate a new descriptor from the semdFree list, insert it in the ASL (at the appropriate position),
-initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to mkEmptyProcQ()), and proceed as above.
-If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE.
-In all other cases return FALSE. */
+allocate a new descriptor from the semdFree list, insert it in the ASL (at the appropriate position), initialize all of the fields (i.e. set s_semAdd to semAdd, and s_procQ to mkEmptyProcQ()), and proceed as above.
+If a new semaphore descriptor needs to be allocated and the semdFree list is empty, return TRUE. In all other cases return FALSE. */
 int insertBlocked (int *semAdd, pcb_t *p) {
 	/* The search() gets the address of the parent whose kid has the correct semAdd.
 	Then this addres is set to be held by temp */
