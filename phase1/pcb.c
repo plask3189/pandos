@@ -42,9 +42,10 @@ pcb_t *allocPcb(){
   if (pcbFree_h != NULL){
 		/* -------- Otherwise, remove an element from the pcbFree list --------- */
 	  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of old head. */
-	  p_temp = pcbFree_h; /* set address of current head to address of temp so that we can return the pointer to the removed element */
+	  p_temp = pcbFree_h; /* set address of current head to address of temp so that we can return the pointer 
+	  		      * to the removed element */
 	  pcbFree_h = p_temp -> p_next; /* access the head node's next that pcbFree_h points to. Set this next to pcbFree_h so that
-									                   pcbFree_h points to the node below the old head. */
+					* pcbFree_h points to the node below the old head. */
 
 		/* The below assignments provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0). 
 		* These fields are from page 8 of pandos. */
@@ -279,8 +280,10 @@ pcb_t *outChild(pcb_t *p){
 	}
 	/* If p is a middle child */
 	if (p -> p_sib != NULL && p -> p_sibPrev != NULL) {	/* Check if there is a Next and Previous sibling to p */
-		p -> p_sib -> p_sibPrev = p -> p_sibPrev;	/* The Previous sibling of p's Next sibling equals the Previous sibling of p */
-		p -> p_sibPrev -> p_sib = p -> p_sib;		/* If true, the Next sibling of p's Previous sibling equals the Next sibling of p  */
+		p -> p_sib -> p_sibPrev = p -> p_sibPrev;	/* The Previous sibling of p's Next sibling equals the 
+								   * Previous sibling of p */
+		p -> p_sibPrev -> p_sib = p -> p_sib;		/* If true, the Next sibling of p's Previous sibling 
+								   * equals the Next sibling of p  */
 		p -> p_prnt = NULL;				/* p's parent set to NULL */
 		p -> p_sib = NULL;				/* p's Next sibling set to NULL */
 		p -> p_sibPrev = NULL;				/* p's Previous sibling set NULL */
