@@ -3,7 +3,8 @@
  * For CSCI-320 Operating Systems
  * ----- Includes two main parts: -------------------
  *   1. The ASL is a null-terminated single, linearly lined list whose nodes each have a s_next field.
- *      The ASL has a head pointer called semd_h. A semaphore is active if there is at least one pcb on the process queue associated with it.
+ *      The ASL has a head pointer called semd_h. A semaphore is active if there is at least one pcb on the process
+ *	queue associated with it.
  *   2. The semdFree list which is also a single linearly linked list. It keeps the semaphores that are free.
 */
 
