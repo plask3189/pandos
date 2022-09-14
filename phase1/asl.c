@@ -3,7 +3,8 @@
  * For CSCI-320 Operating Systems
  * ----- Includes two main parts: -------------------
  *   1. The ASL is a null-terminated single, linearly lined list whose nodes each have a s_next field.
- *      The ASL has a head pointer called semd_h. A semaphore is active if there is at least one pcb on the process queue associated with it.
+ *      The ASL has a head pointer called semd_h. A semaphore is active if there is at least one pcb on the process
+ *	queue associated with it.
  *   2. The semdFree list which is also a single linearly linked list. It keeps the semaphores that are free.
 */
 
@@ -26,7 +27,8 @@ void freeSemdFromSemdFreeList(semd_t *s){
 				semdFreeList_h = s;
 	}
   	else if (semdFreeList_h != NULL){ /* If the freeList is not empty: */
-        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below the new node on the stack. */
+        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below 
+				       * the new node on the stack. */
         semdFreeList_h = s;  /* the head points to the new node. */
 	}
 }
@@ -108,7 +110,8 @@ return a pointer to it. If the process queue for this semaphore becomes empty (e
 remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
 pcb_t *removeBlocked(int *semAdd) {
 	semd_t *temp = search(semAdd);	/* Set a temp var using the search method on semADD */
-	if (temp -> s_next -> s_semAdd == semAdd) {		/* If pointer to sempahor (s_semAdd) of the next element on the ASL from temp == semADD */
+	if (temp -> s_next -> s_semAdd == semAdd) {		/* If pointer to sempahor (s_semAdd) of the next element on 
+								 *	the ASL from temp == semADD */
 		pcb_t *removed = removeProcQ(&temp -> s_next -> s_procQ);	/* Creation of removed var to track removed pcb */
 		if (emptyProcQ(temp -> s_next -> s_procQ)){	/* run emptyProcQ to test if empty */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will use freeSemd on */
@@ -134,7 +137,8 @@ pcb_t *removeBlocked(int *semAdd) {
 with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
 pcb_t *outBlocked(pcb_t *p) {
 	semd_t *temp = search(p -> p_semAdd);	/* Set a temp var using the search method on p _> p_semADD */
-	if(temp -> s_next -> s_semAdd == p -> p_semAdd) {	/* If the pointer to the semaphore from temp's s_next equals p's blocked pointer */
+	if(temp -> s_next -> s_semAdd == p -> p_semAdd) {	/* If the pointer to the semaphore from temp's s_next equals 
+								 * p's blocked pointer */
 		pcb_t *outted = outProcQ(&temp -> s_next -> s_procQ, p);	/* Create outted to track the outProcQ pcb */
 		if(emptyProcQ(temp -> s_next -> s_procQ)) {	/* if emptyProcQ returns True */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will later use freeSemd on */
