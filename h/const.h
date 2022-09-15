@@ -1,10 +1,10 @@
 #ifndef CONSTS
 #define CONSTS
 
-/**************************************************************************** 
+/****************************************************************************
  *
  * This header file contains utility constants & macro definitions.
- * 
+ *
  ****************************************************************************/
 
 /* Hardware & software constants */
@@ -16,7 +16,7 @@
 #define RAMBASEADDR		0x10000000
 #define RAMBASESIZE		0x10000004
 #define TODLOADDR		  0x1000001C
-#define INTERVALTMR		0x10000020	
+#define INTERVALTMR		0x10000020
 #define TIMESCALEADDR	0x10000024
 
 
@@ -39,7 +39,7 @@
 
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
-#define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */	
+#define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */
 #define DEVREGSIZE	  16 		/* device register size in bytes */
 
 /* device register field number for non-terminal devices */
@@ -83,9 +83,12 @@
 #define	ALIGNED(A)		(((unsigned)A & 0x3) == 0)
 
 /* Macro to load the Interval Timer */
-#define LDIT(T)	((* ((cpu_t *) INTERVALTMR)) = (T) * (* ((cpu_t *) TIMESCALEADDR))) 
+#define LDIT(T)	((* ((cpu_t *) INTERVALTMR)) = (T) * (* ((cpu_t *) TIMESCALEADDR)))
 
 /* Macro to read the TOD clock */
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
+
+#define NUCLEUSSTACKPAGE 0x20001000
+
 
 #endif
