@@ -16,18 +16,18 @@
 HIDDEN semd_t *semd_h, *semdFreeList_h;
 /* semd_h is the head pointer of the active semaphore list. semdFree_h is the head pointer to the semdFree list that holds the unused semaphore descriptors. */
 
-/**************************** semdFreeList Supporting Methods ***************************/
+/**************************** semdFreeList Methods ***************************/
 /* semdFreeList is a singly linked NULL terminated stack that holds the free semds.*/
 
 /* Pushes a node pointed to by s onto the stack that is the semdFreeList
    Note that the next pointer of each node points downwards in the stack */
-void freeSemdFromSemdFreeList(semd_t *s){
+void freeSemdByPushingItOntoTheSemdFreeList(semd_t *s){
 	if (semdFreeList_h == NULL){ /* If the freeList is empty */
 				s -> s_next = NULL; /* set the new node's next to NULL since there is no other node in the stack */
 				semdFreeList_h = s;
 	}
   	else if (semdFreeList_h != NULL){ /* If the freeList is not empty: */
-        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below 
+        s -> s_next = semdFreeList_h; /* set the new node's next to hold the head address because the head will be below
 				       * the new node on the stack. */
         semdFreeList_h = s;  /* the head points to the new node. */
 	}
@@ -49,7 +49,7 @@ semd_t *popSemdFromFreeList(){
 }
 
 
-/**************************** Active Semaphore List Supporting Methods ***************************/
+/**************************** Active Semaphore List Methods ***************************/
 /* Look through the active semaphore list for the semAdd that is given as a parameter.
 Return the address of the parent whose child's semaphore had the semAdd that was the one we wanted.
 Remember the ASL is "sorted in ascending order using the s_semAdd field as a sort key." p. 13 pandos*/
@@ -57,6 +57,7 @@ semd_t *search(int *semAdd){
 	semd_t *temp = semd_h;
 	/* Continue the search while the search's semAdd is greater than temp's next's semAdd*/
 	while (semAdd > (temp->s_next->s_semAdd)){
+			/* Increment to the next node */
 			temp = temp -> s_next;
 	}
 	/* Returns the address of the node whose child has the correct semAdd */
@@ -75,11 +76,8 @@ int insertBlocked (int *semAdd, pcb_t *p) {
 	semd_t *temp = search(semAdd);
 	/* If temp's kid actually does hold the correct semAdd and the node exists */
 	if (temp -> s_next -> s_semAdd == semAdd) {
-		/* Remember that p_semAdd was defined in types.h. It is the "pointer to
-		a semaphore on which the process is blocked," (p.8 pandos).
-		Get the pcb pointed to by p and get its semAdd.
-		Set the correct semaphore's semAdd to be the address that the pcb's
-		pointer to its semaphore holds. */
+		/* Remember that p_semAdd was defined in types.h. It is the "pointer to a semaphore on which the process is blocked," (p.8 pandos).
+		Get the pcb pointed to by p and get its semAdd. Set the correct semaphore's semAdd to be the address that the pcb's pointer to its semaphore holds. */
 			p -> p_semAdd = semAdd;
 			/* Insert the pcb pointed to by p onto the semaphore's process queue. */
 			insertProcQ(&(temp -> s_next -> s_procQ), p);
@@ -110,13 +108,13 @@ return a pointer to it. If the process queue for this semaphore becomes empty (e
 remove the semaphore de- scriptor from the ASL and return it to the semdFree list. */
 pcb_t *removeBlocked(int *semAdd) {
 	semd_t *temp = search(semAdd);	/* Set a temp var using the search method on semADD */
-	if (temp -> s_next -> s_semAdd == semAdd) {		/* If pointer to sempahor (s_semAdd) of the next element on 
+	if (temp -> s_next -> s_semAdd == semAdd) {		/* If pointer to sempahor (s_semAdd) of the next element on
 								 *	the ASL from temp == semADD */
 		pcb_t *removed = removeProcQ(&temp -> s_next -> s_procQ);	/* Creation of removed var to track removed pcb */
 		if (emptyProcQ(temp -> s_next -> s_procQ)){	/* run emptyProcQ to test if empty */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* next element from temp is equal to the next element of emptySemd */
-			freeSemdFromSemdFreeList(emptySemd);			/* run freeSemd on emptySemd */
+			freeSemdByPushingItOntoTheSemdFreeList(emptySemd);			/* run freeSemd on emptySemd */
 			removed -> p_semAdd = NULL;		/* reset p_semADD to NULL */
 			return removed;
 		}
@@ -137,13 +135,13 @@ pcb_t *removeBlocked(int *semAdd) {
 with p’s semaphore, which is an error condition, return NULL; otherwise, re- turn p. */
 pcb_t *outBlocked(pcb_t *p) {
 	semd_t *temp = search(p -> p_semAdd);	/* Set a temp var using the search method on p _> p_semADD */
-	if(temp -> s_next -> s_semAdd == p -> p_semAdd) {	/* If the pointer to the semaphore from temp's s_next equals 
+	if(temp -> s_next -> s_semAdd == p -> p_semAdd) {	/* If the pointer to the semaphore from temp's s_next equals
 								 * p's blocked pointer */
 		pcb_t *outted = outProcQ(&temp -> s_next -> s_procQ, p);	/* Create outted to track the outProcQ pcb */
 		if(emptyProcQ(temp -> s_next -> s_procQ)) {	/* if emptyProcQ returns True */
 			semd_t *emptySemd = temp -> s_next;	/* Create emptySemd to track what we will later use freeSemd on */
 			temp -> s_next = emptySemd -> s_next;	/* Set s_next of temp equal to s-next of emptySemd */
-			freeSemdFromSemdFreeList(emptySemd);			/* run FreeSemd on emptySemd */
+			freeSemdByPushingItOntoTheSemdFreeList(emptySemd);			/* run FreeSemd on emptySemd */
 			return outted;
 		}
 		else {
@@ -195,7 +193,7 @@ void initASL(){
 
 	int i = 2;	/* Set the loop variable i to 2 (we have 2 dummies in there already */
 	while (i < MAXPROC + 2) {
-		freeSemdFromSemdFreeList(&semdTableArray[i]);	/* take a node off the free list */
+		freeSemdByPushingItOntoTheSemdFreeList(&semdTableArray[i]);	/* take a node off the free list */
 		i++;
 	}
 }
