@@ -37,6 +37,9 @@
 #define PRNTINT 		  6
 #define TERMINT			  7
 
+#define NUMBEROFDEVICES 49 /* p. 28 of pops says there are 40 device registers in uMPS. On p. 41 of pops, it says there are 8 serial terminal device interfaces. Plus 1 for timer*/
+
+
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
 #define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */
@@ -90,5 +93,8 @@
 
 #define NUCLEUSSTACKPAGE 0x20001000
 
+/* "The Time Scale’s value indicates the number of clock ticks that will occur in a microsecond," p.21 pandos.
+So 100 milliseconds is 100,000 microseconds. */
+#define INTERVALTIMER 100000
 
 #endif
