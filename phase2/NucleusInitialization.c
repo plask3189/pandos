@@ -18,6 +18,9 @@ pcb_PTR readyQueue;
 pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
+/* Load the system-wide Interval Timer with 100 milliseconds. */
+/* cpu_t is CPU time */
+
 
 int main() {
   /* Initialization of the phase1 data structures */
@@ -48,5 +51,14 @@ int main() {
   for(i = 0; i < NUMBEROFDEVICES; i++){
     deviceSemaphores[i] = 0;
   }
+  /******************* CURRENTLY WORKING ON THIS (#6 on p.21) ***************
+  /* "Instantiate a single process, place its pcb in the Ready Queue, and increment Process Count" p.21 pandos. */
+   pcb_PTR initialProcess = allocPcb();
+   /* initializing the processor state that is part of the pcb. */
+        /************** DO THIS *****************/
+   insertProcQ(&readyQueue, initialProcess); /* place the process' pcb in the Ready Queue */
+   processCount++;
+
+   initialProcess = NULL;
 
 }
