@@ -20,7 +20,7 @@ pcb_PTR currentProcess;
 int deviceSemaphores[NUMBEROFDEVICES];
 /* Load the system-wide Interval Timer with 100 milliseconds. */
 /* cpu_t is CPU time */
-
+cpu_t startTOD;
 
 int main() {
   /* Initialization of the phase1 data structures */
@@ -51,14 +51,20 @@ int main() {
   for(i = 0; i < NUMBEROFDEVICES; i++){
     deviceSemaphores[i] = 0;
   }
-  /******************* CURRENTLY WORKING ON THIS (#6 on p.21) ***************
-  /* "Instantiate a single process, place its pcb in the Ready Queue, and increment Process Count" p.21 pandos. */
+  /********** Instantiate a single process ***********/
    pcb_PTR initialProcess = allocPcb();
-   /* initializing the processor state that is part of the pcb. */
-        /************** DO THIS *****************/
-   insertProcQ(&readyQueue, initialProcess); /* place the process' pcb in the Ready Queue */
+   /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
+   initialProcess -> p_s.s_pc = initialProcess->p_s.s_t9 = (memaddr) test;
+   /*!!!!!!!!!!!!! IDK HOW: process needs to have interrupts enabled, the processor Local Timer enabled, kernel-mode on...
+   /* The SP set to RAMTOP (i.e. use the last RAM frame for its stack) */
+   initialProcess -> p_s.s_sp = RAMTOP;
+   initialProcess -> p_time = 0;
+   initialProcess -> p_semAdd = NULL;
+   initialProcess -> p_supportStruct = NULL;
+   /* insert the current process into the ready queue */
+   insertProcQ(&readyQueue, initialProcess);
    processCount++;
-
    initialProcess = NULL;
-
+   /* Call the Scheduler. */
+   scheduler();
 }
