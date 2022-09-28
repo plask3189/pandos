@@ -18,8 +18,7 @@ pcb_PTR readyQueue;
 pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
-/* Load the system-wide Interval Timer with 100 milliseconds. */
-/* cpu_t is CPU time */
+/* the TOD clock counts up and is CPU time. */
 cpu_t startTimeOfDayClock;
 
 int main() {
@@ -52,24 +51,30 @@ int main() {
     deviceSemaphores[i] = 0;
   }
   /********** Instantiate a single process ***********/
-   pcb_PTR initialProcess = allocPcb();
-   /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
-   initialProcess -> p_s.s_pc = initialProcess->p_s.s_t9 = (memaddr) test;
-   /* In const.h, STCK(T) takes an unsigned integer as its input parameter and populates it with the value of the low-order word of the TOD clock divided by the Time Scale" p.21 principles of operations */
-   STCK(startTimeOfDayClock);
-   /* LDIT(T) which loads the Interval Timer with the value T (unsigned int) multiplied by the Time Scale value. */
-   LDIT(INTERVALTIMER);
-   /* Set status of process */
-   /* firstProc->p_s.s_status =  */
-   /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
-   initialProcess -> p_s.s_sp = RAMTOP;
-   initialProcess -> p_time = 0;
-   initialProcess -> p_semAdd = NULL;
-   initialProcess -> p_supportStruct = NULL;
-   /* insert the current process into the ready queue */
-   insertProcQ(&readyQueue, initialProcess);
-   processCount++;
-   initialProcess = NULL;
-   /* Call the Scheduler. */
-   scheduler();
+  if(initialProcess != NULL){
+    pcb_PTR initialProcess = allocPcb();
+    /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
+    initialProcess -> p_s.s_pc = initialProcess->p_s.s_t9 = (memaddr) test;
+    /* In const.h, STCK(T) takes an unsigned integer as its input parameter and populates it with the value of the low-order word of the TOD clock divided by the Time Scale" p.21 principles of operations */
+    STCK(startTimeOfDayClock);
+    /* LDIT(T) which loads the Interval Timer with the value T (unsigned int) multiplied by the Time Scale value. */
+    LDIT(INTERVALTIMER);
+    /* Set status of process */
+    /* firstProc->p_s.s_status =  */
+    /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
+    initialProcess -> p_s.s_sp = RAMTOP;
+    initialProcess -> p_time = 0;
+    initialProcess -> p_semAdd = NULL;
+    initialProcess -> p_supportStruct = NULL;
+    /* insert the current process into the ready queue */
+    insertProcQ((&readyQueue), initialProcess);
+    processCount++;
+    initialProcess = NULL;
+    /* Call the Scheduler. */
+    scheduler();
+  }
+  else {
+    PANIC();
+  }
+ return 0;
 }
