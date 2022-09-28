@@ -13,7 +13,7 @@
 
 
 /* timer, timescale, TOD-LO and other bus regs */
-#define RAMBASEADDR		0x10000000
+#define RAMBASEADDR		0x10000000 /* RAM base physical address bus register */ 
 #define RAMBASESIZE		0x10000004
 #define TODLOADDR		  0x1000001C
 #define INTERVALTMR		0x10000020
