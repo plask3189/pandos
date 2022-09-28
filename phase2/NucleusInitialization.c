@@ -22,7 +22,6 @@ int deviceSemaphores[NUMBEROFDEVICES];
 cpu_t startTimeOfDayClock;
 
 int main() {
-
   /* Initialization of the phase1 data structures */
   initPcbs();
   initSemd();
@@ -30,10 +29,10 @@ int main() {
   softBlockCount = 0;
   /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
   /* 	RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR*/
-  devregarea_t* ramPointer = (devregarea_t *) RAMBASEADDR;
+  devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
   unsigned int RAMTOP;
   /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
-  RAMTOP = (ramPointer -> rambase) + (ramPointer -> ramsize); 
+  RAMTOP = (ramPointer -> rambase) + (ramPointer -> ramsize);
   /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
   readyQueue = mkEmptyProcQ();
   currentProcess = NULL;
@@ -66,10 +65,10 @@ int main() {
     STCK(startTimeOfDayClock);
     /* LDIT(T) which loads the Interval Timer with the value T (unsigned int) multiplied by the Time Scale value. */
     LDIT(INTERVALTIMER);
-    /* Set status of process */
+    /* !!!!!!!!!!!!!!!!!!!   Set status of process !!!!!!!!!!!!!!!!!!! -> idk how*/
     /* firstProc->p_s.s_status =  */
     /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
-    initialProcess -> p_s.s_sp = RAMTOP; /* I forget where RAMTOP is */
+    initialProcess -> p_s.s_sp = RAMTOP;
     initialProcess -> p_time = 0;
     initialProcess -> p_semAdd = NULL;
     initialProcess -> p_supportStruct = NULL;
@@ -77,11 +76,15 @@ int main() {
     insertProcQ((&readyQueue), initialProcess);
     processCount++;
     initialProcess = NULL;
-    /* Call the Scheduler. */
+    /* main() calls the Scheduler, and its task is done! */
     scheduler();
-  }
+  } /* If the initialProcess == NULL */
   else {
     PANIC();
   }
  return 0;
 }
+
+/* The only reason "for re-entering the Nucleus is through an exception which includes device interrupts." p.22 pandos */
+
+/* DO WE NEED AN EXCEPTION HANDLER HERE? */
