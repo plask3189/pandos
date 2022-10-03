@@ -15,7 +15,20 @@
 
 
 void scheduler() {
+  cpu_t elapsedTime;
+  if(currentProcess == NULL){ /* if the currentProcess is NULL, there is nothing executing so get a pcb from the readyQueue */
+    pcb_PTR nextProcess = removeProcQ(&readyQueue);
+  } else { /* If currentProcess is not null, there is a process running, so check its time */
+    STCK(elapsedTime); /* get how long the process has been executing */
+    /* Adjust the CPU time used by the process by adding how much time has elapsed since the clock started added to the CPU time used by the processor so far (p_time) */
+    currentProcess -> p_time = currentProcess -> p_time + (elapsedTime - startTOD);
+    LDIT(INTERVALTIMER);
+    pcb_PTR nextProcess = removeProcQ(&readyQueue);
+  }
 
-
-
+  if(nextProcess != NULL){
+    //do stuff
+  } else {
+    // do stuff
+  }
 }
