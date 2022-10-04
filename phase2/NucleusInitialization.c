@@ -2,7 +2,7 @@
  * Written by Kate Plas and Travis Wahl
  * For CSCI-320 Operating Systems
  *
- *
+ * The Nucleus initialization dispatches a process
  *
  */
 
@@ -14,7 +14,7 @@
 /* Initialization of all Nucleus maintained variables */
 int processCount;
 int softBlockCount;
-pcb_PTR readyQueue;
+pcb_PTR readyQueue; /* readyQueue is a actually a pointer to a queue of pcbs
 pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
@@ -28,7 +28,7 @@ int main() {
   processCount = 0;
   softBlockCount = 0;
   /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
-  /* 	RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR*/
+  /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
   devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
   unsigned int RAMTOP;
   /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
@@ -65,8 +65,8 @@ int main() {
     STCK(startTimeOfDayClock);
     /* LDIT(T) which loads the Interval Timer with the value T (unsigned int) multiplied by the Time Scale value. */
     LDIT(INTERVALTIMER);
-    /* !!!!!!!!!!!!!!!!!!!   Set status of process !!!!!!!!!!!!!!!!!!! -> idk how*/
-    /* firstProc->p_s.s_status =  */
+    /* Set status of process */
+    initialProcess -> p_s.s_status = ALLOFF | IEON |IMON | TEON;
     /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
     initialProcess -> p_s.s_sp = RAMTOP;
     initialProcess -> p_time = 0;
@@ -86,5 +86,10 @@ int main() {
 }
 
 /* The only reason "for re-entering the Nucleus is through an exception which includes device interrupts." p.22 pandos */
-
-/* DO WE NEED AN EXCEPTION HANDLER HERE? */
+void exceptionHander(){
+  state_PTR oldState;
+  oldState = state_PTR BIOSDATAPAGE;
+  /* the cause of the exception is in the cause register */
+  int cause = (oldState -> s_cause) /* idk if need to do anything else here!!!!!!! */
+  /* More to come */
+}
