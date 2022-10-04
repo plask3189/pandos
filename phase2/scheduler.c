@@ -16,7 +16,8 @@
 
 void scheduler() {
   cpu_t elapsedTime;
-  if(currentProcess == NULL){ /* if the currentProcess is NULL, there is nothing executing so get a pcb from the readyQueue */
+  /* currentProcess is a pointer to a pcb and is definined in nucleusPointer.h */
+  if(currentProcess == NULL){ /* if the currentProcess points to NULL, there is nothing executing so get a pcb from the readyQueue */
     pcb_PTR nextProcess = removeProcQ(&readyQueue);
   } else { /* If currentProcess is not null, there is a process running, so check its time */
     STCK(elapsedTime); /* get how long the process has been executing */
@@ -27,8 +28,13 @@ void scheduler() {
   }
 
   if(nextProcess != NULL){
-    //do stuff
+    currentProcess = nextl
+    STCK(startTimeOfDayClock);
+    /* more stuff */
   } else {
-    // do stuff
+    /* processCount is initialized in nucleusInitialization.c */
+    if(processCount > 0) {
+      /* do stuff */
+    }
   }
 }

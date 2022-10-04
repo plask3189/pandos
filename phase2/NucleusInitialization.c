@@ -56,7 +56,7 @@ int main() {
   for(i = 0; i < NUMBEROFDEVICES; i++){
     deviceSemaphores[i] = 0;
   }
-  /********** Instantiate a single process ***********/
+  /********** Initiate a single process ***********/
   if(initialProcess != NULL){
     pcb_PTR initialProcess = allocPcb();
     /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
@@ -89,7 +89,16 @@ int main() {
 void exceptionHander(){
   state_PTR oldState;
   oldState = state_PTR BIOSDATAPAGE;
-  /* the cause of the exception is in the cause register */
-  int cause = (oldState -> s_cause) /* idk if need to do anything else here!!!!!!! */
+  /* The cause of the exception is in the cause register. Although, to make the register address an integer, we need to do some adjustments. The >> is a Binary Right Shift Operator. The left operands value is moved right by the number of bits specified by the right operand. */
+  int cause = ((oldState -> s_cause) >> 2);
   /* More to come */
+  if(cause == 0){
+    /* For exception code0(Interrupts),processing should be passed along to your Nucleus’s device interrupt handler. */
+  }
+  if( > 8) {
+    /* do stuff */
+  }
+  if(cause == 8) {
+    /* For exception code 8 (SYSCALL), processing should be passed along to your Nucleus’s SYSCALL exception handler.  */
+  }
 }
