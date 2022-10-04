@@ -75,6 +75,14 @@
 #define BIOSDATAPAGE    0x0FFFF000
 #define	PASSUPVECTOR	  0x0FFFF900
 
+/* messing with bits */
+#define	ALLOFF 0x00000000 
+#define	TEON 0x08000000 /* enable the processor Local Timer */
+#define	IEON 0x00000004 /* turn on interrupts */
+#define	IMON 0x0000FF00 /* turn on interrupt mask */
+#define	KUON 0x00000008 /* Kernel mode on */
+
+
 /* Exceptions related constants */
 #define	PGFAULTEXCEPT	  0
 #define GENERALEXCEPT	  1
