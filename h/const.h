@@ -76,9 +76,11 @@
 #define	PASSUPVECTOR	  0x0FFFF900
 
 /* messing with bits */
-#define	ALLOFF 0x00000000 
+#define	ALLOFF 0x00000000
+#define	IECON 0x00000001 /* interrupt current on */
+#define	IEON 0x00000004 /* interrupts on */
 #define	TEON 0x08000000 /* enable the processor Local Timer */
-#define	IEON 0x00000004 /* turn on interrupts */
+
 #define	IMON 0x0000FF00 /* turn on interrupt mask */
 #define	KUON 0x00000008 /* Kernel mode on */
 
@@ -98,6 +100,9 @@
 
 /* Macro to read the TOD clock */
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
+/* The time slice value is 5ms. A QUANTUM is the "time used by scheduling algorithms as a basis for determining when to preempt a thread from the CPU to allow another to run." - Operating Systems Concepts*/
+#define QUANTUM 5000
+
 
 #define NUCLEUSSTACKPAGE 0x20001000
 

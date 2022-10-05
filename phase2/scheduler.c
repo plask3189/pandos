@@ -28,13 +28,28 @@ void scheduler() {
   }
 
   if(nextProcess != NULL){
-    currentProcess = nextl
+    currentProcess = next;
     STCK(startTimeOfDayClock);
+    /* setTIMER is a control register write command. p. 60 in pops. The timer is set to a quantum which is 5ms. */
+    setTIMER(QUANTUM);
+    /* get the process state of the current process */
+    LDST(&(currentProcess -> p_s));
     /* more stuff */
-  } else {
-    /* processCount is initialized in nucleusInitialization.c */
-    if(processCount > 0) {
-      /* do stuff */
+  } else { /* if the Ready Queue is empty */
+    /* processCount and softBlockCount are initialized in nucleusInitialization.c */
+    /* "If the Process Count > 0 and the Soft-block Count > 0 enter a Wait State." -p. 23 pandos */
+    if((processCount > 0) && (softBlockCount > 0)){
+      /* " The Scheduler must first set the Status register to enable interrupts and either disable the processor Local Timer (also through the Status register), or load it with a very large value.*/
+      /* "Interrupts enabled via the STATUS register [Section 7.1-pops]" */
+      setSTATUS(ALLOFF | IECON | IMON));
+      WAIT();
+    }
+    if((processCount > 0) && (softBlockCount == 0)){ /* this is a deadlock */
+      PANIC()
+    }
+    /* "If the Process Count is zero invoke the HALT BIOS service/instruction." - p. 23 pandos  */
+    if(processCount == 0){
+      HALT();
     }
   }
 }
