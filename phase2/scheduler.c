@@ -26,7 +26,6 @@ void scheduler() {
     LDIT(INTERVALTIMER);
     pcb_PTR nextProcess = removeProcQ(&readyQueue);
   }
-
   if(nextProcess != NULL){
     currentProcess = next;
     STCK(startTimeOfDayClock);
@@ -41,11 +40,11 @@ void scheduler() {
     if((processCount > 0) && (softBlockCount > 0)){
       /* " The Scheduler must first set the Status register to enable interrupts and either disable the processor Local Timer (also through the Status register), or load it with a very large value.*/
       /* "Interrupts enabled via the STATUS register [Section 7.1-pops]" */
-      setSTATUS(ALLOFF | IECON | IMON));
+      setSTATUS(ALLOFF | IECON | IMON);
       WAIT();
     }
     if((processCount > 0) && (softBlockCount == 0)){ /* this is a deadlock */
-      PANIC()
+      PANIC();
     }
     /* "If the Process Count is zero invoke the HALT BIOS service/instruction." - p. 23 pandos  */
     if(processCount == 0){

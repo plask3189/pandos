@@ -14,12 +14,14 @@
 /* Initialization of all Nucleus maintained variables */
 int processCount;
 int softBlockCount;
-pcb_PTR readyQueue; /* readyQueue is a actually a pointer to a queue of pcbs
+pcb_PTR readyQueue; /* readyQueue is a pointer to a tail pointer of a queue of pcbs */
 pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
 /* the TOD clock counts up and is CPU time. */
 cpu_t startTimeOfDayClock;
+/* allocate the first process from the pcbFree list: Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element.  */
+pcb_PTR initialProcess = allocPcb();
 
 int main() {
   /* Initialization of the phase1 data structures */
@@ -50,14 +52,15 @@ int main() {
   processCount = 0;
   softBlcokCount = 0;
   readyQueue = mkEmptyProcQ();
-  currentProc = NULL;
+  currentProcess = NULL;
+
   /* Since the device semaphores will be used for synchronization, as opposed to mutual exclusion, they should all be initialized to zero. */
   int i;
   for(i = 0; i < NUMBEROFDEVICES; i++){
     deviceSemaphores[i] = 0;
   }
-  /********** Initiate a single process ***********/
-  if(initialProcess != NULL){
+  /***************************** Initiate a single process ***************************************/
+  if(initialProcess != NULL){  /* If there a process that was removed from the pcbFree list*/
     pcb_PTR initialProcess = allocPcb();
     /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
     initialProcess -> p_s.s_pc = initialProcess->p_s.s_t9 = (memaddr) test;
@@ -78,8 +81,8 @@ int main() {
     initialProcess = NULL;
     /* main() calls the Scheduler, and its task is done! */
     scheduler();
-  } /* If the initialProcess == NULL */
-  else {
+  }
+  else { /* If the initialProcess == NULL then there is no pcb to remove from the pcbFreeList, so PANIC */
     PANIC();
   }
  return 0;
@@ -93,12 +96,14 @@ void exceptionHander(){
   int cause = ((oldState -> s_cause) >> 2);
   /* More to come */
   if(cause == 0){
-    /* For exception code0(Interrupts),processing should be passed along to your Nucleus’s device interrupt handler. */
+    /* For exception code 0 (Interrupts), processing should be passed along to your Nucleus’s device interrupt handler. */
+    IOHANDLER(); /* WILL DEFINE LATER WHEN WE WRITE THIS IN EXCEPTIONS.C !!!!!!!!!! */
   }
-  if( > 8) {
+  if(cause > 8) {
     /* do stuff */
   }
   if(cause == 8) {
     /* For exception code 8 (SYSCALL), processing should be passed along to your Nucleus’s SYSCALL exception handler.  */
+    SYSCALLHandler(); /* WILL DEFINE LATER WHEN WE WRITE THIS IN EXCEPTIONS.C !!!!!!!!!! */
   }
 }

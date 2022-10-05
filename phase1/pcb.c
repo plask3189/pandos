@@ -89,7 +89,7 @@ void initPcbs() {
 /* This section contains queue manipulation methods. The queues that will be manipulated are double, circularly linked lists. */
 
 /* This method is used to initialize a variable to be tail pointer to a process queue.
-* Return a pointer to the tail of an empty process queue; i.e. NULL. */
+* Return a tail pointer to an empty process queue; i.e. NULL. */
 pcb_t *mkEmptyProcQ() {
 	return NULL;
 }
