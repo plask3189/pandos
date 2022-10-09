@@ -97,7 +97,7 @@ void exceptionHander(){
   /* More to come */
   if(cause == 0){
     /* For exception code 0 (Interrupts), processing should be passed along to your Nucleus’s device interrupt handler. */
-    IOHANDLER(); /* WILL DEFINE LATER WHEN WE WRITE THIS IN EXCEPTIONS.C !!!!!!!!!! */
+    IOHANDLER(); /* WILL DEFINE LATER !!!!!!!!!! */
   }
   if(cause > 8) {
     /* do stuff */
