@@ -11,6 +11,11 @@
 #include "../h/pcb.h"
 #include "../h/asl.h"
 
+#include "../h/initial.h"
+#include "../h/scheduler.h"
+#include "../h/exceptions.h"
+#include "../h/interrupts.h"
+
 /* Initialization of all Nucleus maintained variables */
 int processCount;
 int softBlockCount;
