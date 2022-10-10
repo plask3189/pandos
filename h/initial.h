@@ -1,5 +1,6 @@
 /* initial.h */
 
+#ifndef INITIAL
 #define INITIAL
 
 extern int processCount;
