@@ -38,9 +38,9 @@ void scheduler() {
     /* processCount and softBlockCount are initialized in nucleusInitialization.c */
     /* "If the Process Count > 0 and the Soft-block Count > 0 enter a Wait State." -p. 23 pandos */
     if((processCount > 0) && (softBlockCount > 0)){
-      /* " The Scheduler must first set the Status register to enable interrupts and either disable the processor Local Timer (also through the Status register), or load it with a very large value.*/
+      /* " The Scheduler must first set the Status register to enable interrupts and disable the processor Local Timer (also through the Status register)*/
       /* "Interrupts enabled via the STATUS register [Section 7.1-pops]" */
-      setSTATUS(ALLOFF | IECON | IMON);
+      setSTATUS(ALLOFF | IECON | TEBITON | IMON);
       WAIT();
     }
     if((processCount > 0) && (softBlockCount == 0)){ /* this is a deadlock */
@@ -51,4 +51,9 @@ void scheduler() {
       HALT();
     }
   }
+}
+
+/* LDST aka load state would be too significant since it overwrites so much. So we make a handler to easily identify issues. */
+void myLoadState(state_PTR processToLoad){
+  LDST(processToLoad);
 }

@@ -91,7 +91,7 @@ int main() {
 /* The only reason "for re-entering the Nucleus is through an exception which includes device interrupts." p.22 pandos */
 void exceptionHander(){
   state_PTR oldState;
-  oldState = state_PTR BIOSDATAPAGE;
+  oldState = (state_PTR) BIOSDATAPAGE;
   /* The cause of the exception is in the cause register. Although, to make the register address an integer, we need to do some adjustments. The >> is a Binary Right Shift Operator. The left operands value is moved right by the number of bits specified by the right operand. */
   int cause = ((oldState -> s_cause) >> 2);
   /* More to come */
