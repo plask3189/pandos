@@ -1,6 +1,7 @@
-/* nucleusInitialization.h */
+/* initial.h */
 
-#define nucleusInitialization
+#ifndef INITIAL
+#define INITIAL
 
 extern int processCount;
 extern int softBlockCount;
