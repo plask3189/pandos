@@ -23,22 +23,58 @@ extern int deviceSemaphores[NUMBEROFDEVICES];
 extern cpu_t startTimeOfDayClock;
 extern int* clockSemaphore;
 
-void SYSCALLHandler(){
+/*  "A System Call (SYSCALL) exception occurs when the SYSCALL assembly in- struction is executed." p.24 pandos */
+void SYSCALLExceptionHandler(){
   /* go to page 9 pops and look at the status register diagram. */
-  state_PTR pointerToHoldTheStateOfARudelyInterruptedProcess;
+  state_PTR process;
   /* the BIOSDATAPAGE holds processor states */
-	pointerToHoldTheStateOfARudelyInterruptedProcess = (state_PTR) BIOSDATAPAGE;
+	process = (state_PTR) BIOSDATAPAGE;
 
   /* this variable "syscall" will hold the integer contained in a0 from the process that was interrupted. */
   int syscall;
   /* We need to access a0 so that we can check its value for 1-8 if request was in kernel mode */
-	syscall = pointerToHoldTheStateOfARudelyInterruptedProcess -> s_a0;
-
+	syscall = process -> s_a0;
+switch() {
+  case createProcessCase:{
+    /* create process */
+    break;
+  }
+  case terminateProcessCase:{
+    /* */
+    break;
+  }
+  case passerenCase:{
+    /*  */
+    break;
+  }
+  case verhogenCase:{
+    /* */
+    break;
+  }
+  case waitForIODeviceCase:{
+    /* */
+    break;
+  }
+  case getCPUTimeCase:{
+    /*  */
+    break;
+  }
+  case waitForClockCase:{
+    /*  */
+    break;
+  }
+  case getSupportDataCase:{
+    /* */
+    break;
+  }
 }
 
-
-/********************************* SYS 1 *********************************/
-
+/********************************* SYS 1 ********************************
+" When requested, this service causes a new process, said to be a progeny of the caller, to be created. a1 should contain a pointer to a processor state (state t *). This processor state is to be used as the initial state for the newly created pro- cess. The process requesting the SYS1 service continues to exist and to execute. If the new process cannot be created due to lack of resources (e.g. no more free pcb’s), an error code of -1 is placed/returned in the caller’s v0, otherwise, return the value 0 in the caller’s v0."
+*/
+voide createProcess(state_PTR idk){
+  /*
+}
 /********************************* SYS 2 *********************************/
 
 /********************************* SYS 3 *********************************/
@@ -52,3 +88,4 @@ void SYSCALLHandler(){
 /********************************* SYS 7 *********************************/
 
 /********************************* SYS 8 *********************************/
+}

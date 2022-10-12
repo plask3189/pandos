@@ -32,7 +32,7 @@ void scheduler() {
     /* setTIMER is a control register write command. p. 60 in pops. The timer is set to a quantum which is 5ms. */
     setTIMER(QUANTUM);
     /* get the process state of the current process */
-    LDST(&(currentProcess -> p_s));
+    loadState(&(currentProcess -> p_s));
     /* more stuff */
   } else { /* if the Ready Queue is empty */
     /* processCount and softBlockCount are initialized in nucleusInitialization.c */
@@ -54,6 +54,6 @@ void scheduler() {
 }
 
 /* LDST aka load state would be too significant since it overwrites so much. So we make a handler to easily identify issues. */
-void myLoadState(state_PTR processToLoad){
-  LDST(processToLoad);
+void loadState(state_PTR process){
+  LDST(process);
 }
