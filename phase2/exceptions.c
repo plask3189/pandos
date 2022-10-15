@@ -34,7 +34,8 @@ void SYSCALLExceptionHandler(){
   int syscall;
   /* We need to access a0 so that we can check its value for 1-8 if request was in kernel mode */
 	syscall = process -> s_a0;
-switch() {
+  /* "The Nucleus will then perform some service on behalf of the process executing the SYSCALL instruction depending on the value found in a0." p. 25 pandos"*/
+switch(syscall) {
   case createProcessCase:{
     /* create process */
     break;
@@ -70,10 +71,20 @@ switch() {
 }
 
 /********************************* SYS 1 ********************************
-" When requested, this service causes a new process, said to be a progeny of the caller, to be created. a1 should contain a pointer to a processor state (state t *). This processor state is to be used as the initial state for the newly created pro- cess. The process requesting the SYS1 service continues to exist and to execute. If the new process cannot be created due to lack of resources (e.g. no more free pcb’s), an error code of -1 is placed/returned in the caller’s v0, otherwise, return the value 0 in the caller’s v0."
-*/
-voide createProcess(state_PTR idk){
-  /*
+A new pcb is allocated and fields are initialized:
+- p_s from a1.
+- p_supportStruct from a2. If no parameter is provided, this field is set to NULL.
+- The process queue fields (e.g. p next) by the call to insertProcQ
+- The process tree fields (e.g. p child) by the call to insertChild.
+- p_time is set to zero; the new process has yet to accumulate any cpu time.
+- p_semAdd is set to NULL; this pcb/process is in the “ready” state, not the “blocked” state. */
+void createProcess(state_PTR oldState){
+  /* "A new process, said to be a progeny of the caller, to be created,"(p. 25 pandos). */
+  pcb_PTR child = allocPcb();
+  /* If the new process cannot be created due to lack of resources (e.g. no more free pcb’s), an error code of -1 is placed/returned in the caller’s v0, otherwise, return the value 0 in the caller’s v0. */
+  int returnStatus = -1;
+
+
 }
 /********************************* SYS 2 *********************************/
 

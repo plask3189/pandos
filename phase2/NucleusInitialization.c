@@ -29,10 +29,10 @@ int main() {
   initSemd();
   processCount = 0;
   softBlockCount = 0;
-  /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
-  /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
-  devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
-  unsigned int RAMTOP;
+  int RAMTOP;
+  /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. The pointer needs to be of type devregarea_t because it will point to rambase and ramsize which are of type devregarea_t. */
+  devregarea_t* ramPointer;
+  ramPointer = (devregarea_t*) RAMBASEADDR;
   /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
   RAMTOP = (ramPointer -> rambase) + (ramPointer -> ramsize);
   /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
