@@ -82,7 +82,7 @@
 #define TEBITON 0x08000000  /* enable the processor Local Timer */
 #define	IMON 0x0000FF00 /* turn on interrupt mask */
 #define	KUON 0x00000008 /* Kernel mode on */
-
+#define USERMODEOFF 0x00000002 /* User mode off */
 
 /* Exceptions related constants */
 #define	PGFAULTEXCEPT	  0
