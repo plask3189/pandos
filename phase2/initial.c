@@ -95,10 +95,10 @@ int main() {
 
 /* The only reason "for re-entering the Nucleus is through an exception which includes device interrupts." p.22 pandos */
 void exceptionHandler(){
-  state_PTR oldState;
-  oldState = (state_PTR) BIOSDATAPAGE;
+  state_PTR pointerToOldState;
+  pointerToOldState = (state_PTR) BIOSDATAPAGE;
   /* The cause of the exception is in the cause register. Although, to make the register address an integer, we need to do some adjustments. The >> is a Binary Right Shift Operator. The left operands value is moved right by the number of bits specified by the right operand. */
-  int cause = ((oldState -> s_cause) >> 2);
+  int cause = ((pointerToOldState -> s_cause) >> 2);
   /* More to come */
   if(cause == 0){
     /* For exception code 0 (Interrupts), processing should be passed along to your Nucleus’s device interrupt handler. */
@@ -109,6 +109,6 @@ void exceptionHandler(){
   }
   if(cause == 8) {
     /* For exception code 8 (SYSCALL), processing should be passed along to your Nucleus’s SYSCALL exception handler.  */
-    SYSCALLHandler(); /* WILL DEFINE LATER WHEN WE WRITE THIS IN EXCEPTIONS.C !!!!!!!!!! */
+    SYSCALLHandler();
   }
 }

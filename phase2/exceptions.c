@@ -11,7 +11,7 @@
  #include "../h/asl.h"
  #include "../h/scheduler.h"
  #include "../h/exceptions.h"
- #include "../h/NucleusInitialization.h"
+ #include "../h/initial.h"
 
 
 /* Get global variables */
@@ -82,25 +82,28 @@ A new pcb is allocated as the child of the currently running process and fields 
 - The process tree fields (e.g. p child) by the call to insertChild.
 - p_time is set to zero; the new process has yet to accumulate any cpu time.
 - p_semAdd is set to NULL; this pcb/process is in the “ready” state, not the “blocked” state. */
-void createProcess(state_PTR oldState){
+void createProcess(state_PTR pointerToOldState){
   /* Allocate a new pcb as the child of the currently running process */
   pcb_PTR child = allocPcb();
   /* If the new process cannot be created due to lack of resources (e.g. no more free pcb’s), an error code of -1 is placed/returned in the caller’s v0. The returnStatusCode is set as a default -1 to show failure. */
   int returnStatusCode = -1;
   /* If a new process can be allocated */
-  if(child != NULL) {
+  if(child = NULL) {
+    currentProc->p_s.s_v0 = returnStatus;
+    loadState(pointerToOldState);
+  }
+  else {
     processCount++;
-    /* child holds the address to p_s. p_s is replaced with the parent's state */
-    child -> p_s = (oldState -> s_a1);
-    /* MORE TO COME */
     insertChild(currentProcess, child);
     insertProcQ(&(readyQueue), child);
-
-    oldState->s_v0 = 0;
-  } else {
-      oldState->s_v0 = -1;
   }
-  loadState(oldState);
+
+
+    pointerToOldState -> s_v0 = 0;
+  } else {
+      pointerToOldState -> s_v0 = -1;
+  }
+  loadState(pointerToOldState);
 }
 /********************************* SYS 2 *********************************/
 void terminateProcess(pcb_PTR parentProcess){
@@ -111,47 +114,47 @@ void terminateProcess(pcb_PTR parentProcess){
 }
 
 /********************************* SYS 3 *********************************/
-void passeren(state_PTR oldState){
+void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
-  int* semdAdd = oldState -> s_a1;
+  int* semdAdd = pointerToOldState -> s_a1;
    /* decrement semaphore */
    (*semdAdd)--;
    /*block the process on the ASL if semaphore less than zero.*/
    if((*semdAdd) < 0){
-     currentProcess -> p_s = *oldState;
+     currentProcess -> p_s = *pointerToOldState;
      /* The process transitions from running to blocked */
      insertBlocked(semdAdd, currentProcess);
      scheduler();
    }
-   loadState(oldState);
+   loadState(pointerToOldState);
 }
 /********************************* SYS 4 *********************************/
-void verhogen(state_PTR oldState){
+void verhogen(state_PTR pointerToOldState){
   /* make a pointer to an int called semAdd. */
   int* semAdd;
   /* semAdd holds the address of an address to a process' state
   semAdd = oldState -> s_a1
 }
 /********************************* SYS 5 *********************************/
-void waitForIO(state_PTR oldState){
+void waitForIO(state_PTR pointerToOldState){
 }
 /********************************* SYS 6 *********************************/
 
-void getCPUTime(state_PTR oldState){
+void getCPUTime(state_PTR pointerToOldState){
 }
 /********************************* SYS 7 *********************************/
-void waitForClock(state_PTR oldState){
+void waitForClock(state_PTR pointerToOldState){
 }
 /********************************* SYS 8 *********************************/
-void getSupport(state_PTR oldState){
+void getSupport(state_PTR pointerToOldState){
 }
 
 
-void passUpOrDie(state_PTR oldState, int exception){
+void passUpOrDie(state_PTR pointerToOldState, int exception){
 }
 
 
-/************* Termination support methods **********************/
+/* * * * * * * * * * * * * * * * Support methods * * * * * * * * * * * * * * * */
 HIDDEN void nukeProgeny(pcb_t* toRemove){
     if (toRemove == NULL){
       return;
@@ -174,4 +177,22 @@ HIDDEN void removeOneProcess(pcb_t* toRemove){
         outBlocked(toRemove);
     }
     freePcb(toRemove);
+}
+
+/* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
+* Copying the registers
+* Copying the state 
+ */
+void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState){
+    int i = 0;
+    /* There are 31 total state registers (STATEREGNUM). For each register, copy the register*/
+    while(i < STATEREGNUM){
+	    newStatePointer -> s_reg[i] = pointerToOldState -> s_reg[i];
+      i++;
+    }
+    /* EntryHi, cause, status, and pc are what make up a state.*/
+    pointertoNewState -> s_entryHI = pointerToOldState -> s_entryHI;
+    pointertoNewState -> s_cause = pointerToOldState -> s_cause;
+    pointertoNewState -> s_status = pointerToOldState -> s_status;
+    pointertoNewState -> s_pc = pointerToOldState -> s_pc;
 }
