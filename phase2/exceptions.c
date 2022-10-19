@@ -74,7 +74,7 @@ switch(syscallCodeNumber1234567or8) {
   }
 }
 
-/********************************* SYS 1 ********************************
+/* * * * * * * * * * * * * * * * SYS1 * * * * * * * * * * * * * * * *
 A new pcb is allocated as the child of the currently running process and fields are initialized:
 - p_s from a1.
 - p_supportStruct from a2. If no parameter is provided, this field is set to NULL.
@@ -89,21 +89,25 @@ void createProcess(state_PTR pointerToOldState){
   int returnStatusCode = -1;
   /* If a new process can be allocated */
   if(child = NULL) {
-    currentProc->p_s.s_v0 = returnStatus;
+    currentProc -> p_s.s_v0 = returnStatus;
     loadState(pointerToOldState);
   }
   else {
-    processCount++;
-    insertChild(currentProcess, child);
-    insertProcQ(&(readyQueue), child);
+    if(child != NULL){
+      processCount++;
+      insertChild(currentProcess, child);
+      insertProcQ(&(readyQueue), child);
+      /* copy the value that  the child's state pointer holds. This value is actually a pointer to a state. Copy this state into the oldState's a1, pointed to by pointerToOldState */
+      copyState((state_PTR) (pointerToOldState -> s_al), &(child -> p_s));
+      if((pointerToOldState -> s_a2) == 0 || (pointerToOldState -> s_a2 == NULL)) {
+        /* do stuff */
+      } else {
+        /*do stuff */
+      }
+    }
+    currentProc -> p_s.s_v0 = returnStatus;
+    loadState(pointerToOldState);
   }
-
-
-    pointerToOldState -> s_v0 = 0;
-  } else {
-      pointerToOldState -> s_v0 = -1;
-  }
-  loadState(pointerToOldState);
 }
 /********************************* SYS 2 *********************************/
 void terminateProcess(pcb_PTR parentProcess){
@@ -113,12 +117,11 @@ void terminateProcess(pcb_PTR parentProcess){
   scheduler();
 }
 
-/********************************* SYS 3 *********************************/
+/* * * * * * * * * * * * * * * * SYS 3 * * * * * * * * * * * * * * * */
 void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
-  int* semdAdd = pointerToOldState -> s_a1;
-   /* decrement semaphore */
-   (*semdAdd)--;
+  int* sedmAdd = pointerToOldState -> s_a1;
+  (*semdAdd)--;
    /*block the process on the ASL if semaphore less than zero.*/
    if((*semdAdd) < 0){
      currentProcess -> p_s = *pointerToOldState;
@@ -130,10 +133,13 @@ void passeren(state_PTR pointerToOldState){
 }
 /********************************* SYS 4 *********************************/
 void verhogen(state_PTR pointerToOldState){
-  /* make a pointer to an int called semAdd. */
-  int* semAdd;
-  /* semAdd holds the address of an address to a process' state
-  semAdd = oldState -> s_a1
+  int* semdAdd = pointerToOldState -> s_a1;
+  (*semdAdd)++;
+  if((*semdAdd) <= 0){
+    pcb_PTR temp = removeBlocked(semdAdd);
+    /* do stuff */
+  }
+
 }
 /********************************* SYS 5 *********************************/
 void waitForIO(state_PTR pointerToOldState){
@@ -145,8 +151,13 @@ void getCPUTime(state_PTR pointerToOldState){
 /********************************* SYS 7 *********************************/
 void waitForClock(state_PTR pointerToOldState){
 }
-/********************************* SYS 8 *********************************/
+/* * * * * * * * * * * * * * * * SYS 8 * * * * * * * * * * * * * * * */
 void getSupport(state_PTR pointerToOldState){
+  /* copy the value (which is a value of the process state (aka pointer)) held in the currentProcess state and copy it into the pointer of the oldState. This is to save the currentProcess' state. */
+  copyState(pointerToOldState, &(currentProcess -> p_s));
+  /* assign v0 to hold support data */
+  currentProcess -> p_s.s_v0 = (int) currentProcess -> p_supportStruct;
+  loadState(&(currentProcess -> p_s));
 }
 
 
@@ -181,18 +192,17 @@ HIDDEN void removeOneProcess(pcb_t* toRemove){
 
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
 * Copying the registers
-* Copying the state 
+* Copying entryHI, cause, status, and pc (which are part of the state)
  */
 void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState){
     int i = 0;
+    pointertoNewState -> s_entryHI = pointerToOldState -> s_entryHI;
+    pointertoNewState -> s_cause = pointerToOldState -> s_cause;
+    pointertoNewState -> s_status = pointerToOldState -> s_status;
+    pointertoNewState -> s_pc = pointerToOldState -> s_pc;
     /* There are 31 total state registers (STATEREGNUM). For each register, copy the register*/
     while(i < STATEREGNUM){
 	    newStatePointer -> s_reg[i] = pointerToOldState -> s_reg[i];
       i++;
     }
-    /* EntryHi, cause, status, and pc are what make up a state.*/
-    pointertoNewState -> s_entryHI = pointerToOldState -> s_entryHI;
-    pointertoNewState -> s_cause = pointerToOldState -> s_cause;
-    pointertoNewState -> s_status = pointerToOldState -> s_status;
-    pointertoNewState -> s_pc = pointerToOldState -> s_pc;
 }

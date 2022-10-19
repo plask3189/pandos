@@ -37,7 +37,7 @@ void scheduler() {
   } else { /* if the Ready Queue is empty */
     /* processCount and softBlockCount are initialized in nucleusInitialization.c */
     /* "If the Process Count > 0 and the Soft-block Count > 0 enter a Wait State." -p. 23 pandos */
-    
+
     if((processCount > 0) && (softBlockCount > 0)){
       /* " The Scheduler must first set the Status register to enable interrupts and disable the processor Local Timer (also through the Status register)*/
       /* "Interrupts enabled via the STATUS register [Section 7.1-pops]" */

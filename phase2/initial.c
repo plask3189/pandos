@@ -74,7 +74,7 @@ int main() {
     /* LDIT(T) which loads the Interval Timer with the value T (unsigned int) multiplied by the Time Scale value. */
     LDIT(INTERVALTIMER);
     /* Set status of process */
-    initialProcess -> p_s.s_status = ALLOFF | IEON |IMON | TEON;
+    initialProcess -> p_s.s_status = ALLOFF | IEON |IMON | TEBITON;
     /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
     initialProcess -> p_s.s_sp = RAMTOP;
     initialProcess -> p_time = 0;
