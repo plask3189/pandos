@@ -85,18 +85,21 @@ A new pcb is allocated as the child of the currently running process and fields 
 void createProcess(state_PTR pointerToOldState){
   /* Allocate a new pcb as the child of the currently running process */
   pcb_PTR child = allocPcb();
-  /* If the new process cannot be created due to lack of resources (e.g. no more free pcb’s), an error code of -1 is placed/returned in the caller’s v0. The returnStatusCode is set as a default -1 to show failure. */
+  /* The returnStatusCode is set as a default -1 which is placed in v0 to show an error. */
   int returnStatusCode = -1;
-  /* If a new process can be allocated */
-  if(child = NULL) {
-    currentProc -> p_s.s_v0 = returnStatus;
+  /* If a new process cannot be allocated */
+  if(child == NULL) {
+    /* Puts -1 into the process' v0. */
+    currentProcess -> p_s.s_v0 = returnStatus;
     loadState(pointerToOldState);
   }
   else {
     if(child != NULL){
       processCount++;
-      insertChild(currentProcess, child);
+      /* initialize the process queue fields */
       insertProcQ(&(readyQueue), child);
+      /* initialize the process tree fields */
+      insertChild(currentProcess, child);
       /* copy the value that  the child's state pointer holds. This value is actually a pointer to a state. Copy this state into the oldState's a1, pointed to by pointerToOldState */
       copyState((state_PTR) (pointerToOldState -> s_al), &(child -> p_s));
       if((pointerToOldState -> s_a2) == 0 || (pointerToOldState -> s_a2 == NULL)) {
@@ -105,7 +108,8 @@ void createProcess(state_PTR pointerToOldState){
         /*do stuff */
       }
     }
-    currentProc -> p_s.s_v0 = returnStatus;
+    currentProcess -> p_s.s_v0 = returnStatus;
+    /* loadState is perfomed on a state saved in the BIOS. */
     loadState(pointerToOldState);
   }
 }
@@ -117,10 +121,11 @@ void terminateProcess(pcb_PTR parentProcess){
   scheduler();
 }
 
-/* * * * * * * * * * * * * * * * SYS 3 * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * * * * SYS3 * * * * * * * * * * * * * * * */
 void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
-  int* sedmAdd = pointerToOldState -> s_a1;
+  int* semAdd;
+  semAdd = pointerToOldState -> s_a1;
   (*semAdd)--;
    /*block the process on the ASL if semaphore less than zero.*/
    if((*semAdd) < 0){
@@ -131,19 +136,26 @@ void passeren(state_PTR pointerToOldState){
    }
    loadState(pointerToOldState);
 }
-/********************************* SYS 4 *********************************/
+
+/* * * * * * * * * * * * * * * * SYS4 * * * * * * * * * * * * * * * */
 void verhogen(state_PTR pointerToOldState){
+  pcb_PTR temp;
   /*a1 holds a pointer to a process state. semAdd is a pointer to a semaphore */
-  int* semAdd = pointerToOldState -> s_a1;
+  int* semAdd;
+  semAdd = pointerToOldState -> s_a1;
   (*semAdd)++;
   if((*semAdd) <= 0){
-    pcb_PTR temp = removeBlocked(semAdd);
-    /* do stuff */
-  }
+    temp = removeBlocked(semAdd);
+    if(temp != NULL) {
+      insertProcQ((&readyQueue), temp);
 
+    }
+  }
+  loadState(pointerToOldState);
 }
-/********************************* SYS 5 *********************************/
+/* * * * * * * * * * * * * * * * SYS5 * * * * * * * * * * * * * * * */
 void waitForIO(state_PTR pointerToOldState){
+  copyState(pointerToOldState, &(currentProcess -> p_s));
 }
 /********************************* SYS 6 *********************************/
 
