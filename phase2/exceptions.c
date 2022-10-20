@@ -121,22 +121,23 @@ void terminateProcess(pcb_PTR parentProcess){
 void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
   int* sedmAdd = pointerToOldState -> s_a1;
-  (*semdAdd)--;
+  (*semAdd)--;
    /*block the process on the ASL if semaphore less than zero.*/
-   if((*semdAdd) < 0){
+   if((*semAdd) < 0){
      currentProcess -> p_s = *pointerToOldState;
      /* The process transitions from running to blocked */
-     insertBlocked(semdAdd, currentProcess);
+     insertBlocked(semAdd, currentProcess);
      scheduler();
    }
    loadState(pointerToOldState);
 }
 /********************************* SYS 4 *********************************/
 void verhogen(state_PTR pointerToOldState){
-  int* semdAdd = pointerToOldState -> s_a1;
-  (*semdAdd)++;
-  if((*semdAdd) <= 0){
-    pcb_PTR temp = removeBlocked(semdAdd);
+  /*a1 holds a pointer to a process state. semAdd is a pointer to a semaphore */
+  int* semAdd = pointerToOldState -> s_a1;
+  (*semAdd)++;
+  if((*semAdd) <= 0){
+    pcb_PTR temp = removeBlocked(semAdd);
     /* do stuff */
   }
 
