@@ -14,7 +14,7 @@ typedef signed int cpu_t;
 
 typedef unsigned int memaddr;
 
-
+/*******************************************************************************/
 /* Device Register */
 typedef struct {
 	unsigned int d_status;
@@ -28,7 +28,7 @@ typedef struct {
 #define t_transm_status		d_data0
 #define t_transm_command	d_data1
 
-
+/*******************************************************************************/
 /* Bus Register Area */
 typedef struct {
 	unsigned int rambase;
@@ -47,7 +47,7 @@ typedef struct {
 	device_t	devreg[DEVINTNUM * DEVPERINT];
 } devregarea_t;
 
-
+/*******************************************************************************/
 /* Pass Up Vector */
 typedef struct passupvector {
     unsigned int tlb_refll_handler;
@@ -56,7 +56,7 @@ typedef struct passupvector {
     unsigned int exception_stackPtr;
 } passupvector_t;
 
-
+/*******************************************************************************/
 #define STATEREGNUM	31
 typedef struct state_t {
 	unsigned int	s_entryHI;
@@ -67,6 +67,7 @@ typedef struct state_t {
 
 } state_t, *state_PTR;
 
+/*******************************************************************************/
 /* Process control block type */
 typedef struct pcb_t {
 	/* Process queue fields */
@@ -88,6 +89,7 @@ typedef struct pcb_t {
 	struct support_t	*p_supportStruct;	/* Pointer to support struct */
 
 } pcb_t, *pcb_PTR;
+/*******************************************************************************/
 
 /* Semaphore descriptor type */
 typedef struct semd_t {

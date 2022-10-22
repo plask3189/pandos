@@ -16,7 +16,7 @@
 
 void scheduler() {
   cpu_t elapsedTime;
-  /* currentProcess is a pointer to a pcb and is definined in nucleusPointer.h */
+  /* currentProcess is a pointer to a pcb */
   if(currentProcess == NULL){ /* if the currentProcess points to NULL, there is nothing executing so get a pcb from the readyQueue */
     pcb_PTR nextProcess = removeProcQ(&readyQueue);
   } else { /* If currentProcess is not null, there is a process running, so check its time */
@@ -37,10 +37,9 @@ void scheduler() {
   } else { /* if the Ready Queue is empty */
     /* processCount and softBlockCount are initialized in nucleusInitialization.c */
     /* "If the Process Count > 0 and the Soft-block Count > 0 enter a Wait State." -p. 23 pandos */
-
     if((processCount > 0) && (softBlockCount > 0)){
       /* " The Scheduler must first set the Status register to enable interrupts and disable the processor Local Timer (also through the Status register)*/
-      /* "Interrupts enabled via the STATUS register [Section 7.1-pops]" */
+      /* "Interrupts enabled via the STATUS register(setSTATUS)[Section 7.1-pops]" */
       setSTATUS(ALLOFF | IECON | TEBITON | IMON);
       WAIT();
     }
@@ -54,7 +53,9 @@ void scheduler() {
   }
 }
 
-/* LDST aka load state would be too significant since it overwrites so much. So we make a handler to easily identify issues. */
+/* LDST aka load state would be too significant since it overwrites so much. So we make a handler to easily identify issues.
+"Observe that the correct processor state to load (LDST) is the saved exception state (located at the start of the BIOS Data Page [Section 3.4]) and not the obsolete processor state stored in the Current Process's pcb." p.30 pandos. So LDST is performed on the state located in the BIOS!!!
+*/
 void loadState(state_PTR process){
   LDST(process);
 }

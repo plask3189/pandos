@@ -27,7 +27,8 @@ extern int* clockSemaphore;
 void SYSCALLExceptionHandler(){
   /*----------- Initializing processSyscallState -------------*/
   state_PTR processSyscallState;
-  /* the BIOSDATAPAGE holds processor states */
+  /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
+  Now we have processSyscallState which points to the BIOSDATAPAGE  */
 	processSyscallState = (state_PTR) BIOSDATAPAGE;
   /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
   /* this variable will hold the integer contained in a0 from the process that was interrupted. */
@@ -87,12 +88,14 @@ void createProcess(state_PTR pointerToOldState){
   pcb_PTR child = allocPcb();
   /* The returnStatusCode is set as a default -1 which is placed in v0 to show an error. */
   int returnStatusCode = -1;
-  /* If a new process cannot be allocated */
+  /* If the child pointer points to NULL, a new process cannot be allocated. */
   if(child == NULL) {
+    returnStatusCode = -1;
     /* Puts -1 into the process' v0. */
-    currentProcess -> p_s.s_v0 = returnStatus;
+    currentProcess -> p_s.s_v0 = returnStatusCode;
     loadState(pointerToOldState);
   }
+  /* If a new process can be allocated */
   else {
     if(child != NULL){
       processCount++;
@@ -101,11 +104,12 @@ void createProcess(state_PTR pointerToOldState){
       /* initialize the process tree fields */
       insertChild(currentProcess, child);
       /* copy the value that  the child's state pointer holds. This value is actually a pointer to a state. Copy this state into the oldState's a1, pointed to by pointerToOldState */
-      copyState((state_PTR) (pointerToOldState -> s_al), &(child -> p_s));
-      if((pointerToOldState -> s_a2) == 0 || (pointerToOldState -> s_a2 == NULL)) {
-        /* do stuff */
+      copyState((state_PTR) (pointerToOldState -> s_a1), &(child -> p_s));
+      /* a2 holds pointer to a support structure */
+      if((pointerToOldState -> s_a2 == 0) || (pointerToOldState -> s_a2 == NULL)) {
+        child -> p_supportStruct = (support_t *) pointerToOldState -> s_a2;
       } else {
-        /*do stuff */
+        child -> p_supportStruct = NULL;
       }
     }
     currentProcess -> p_s.s_v0 = returnStatus;
@@ -113,11 +117,38 @@ void createProcess(state_PTR pointerToOldState){
     loadState(pointerToOldState);
   }
 }
-/********************************* SYS 2 *********************************/
+/* * * * * * * * * * * * * * * * SYS2 * * * * * * * * * * * * * * * * * * * * *
+This causes the executing process to cease to exist. All progeny of this process are terminated as well */
 void terminateProcess(pcb_PTR parentProcess){
-  outChild(currentProcess);
-  removeProgeny(currentProcess);
-  currentProcess = NULL;
+  /* -------------------- Process Tree Adjustments ----------------------------*/
+  /* emptyChild() asks if the if the pcb pointed to by p has children. If there are progeny, (aka emptyChild() is false (0), remove them. */
+  while(emptyChild(parentProcess) == 0){
+    terminateProcess(removeChild(parentProcess));
+  }
+  if(parentProcess == currentProcess){
+      /* outChild() makes the pcb pointed to by parentProcess an orphan (no longer the child of its parent on the process tree). */
+    outChild(parentProcess);
+    currentProcess = NULL;
+  }
+  else{
+      /*-----------------------ReadyQueue Adjustments---------------------------*/
+     if(parentProcess -> p_semAdd == NULL){
+       /* Remove the pcb pointed to by parentProcess from the process queue whose tail pointer is pointed to by the tail pointer held as a value in ReadyQueue. (ReadyQueue is a pointer to a tail pointer of a queue of pcbs)*/
+       outProcQ(&readyQueue, parentProcess);
+     }
+     else {
+       /*-----------------------Semaphore Adjustments---------------------------*/
+      /* outBlocked removes the pcb pointed to by parentProcess from the process queue associated with parentProcess’s semaphore */
+      if((outBlocked(parentProcess)) != NULL){
+          if(((parentProcess -> p_semAdd) >= &deviceSemaphores[0]) && ((parentProcess -> p_semAdd) <= &deviceSemaphores[DEVNUM]){
+              softBlockCount--;
+          } else {
+              (*(parentProcess -> p_semAdd))++;
+          }
+        }
+      }
+  freePcb(parentProcess);
+  processCount--;
   scheduler();
 }
 
@@ -148,7 +179,6 @@ void verhogen(state_PTR pointerToOldState){
     temp = removeBlocked(semAdd);
     if(temp != NULL) {
       insertProcQ((&readyQueue), temp);
-
     }
   }
   loadState(pointerToOldState);
@@ -179,29 +209,7 @@ void passUpOrDie(state_PTR pointerToOldState, int exception){
 
 
 /* * * * * * * * * * * * * * * * Support methods * * * * * * * * * * * * * * * */
-HIDDEN void nukeProgeny(pcb_t* toRemove){
-    if (toRemove == NULL){
-      return;
-    }
-    while (!(emptyChild(toRemove)))
-        nukeProgeny(removeChild(toRemove));
-        removeSingleProcess(toRemove);
-}
-HIDDEN void removeOneProcess(pcb_t* toRemove){
-    processCount--;
-    outProcQ(&readyQueue, toRemove);
-    if (toRemove -> p_semAdd != NULL) {
-        if (&(deviceSemaphores[0]) <= toRemove -> p_semAdd && toRemove->p_semAdd <= &(deviceSemaphores[48])){
-            softBlockedCount--;
-        }
-        else{
-            *(toRemove->p_semAdd)++;
-        }
-        /* outBlocked() removes the pcb pointed to by toRemove from the process queue associated with p’s semaphore */
-        outBlocked(toRemove);
-    }
-    freePcb(toRemove);
-}
+
 
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
 * Copying the registers

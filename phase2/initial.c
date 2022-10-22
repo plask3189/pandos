@@ -55,10 +55,9 @@ int main() {
   nucleusPointer->exception_stackPtr = NUCLEUSSTACKPAGE;
   /* Initialize all Nucleus maintained variables */
   processCount = 0;
-  softBlcokCount = 0;
+  softBlockCount = 0;
   readyQueue = mkEmptyProcQ();
   currentProcess = NULL;
-
   /* Since the device semaphores will be used for synchronization, as opposed to mutual exclusion, they should all be initialized to zero. */
   int i;
   for(i = 0; i < NUMBEROFDEVICES; i++){
