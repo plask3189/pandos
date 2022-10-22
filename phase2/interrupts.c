@@ -14,3 +14,17 @@
 #include "../h/scheduler.h"
 #include "../h/interrupts.h"
 
+void InterruptHandler() {
+  /* Variable and STCK creation */
+  cpu_t stopTimer;
+  cpu_t timeRemaining;
+  
+  STCK (stopTimer);
+  timeRemaining = getTIMER();
+  
+  
+  
+  
+  
+  
+}
