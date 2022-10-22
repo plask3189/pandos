@@ -22,6 +22,28 @@ void InterruptHandler() {
   STCK (stopTimer);
   timeRemaining = getTIMER();
   unsigned int interruptCause = ((state_t*) BIOSDATAPAGE) -> s_cause;
+  
+  
+  /* If DISK Interrupt? */
+  if ((((state_PTR)BIOSDATAPAGE) -> s_cause & DISKINT) != 0) {
+    deviceInterruptHandler(DISK);
+  }
+  
+  /* If FLASH Interrupt? */
+  if ((((state_PTR)BIOSDATAPAGE) -> s_cause & FLASHINT) != 0) {
+    deviceInterruptHandler(FLASH);
+  }
+  
+  /* If PRINTER Interrupt? */
+  if ((((state_PTR)BIOSDATAPAGE) -> s_cause & PRINTERINT) != 0) {
+    deviceInterruptHandler(PRINTER);
+  }
+  
+  /* If Terminal Interrupt? */
+  if ((((state_PTR)BIOSDATAPAGE) -> s_cause & TERMINT) != 0) {
+    deviceInterruptHandler(TERMINAL);
+  }
+  
 
 }
 
