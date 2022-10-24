@@ -118,37 +118,41 @@ void createProcess(state_PTR pointerToOldState){
   }
 }
 /* * * * * * * * * * * * * * * * SYS2 * * * * * * * * * * * * * * * * * * * * *
-This causes the executing process to cease to exist. All progeny of this process are terminated as well */
+This causes the executing process to cease to exist. All progeny of this process are terminated as well. "Processes (i.e. pcb’s) can’t hide. A pcb is either the Current Process (“run- ning”), sitting on the Ready Queue (“ready”), blocked on a device semaphore (“blocked”), or blocked on a non-device semaphore (“blocked”)." p.39 pandos */
 void terminateProcess(pcb_PTR parentProcess){
+  processCount--;
+  pcb_PTR processToTerminate = parentProcess;
   /* -------------------- Process Tree Adjustments ----------------------------*/
-  /* emptyChild() asks if the if the pcb pointed to by p has children. If there are progeny, (aka emptyChild() is false (0), remove them. */
-  while(emptyChild(parentProcess) == 0){
-    terminateProcess(removeChild(parentProcess));
+  /* emptyChild() asks if the pcb pointed to by p has children. If there are progeny, (aka emptyChild() is false (0), remove them. */
+  while(emptyChild(processToTerminate) == 0){
+    terminateProcess(removeChild(processToTerminate));
   }
-  if(parentProcess == currentProcess){
+  /* if the current process is the one we want to remove. */
+  if(processToTerminate == currentProcess){
       /* outChild() makes the pcb pointed to by parentProcess an orphan (no longer the child of its parent on the process tree). */
-    outChild(parentProcess);
+    outChild(processToTerminate);
     currentProcess = NULL;
   }
   else{
       /*-----------------------ReadyQueue Adjustments---------------------------*/
-     if(parentProcess -> p_semAdd == NULL){
-       /* Remove the pcb pointed to by parentProcess from the process queue whose tail pointer is pointed to by the tail pointer held as a value in ReadyQueue. (ReadyQueue is a pointer to a tail pointer of a queue of pcbs)*/
-       outProcQ(&readyQueue, parentProcess);
+     if(processToTerminate -> p_semAdd == NULL){
+       /* Remove the pcb pointed to by processToTerminate from the process queue whose tail pointer is pointed to by the tail pointer held as a value in ReadyQueue. (ReadyQueue is a pointer to a tail pointer of a queue of pcbs. We need it to identify the readyQueue)*/
+       outProcQ(&readyQueue, processToTerminate);
      }
      else {
-       /*-----------------------Semaphore Adjustments---------------------------*/
-      /* outBlocked removes the pcb pointed to by parentProcess from the process queue associated with parentProcess’s semaphore */
-      if((outBlocked(parentProcess)) != NULL){
-          if(((parentProcess -> p_semAdd) >= &deviceSemaphores[0]) && ((parentProcess -> p_semAdd) <= &deviceSemaphores[DEVNUM]){
+       /*---------------------- Process Blocked on Semaphore ----------------------*/
+      /* outBlocked removes the pcb pointed to by processToTerminate from the process queue associated with processToTerminate's semaphore. If pcb pointed to by processToTerminate is in the process queue associated with processToTerminate’s semaphore this is NOT NULL;*/
+      if((outBlocked(processToTerminate)) != NULL){
+          if(((processToTerminate -> p_semAdd) >= &deviceSemaphores[0]) && ((processToTerminate -> p_semAdd) <= &deviceSemaphores[DEVNUM]){
               softBlockCount--;
+              /* "If a terminated process is blocked on a device semaphore, the semaphore should NOT be adjusted. When the interrupt eventually occurs the semaphore will get V’ed (and hence incremented) by the interrupt handler." p.39 pandos */
           } else {
-              (*(parentProcess -> p_semAdd))++;
+            /* if pcb pointed to by processToTerminate is not in the process queue associated with processToTerminate’s semaphore (OutBlocked(processToTerminate)) == NULL)). Increment semaphore*/
+              *(processToTerminate -> p_semAdd)++;
           }
         }
       }
-  freePcb(parentProcess);
-  processCount--;
+  freePcb(processToTerminate);
   scheduler();
 }
 
@@ -184,8 +188,25 @@ void verhogen(state_PTR pointerToOldState){
   loadState(pointerToOldState);
 }
 /* * * * * * * * * * * * * * * * SYS5 * * * * * * * * * * * * * * * */
+/* When an I/O operation is initiated, the initiating process is blocked until the IO completes. SYS5 transitions the current process from running to blocked. We get the semaphore for the I/O device indicated by a1, a2, and a3. Then do a P operation. */
 void waitForIO(state_PTR pointerToOldState){
   copyState(pointerToOldState, &(currentProcess -> p_s));
+  /* a1 holds the interrupt line number ([3. . .7]) */
+  int lineNumberForDevice = pointerToOldState -> s_a1;
+  /* Need to subract 3 because "when bit i in word j is set to one then device i attached to interrupt line j + 3 has a pending interrupt." p. 29 pops.  */
+  int wordNumberForDevice = (lineNumberForDevice - 3);
+  /* a2 holds the device number ([0. . .7]) */
+  int deviceNumber = pointerToOldState -> s_a2;
+  /* a3 holds true (1) or false (0) to tell if waiting for a terminal read operation */
+  int areWeWaitingForTerminalReadOperation = pointerToOldState -> s_a3;
+  /* calculate the semaphore index that the device has.
+      DEVPERINT is in const.h and represents the # of devices per interrupt line, which is 8. */
+  int deviceSemaphoreIndex = ((wordNumberForDevice + areWeWaitingForTerminalReadOperation) * DEVPERINT + deviceNumber);
+  deviceSemaphores[deviceSemaphoreIndex]--;
+  softBlockCount++;
+  insertBlocked(&(deviceSemaphores[deviceSemaphoreIndex]), currentProcess);
+  currentProcess = NULL;
+  scheduler();
 }
 /********************************* SYS 6 *********************************/
 
@@ -196,7 +217,6 @@ void waitForClock(state_PTR pointerToOldState){
 }
 /* * * * * * * * * * * * * * * * SYS 8 * * * * * * * * * * * * * * * */
 void getSupport(state_PTR pointerToOldState){
-  /* copy the value (which is a value of the process state (aka pointer)) held in the currentProcess state and copy it into the pointer of the oldState. This is to save the currentProcess' state. */
   copyState(pointerToOldState, &(currentProcess -> p_s));
   /* assign v0 to hold support data */
   currentProcess -> p_s.s_v0 = (int) currentProcess -> p_supportStruct;
