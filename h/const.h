@@ -30,12 +30,33 @@
 
 #define NULL 			    ((void *)0xFFFFFFFF)
 
-/* device interrupts */
-#define DISKINT			  3
-#define FLASHINT 		  4
-#define NETWINT 		  5
-#define PRNTINT 		  6
-#define TERMINT			  7
+
+/* Device constants */
+#define PLT       1
+#define INTERVAL  2
+#define DISK      3
+#define FLASH     4
+#define NETWORK   5
+#define PRINTER   6
+#define TERMINAL  7
+
+/* Device Interrupt constants */
+#define PLTINT      0x00000200
+#define INTERVALINT 0x00000400
+#define DISKINT     0x00000800
+#define FLASHINT    0x00001000
+#define NETWINT     0x00002000
+#define PRNTINT     0x00004000
+#define TERMINT     0x00008000
+
+#define DEVREG0     0x00000001
+#define DEVREG1     0x00000002
+#define DEVREG2     0x00000004
+#define DEVREG3     0x00000008
+#define DEVREG4     0x00000010
+#define DEVREG5     0x00000020
+#define DEVREG6     0x00000040
+#define DEVREG7     0x00000080
 
 #define NUMBEROFDEVICES 49 /* p. 28 of pops says there are 40 device registers in uMPS. On p. 41 of pops, it says there are 8 serial terminal device interfaces. Plus 1 for timer*/
 
