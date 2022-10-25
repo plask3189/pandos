@@ -87,6 +87,10 @@ typedef struct pcb_t {
 
 	/* Support layer information */
 	struct support_t	*p_supportStruct;	/* Pointer to support struct */
+	/*p.36 pandos */
+	int sup_asid; /* process id (asid) */
+	state_t sup_exceptState[2]; /* stored exception states */
+	context_t sup_exceptContext[2]; /* pass up contexts */
 
 } pcb_t, *pcb_PTR;
 /*******************************************************************************/

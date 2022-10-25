@@ -40,6 +40,10 @@ void SYSCALLExceptionHandler(){
   /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
   Now we have processSyscallState which points to the BIOSDATAPAGE  */
 	processSyscallState = (state_PTR) BIOSDATAPAGE;
+  state_PTR t9processSyscallState = processSyscallState -> s_t9;
+  state_PTR pcOfProcessSyscallState = processSyscallState -> s_pc;
+  t9processSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
+  pcOfProcessSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
   /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
   /* this variable will hold the integer contained in a0 from the process that was interrupted. */
   int syscallCodeNumber1234567or8;
@@ -49,40 +53,47 @@ void SYSCALLExceptionHandler(){
   /*------------- Check for user mode -----------*/
 /* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
   /* int mode = (processSyscallState -> s_status... idk */
-  }
+
 switch(syscallCodeNumber1234567or8) {
   case createProcessCase:{
-    /* create process */
+    createProcess(processSyscallState);
     break;
   }
   case terminateProcessCase:{
-    /* */
+    if(currentProcess != NULL){
+            terminateProc(currentProcess);
+        }
     break;
   }
   case passerenCase:{
-    /*  */
+    passeren(processSyscallState);
     break;
   }
   case verhogenCase:{
-    /* */
+    verhogen(processSyscallState);
     break;
   }
   case waitForIODeviceCase:{
-    /* */
+    waitForIO(processSyscallState);
     break;
   }
   case getCPUTimeCase:{
-    /*  */
+    getCPUTime(processSyscallState);
     break;
   }
   case waitForClockCase:{
-    /*  */
+    waitForClock(processSyscallState);
     break;
   }
   case getSupportDataCase:{
-    /* */
+    getSupport(processSyscallState);
     break;
   }
+  default:{
+     passUpOrDie(processSyscallState, GENERALEXCEPT);
+     break;
+   }
+ }
 }
 
 /* * * * * * * * * * * * * * * * SYS1 * * * * * * * * * * * * * * * *
@@ -250,11 +261,12 @@ void getSupport(state_PTR pointerToOldState){
   loadState(&(currentProcess -> p_s));
 }
 
-
+/* * * * * * * * * * * * * *  * * * * Pass up or Die * * * * * * * * * * * * * * * * * */
 void passUpOrDie(state_PTR pointerToOldState, int exception){
   /* if the currentProcess has a support structure */
   if(currentProcess -> p_supportStruct != NULL){
-    stateCopy(pointerToOldState, &(currentProcess -> p_supportStruct));
+    stateCopy(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
+    LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
   }
   else {
     terminateProcess(currentProcess);
@@ -265,7 +277,13 @@ void passUpOrDie(state_PTR pointerToOldState, int exception){
 
 
 /* * * * * * * * * * * * * * * * Support methods * * * * * * * * * * * * * * * */
-
+void otherException(int cause){
+  if(cause >=4 ){
+    passUpOrDie((state_PTR) BIOSDATAPAGE, GENERALEXCEPT);
+  } else {
+    passUpOrDie((state_PTR) BIOSDATAPAGE, PGFAULTEXCEPT);
+  }
+}
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
 * Copying the registers
 * Copying entryHI, cause, status, and pc (which are part of the state)

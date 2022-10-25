@@ -105,7 +105,7 @@ void exceptionHandler(){
     IOHANDLER(); /* WILL DEFINE LATER !!!!!!!!!! */
   }
   if(cause > 8) {
-    /* do stuff */
+    otherException(cause);
   }
   if(cause == 8) {
     /* For exception code 8 (SYSCALL), processing should be passed along to your Nucleus’s SYSCALL exception handler.  */
