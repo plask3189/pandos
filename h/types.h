@@ -87,10 +87,6 @@ typedef struct pcb_t {
 
 	/* Support layer information */
 	struct support_t	*p_supportStruct;	/* Pointer to support struct */
-	/*p.36 pandos */
-	int sup_asid; /* process id (asid) */
-	state_t sup_exceptState[2]; /* stored exception states */
-	context_t sup_exceptContext[2]; /* pass up contexts */
 
 } pcb_t, *pcb_PTR;
 /*******************************************************************************/
@@ -101,6 +97,25 @@ typedef struct semd_t {
 	int		*s_semAdd;	/* Pointer to the semaphore */
 	pcb_t		*s_procQ;	/* Tail pointer to a process queue */
 } semd_t;
+
+
+typedef struct context{
+    unsigned int c_stackPointer,
+									c_pc;
+                	c_status,
+} context_t;
+
+/* p.36 pandos */
+typedef struct support_t
+{
+    int sup_asid;
+    state_t sup_exceptState[2];
+    context_t sup_exceptContext[2];
+
+} support_t;
+
+
+
 
 
 /* Registry */
