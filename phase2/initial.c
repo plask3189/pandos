@@ -23,10 +23,15 @@ pcb_PTR readyQueue; /* readyQueue is a pointer to a tail pointer of a queue of p
 pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
+
+int *clockSemaphore = &(deviceSemaphores[DEVNUM - 1]);
 /* the TOD clock counts up and is CPU time. */
 cpu_t startTimeOfDayClock;
 /* allocate the first process from the pcbFree list: Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element.  */
 pcb_PTR initialProcess = allocPcb();
+/* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
+extern void test();
+HIDDEN void exceptionHandler();
 
 int main() {
   /* Initialization of the phase1 data structures */
@@ -39,7 +44,7 @@ int main() {
   devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
   unsigned int RAMTOP;
   /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
-  RAMTOP = (ramPointer -> rambase) + (ramPointer -> ramsize);
+  RAMTOP = ((ramPointer -> rambase) + (ramPointer -> ramsize));
   /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
   readyQueue = mkEmptyProcQ();
   currentProcess = NULL;
@@ -53,11 +58,7 @@ int main() {
   nucleusPointer->exception_handler = (memaddr) exceptionHandler;
   /* Set the Stack pointer for the Nucleus exception handler to the top of the Nucleus stack page: 0x2000.1000. */
   nucleusPointer->exception_stackPtr = NUCLEUSSTACKPAGE;
-  /* Initialize all Nucleus maintained variables */
-  processCount = 0;
-  softBlockCount = 0;
-  readyQueue = mkEmptyProcQ();
-  currentProcess = NULL;
+
   /* Since the device semaphores will be used for synchronization, as opposed to mutual exclusion, they should all be initialized to zero. */
   int i;
   for(i = 0; i < NUMBEROFDEVICES; i++){

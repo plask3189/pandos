@@ -127,6 +127,7 @@
 /* The time slice value is 5ms. A QUANTUM is the "time used by scheduling algorithms as a basis for determining when to preempt a thread from the CPU to allow another to run." - Operating Systems Concepts*/
 #define QUANTUM 5000
 
+#define ONE 1
 
 #define NUCLEUSSTACKPAGE 0x20001000
 

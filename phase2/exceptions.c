@@ -13,8 +13,6 @@
  #include "../h/exceptions.h"
  #include "../h/initial.h"
 
-
-/* Get global variables */
 extern pcb_PTR currentProcess;
 extern pcb_PTR readyQueue;
 extern int processCount;
@@ -22,6 +20,18 @@ extern int softBlockCount;
 extern int deviceSemaphores[NUMBEROFDEVICES];
 extern cpu_t startTimeOfDayClock;
 extern int* clockSemaphore;
+
+void createProcess(state_PTR currentProcess1);
+void terminateProcess(pcb_PTR parentProcess1);
+void passeren(state_PTR currentProcess1);
+void verhogen(state_PTR currentProcess1);
+void waitForIO(state_PTR currentProcess1);
+void getCPUTime(state_PTR currentProcess1);
+void waitForClock(state_PTR currentProcess1);
+void getSupport(state_PTR currentProcess1);
+
+void passUpOrDie(state_PTR currentProcess1, int exception);
+void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 /*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
 void SYSCALLExceptionHandler(){
