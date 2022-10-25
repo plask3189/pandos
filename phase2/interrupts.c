@@ -51,31 +51,68 @@ void InterruptHandler() {
 /* Interrupt Handler specifically for Devices */
 void deviceInterruptHandler(int lineNum) {
   unsigned int bitM;
-  volatile devregarea_t *deviceReg;
-  int deviceNum;
+  unsigned int status;
+  volatile devregarea_t *dReg;
+  int devNum;
+  int devSema4;
   
-  deviceReg = (devregarea_t *) RAMBASEADDR;
-  bitM = deviceReg -> interrupt_dev[lineNum - DISK];
+  dReg = (devregarea_t *) RAMBASEADDR;
+  bitM = dReg -> interrupt_dev[lineNum - DISK];
   
   /* Which device is causing the interrupt? */
   if ((bitM & DEVREG0) !=0) {
-      deviceNum = 0;
+      devNum = 0;
   } else if ((bitM & DEVREG1) !=0) {
-      deviceNum = 1;
+      devNum = 1;
   } else if ((bitM & DEVREG2) !=0) {
-      deviceNum = 2;
+      devNum = 2;
   } else if ((bitM & DEVREG3) !=0) {
-      deviceNum = 3;
+      devNum = 3;
   } else if ((bitM & DEVREG4) !=0) {
-      deviceNum = 4;
+      devNum = 4;
   } else if ((bitM & DEVREG5) !=0) {
-      deviceNum = 5;
+      devNum = 5;
   } else if ((bitM & DEVREG6) !=0) {
-      deviceNum = 6;
+      devNum = 6;
   } else if ((bitM & DEVREG7) !=0) {
-      deviceNum = 7;
+      devNum = 7;
   } else {
     PANIC();
+  }  
+  
+  /* Set device semaphore */
+  sema4_d = ((lineNum - DISK) * DEVPERINT) + devNum;
+  
+  /* Terminal Interrupt Handler */
+  if (lineNum == TERMINAL){
+    status = terminalInterruptHandler(&sema4_d);
   }
   
+  /*Finally, call the scheduler if nothing is running */
+  if(currentProc == NULL) {
+    scheduler();
+  }
+  
+  
 }
+
+
+/* Creation of a helper function to handle TERMINAL type interrupts, to be used in the deviceInterruptHandler */
+int terminalInterruptHandler(int sema4_d){
+  unsigned int status;
+  volatile devregarea_t *dReg;
+  dReg = (devregarea_t *) RAMBASEADDR;
+  
+  /* Priority is being given to Writing over Reading in the Terminal */
+  if((dReg -> devreg[(*sema4_d)].t_transm_status & SHIFT) != READY) {
+    status = dReg -> devreg[(*sema4_d)].t_transm_status;
+    dReg -> devreg[(*sema4_d)].t_transm_command = ACK;
+  
+  } else {
+    status = dReg -> devreg[(*sema4_d)].t_recv_status;
+    dReg -> devreg[(*sema4_d)].t_recv_command = ACK;
+    (*sema4_d) = (*sema4_d) + DEVPERINT;
+  }
+  return (status);
+}
+  
