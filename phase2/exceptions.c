@@ -208,23 +208,49 @@ void waitForIO(state_PTR pointerToOldState){
   currentProcess = NULL;
   scheduler();
 }
-/********************************* SYS 6 *********************************/
-
+/* * * * * * * * * * * * * * * * * * SYS 6 * * * * * * * * * * * * * * * * * */
+/* This service requests that the accumulated processor time (in microseconds) used by the requesting process be placed/returned in the caller’s v0.  */
 void getCPUTime(state_PTR pointerToOldState){
+  copyState(pointerToOldState, &(currentProcess -> p_s));
+  cpu_t whatTimeIsIt;
+  /*  STCK(whatTimeIsIt) does this: whatTimeIsIt = TODLOADD / TIMESCALEADDR */
+  STCK(whatTimeIsIt);
+  /* Remember that the TOD clock increments every processor cycle */
+  whatTimeIsIt = whatTimeIsIt - startTimeOfDayClock;
+  /* add time to current process time */
+  (currentProcess -> p_time) = (currentProcess -> p_time) + whatTimeIsIt;
+  currentProcess -> p_s.s_v0 = currentProcess -> p_time;
+  loadState(&currentProcess -> p_s);
 }
-/********************************* SYS 7 *********************************/
+/* * * * * * * * * * * * * * * * * * SYS 7 * * * * * * * * * * * * * * * * * */
 void waitForClock(state_PTR pointerToOldState){
+  copyState(pointerToOldState, &(currentProcess -> p_s));
+  (*clockSemaphore)--;
+  if(!((*clockSemaphore)>= 0)){
+    insertBlocked(clockSemaphore, currentProcess);
+    currentProcess = NULL;
+    softBlockCount++;
+    scheduler();
+  }
 }
-/* * * * * * * * * * * * * * * * SYS 8 * * * * * * * * * * * * * * * */
+/* * * * * * * * * * * * * *  * * * * SYS 8 * * * * * * * * * * * * * * * * * */
 void getSupport(state_PTR pointerToOldState){
   copyState(pointerToOldState, &(currentProcess -> p_s));
-  /* assign v0 to hold support data */
   currentProcess -> p_s.s_v0 = (int) currentProcess -> p_supportStruct;
   loadState(&(currentProcess -> p_s));
 }
 
 
 void passUpOrDie(state_PTR pointerToOldState, int exception){
+  /* if the currentProcess has a support structure */
+  if(currentProcess -> p_supportStruct != NULL){
+    stateCopy(pointerToOldState, &(currentProcess -> p_supportStruct));
+  }
+  else {
+    terminateProcess(currentProcess);
+    currentProcess = NULL;
+    scheduler();
+  }
 }
 
 

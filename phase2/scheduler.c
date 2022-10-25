@@ -22,7 +22,7 @@ void scheduler() {
   } else { /* If currentProcess is not null, there is a process running, so check its time */
     STCK(elapsedTime); /* get how long the process has been executing */
     /* Adjust the CPU time used by the process by adding how much time has elapsed since the clock started added to the CPU time used by the processor so far (p_time) */
-    currentProcess -> p_time = currentProcess -> p_time + (elapsedTime - startTOD);
+    currentProcess -> p_time = currentProcess -> p_time + (elapsedTime - startTimeOfDayClock);
     LDIT(INTERVALTIMER);
     pcb_PTR nextProcess = removeProcQ(&readyQueue);
   }
@@ -53,8 +53,7 @@ void scheduler() {
   }
 }
 
-/* LDST aka load state would be too significant since it overwrites so much. So we make a handler to easily identify issues.
-"Observe that the correct processor state to load (LDST) is the saved exception state (located at the start of the BIOS Data Page [Section 3.4]) and not the obsolete processor state stored in the Current Process's pcb." p.30 pandos. So LDST is performed on the state located in the BIOS!!!
+/* LDST aka load state would be too significant since it overwrites so much. So we make a handler to easily identify issues. "Observe that the correct processor state to load (LDST) is the saved exception state (located at the start of the BIOS Data Page [Section 3.4]) and not the obsolete processor state stored in the Current Process's pcb." p.30 pandos. So LDST is performed on the state located in the BIOS!!!
 */
 void loadState(state_PTR process){
   LDST(process);

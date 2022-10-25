@@ -126,8 +126,7 @@
 
 #define NUCLEUSSTACKPAGE 0x20001000
 
-/* "The Time Scale’s value indicates the number of clock ticks that will occur in a microsecond," p.21 pandos.
-So 100 milliseconds is 100,000 microseconds. */
+/* "The Time Scale’s value indicates the number of clock ticks that will occur in a microsecond," p.21 pandos. So 100 milliseconds is 100,000 microseconds. */
 #define INTERVALTIMER 100000
 
 #endif
