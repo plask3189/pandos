@@ -30,8 +30,10 @@ cpu_t startTimeOfDayClock;
 /* allocate the first process from the pcbFree list: Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element.  */
 pcb_PTR initialProcess = allocPcb();
 /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
+extern void uTLB_RefillHandler();
 extern void test();
 HIDDEN void exceptionHandler();
+
 
 int main() {
   /* Initialization of the phase1 data structures */
@@ -39,15 +41,17 @@ int main() {
   initSemd();
   processCount = 0;
   softBlockCount = 0;
-  /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
-  /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
-  devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
   unsigned int RAMTOP;
-  /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
-  RAMTOP = ((ramPointer -> rambase) + (ramPointer -> ramsize));
   /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
   readyQueue = mkEmptyProcQ();
   currentProcess = NULL;
+  /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
+  /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
+  devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
+
+  /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
+  RAMTOP = ((ramPointer -> rambase) + (ramPointer -> ramsize));
+
   /* Populate the Processor 0 Pass Up Vector. The Pass Up Vector is part of the BIOS Data Page, and for Processor 0, is located at 0x0FFF.F900. The Pass Up Vector is where the BIOS finds the address of the Nucleus functions to pass control to for both TLB-Refill events and all other exceptions. */
   (passupvector_t*) nucleusPointer = (passupvector_t*) PASSUPVECTOR;
   /* Set the Nucleus TLB-Refill event handler address. where memaddr,in types.h,has been aliased to unsigned int. Since address translation is not implemented until the Support Level, uTLB RefillHandler is a place holder function whose code is provided. [Section 3.3] This code will then be replaced when the Sup- port Level is implemented.*/
@@ -65,8 +69,9 @@ int main() {
     deviceSemaphores[i] = 0;
   }
   /***************************** Initiate a single process ***************************************/
+  pcb_PTR initialProcess = allocPcb();
   if(initialProcess != NULL){  /* If there a process that was removed from the pcbFree list*/
-    pcb_PTR initialProcess = allocPcb();
+
     /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
     initialProcess -> p_s.s_pc = initialProcess->p_s.s_t9 = (memaddr) test;
     /* In const.h, STCK(T) takes an unsigned integer as its input parameter and populates it with the value of the low-order word of the TOD clock divided by the Time Scale" p.21 principles of operations */
