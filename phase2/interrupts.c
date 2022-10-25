@@ -35,6 +35,10 @@ void InterruptHandler() {
   if ((CAUSE & PLTINT) != 0) {
     pltInterruptHandler(stopTimer)
   }
+  /* If Interval Clock Interrupt? */
+  if ((CAUSE & INTERVALINT) != 0) {
+    intervalInterruptHandler();
+  }
   
   /* If DISK Interrupt? */
   if ((CAUSE & DISKINT) != 0) {
@@ -70,6 +74,22 @@ void pltInterruptHandler(int stopTimer){
     else {
       PANIC();
     }
+}
+
+/* Interrupt Handler specifically for the Interval Clock */
+void intervalInterruptHandler() {
+  LDIT(CLOCKTIME);
+  pcb_PTR temp = removeBlocked(&deviceSemaphores[NUMBEROFDEVICES - 1]);
+  while(temp != NULL) {
+    insertProcQ(&readyQueue, temp);
+    softBlockCount++;
+    temp = removeBlocked(&deviceSemaphores[NUMBEROFDEVICES - 1]);
+  }
+  deviceSemaphores[NUMBEROFDEVICES - 1] = 0;
+  
+  if(currentProcess == NULL) {
+    scheduler();
+  }
 }
 
 /* Interrupt Handler specifically for Devices */
@@ -115,9 +135,7 @@ void deviceInterruptHandler(int lineNum) {
   /*Finally, call the scheduler if nothing is running */
   if(currentProc == NULL) {
     scheduler();
-  }
-  
-  
+  } 
 }
 
 
