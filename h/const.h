@@ -60,6 +60,9 @@
 
 #define NUMBEROFDEVICES 49 /* p. 28 of pops says there are 40 device registers in uMPS. On p. 41 of pops, it says there are 8 serial terminal device interfaces. Plus 1 for timer*/
 
+/* Clock Constants */
+#define CLOCKTIME 100000
+
 
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
