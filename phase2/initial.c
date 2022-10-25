@@ -24,7 +24,7 @@ pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
 
-int *clockSemaphore = &(deviceSemaphores[DEVNUM - 1]);
+int *clockSemaphore = &(deviceSemaphores[NUMBEROFDEVICES - 1]);
 /* the TOD clock counts up and is CPU time. */
 cpu_t startTimeOfDayClock;
 /* allocate the first process from the pcbFree list: Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element.  */
@@ -53,7 +53,7 @@ int main() {
   RAMTOP = ((ramPointer -> rambase) + (ramPointer -> ramsize));
 
   /* Populate the Processor 0 Pass Up Vector. The Pass Up Vector is part of the BIOS Data Page, and for Processor 0, is located at 0x0FFF.F900. The Pass Up Vector is where the BIOS finds the address of the Nucleus functions to pass control to for both TLB-Refill events and all other exceptions. */
-  (passupvector_t*) nucleusPointer = (passupvector_t*) PASSUPVECTOR;
+  passupvector_t* nucleusPointer = (passupvector_t*) PASSUPVECTOR;
   /* Set the Nucleus TLB-Refill event handler address. where memaddr,in types.h,has been aliased to unsigned int. Since address translation is not implemented until the Support Level, uTLB RefillHandler is a place holder function whose code is provided. [Section 3.3] This code will then be replaced when the Sup- port Level is implemented.*/
   nucleusPointer -> tlb_refll_handler = (memaddr) uTLB_RefillHandler;
   /* Set the stack pointer for the nucleus TBL-refill event handler to top of nucleus stack page. *** Side note: There's an assignment for the constant address of the nculeus nucleus stack page as 0x20001000 in const.h */

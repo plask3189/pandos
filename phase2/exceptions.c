@@ -60,37 +60,37 @@ void SYSCALLExceptionHandler(){
     passUpOrDie(toCheckIfInUserMode, GENERALEXCEPT);
   }
 switch(syscallCodeNumber1234567or8) {
-  case createProcessCase:{
+  case CREATEPROCESS:{
     createProcess(processSyscallState);
     break;
   }
-  case terminateProcessCase:{
+  case TERMINATEPROCESS:{
     if(currentProcess != NULL){
             terminateProc(currentProcess);
         }
     break;
   }
-  case passerenCase:{
+  case PASSEREN:{
     passeren(processSyscallState);
     break;
   }
-  case verhogenCase:{
+  case VERHOGEN:{
     verhogen(processSyscallState);
     break;
   }
-  case waitForIODeviceCase:{
+  case WAITFORIO:{
     waitForIO(processSyscallState);
     break;
   }
-  case getCPUTimeCase:{
+  case GETCPUTIME:{
     getCPUTime(processSyscallState);
     break;
   }
-  case waitForClockCase:{
+  case WAITFORCLOCK:{
     waitForClock(processSyscallState);
     break;
   }
-  case getSupportDataCase:{
+  case GETSUPPORTPOINTER:{
     getSupport(processSyscallState);
     break;
   }

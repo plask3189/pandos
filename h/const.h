@@ -130,6 +130,17 @@
 #define ONE 1
 #define FOURTOINCREMENTTHEPC 4
 
+
+#define CREATEPROCESS 1
+#define TERMINATEPROCESS 2
+#define PASSEREN 3
+#define VERHOGEN 4
+#define WAITFORIO 5
+#define GETCPUTIME 6
+#define WAITFORCLOCK 7
+#define GETSUPPORTPOINTER 8
+
+
 #define NUCLEUSSTACKPAGE 0x20001000
 
 /* "The Time Scale’s value indicates the number of clock ticks that will occur in a microsecond," p.21 pandos. So 100 milliseconds is 100,000 microseconds. */
