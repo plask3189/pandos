@@ -256,7 +256,6 @@ void passUpOrDie(state_PTR pointerToOldState, int exception){
 
 /* * * * * * * * * * * * * * * * Support methods * * * * * * * * * * * * * * * */
 
-
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
 * Copying the registers
 * Copying entryHI, cause, status, and pc (which are part of the state)
