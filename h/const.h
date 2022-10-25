@@ -97,13 +97,14 @@
 #define	PASSUPVECTOR	  0x0FFFF900
 
 /* messing with bits */
-#define	ALLOFF 0x00000000
-#define	IECON 0x00000001 /* interrupt current on */
-#define	IEON 0x00000004 /* interrupts on */
-#define TEBITON 0x08000000  /* enable the processor Local Timer */
-#define	IMON 0x0000FF00 /* turn on interrupt mask */
-#define	KUON 0x00000008 /* Kernel mode on */
-#define USERMODEOFF 0x00000002 /* User mode off */
+#define	ALLOFF      0x00000000
+#define	IECON       0x00000001  /* interrupt current on */
+#define	IEON        0x00000004  /* interrupts on */
+#define TEBITON     0x08000000  /* enable the processor Local Timer */
+#define	IMON        0x0000FF00  /* turn on interrupt mask */
+#define	KUON        0x00000008  /* Kernel mode on */
+#define USERMODEOFF 0x00000002  /* User mode off */
+#define SHIFT       0x0F        /*Set 4 lowest bits */
 
 /* Exceptions related constants */
 #define	PGFAULTEXCEPT	  0
