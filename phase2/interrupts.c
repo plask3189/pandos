@@ -21,7 +21,6 @@ void InterruptHandler() {
   
   STCK (stopTimer);
   timeRemaining = getTIMER();
-  unsigned int interruptCause = ((state_t*) BIOSDATAPAGE) -> s_cause;
   
   
   /* If DISK Interrupt? */
