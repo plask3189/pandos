@@ -101,8 +101,8 @@ typedef struct semd_t {
 
 typedef struct context{
     unsigned int c_stackPointer,
-		c_pc, 
-		c_status,
+		c_pc,
+		c_status;
 } context_t;
 
 /* p.36 pandos */
