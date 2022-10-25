@@ -27,8 +27,7 @@ int deviceSemaphores[NUMBEROFDEVICES];
 int *clockSemaphore = &(deviceSemaphores[NUMBEROFDEVICES - 1]);
 /* the TOD clock counts up and is CPU time. */
 cpu_t startTimeOfDayClock;
-/* allocate the first process from the pcbFree list: Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element.  */
-pcb_PTR initialProcess = allocPcb();
+
 /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
 extern void uTLB_RefillHandler();
 extern void test();
@@ -41,7 +40,7 @@ int main() {
   initSemd();
   processCount = 0;
   softBlockCount = 0;
-  unsigned int RAMTOP;
+  int newRamTop;
   /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
   readyQueue = mkEmptyProcQ();
   currentProcess = NULL;
@@ -50,7 +49,7 @@ int main() {
   devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
 
   /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
-  RAMTOP = ((ramPointer -> rambase) + (ramPointer -> ramsize));
+  newRamTop = ((ramPointer -> rambase) + (ramPointer -> ramsize));
 
   /* Populate the Processor 0 Pass Up Vector. The Pass Up Vector is part of the BIOS Data Page, and for Processor 0, is located at 0x0FFF.F900. The Pass Up Vector is where the BIOS finds the address of the Nucleus functions to pass control to for both TLB-Refill events and all other exceptions. */
   passupvector_t* nucleusPointer = (passupvector_t*) PASSUPVECTOR;

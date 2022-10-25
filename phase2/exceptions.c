@@ -133,7 +133,7 @@ void createProcess(state_PTR pointerToOldState){
       copyState((state_PTR) (pointerToOldState -> s_a1), &(child -> p_s));
       /* a2 holds pointer to a support structure */
       if((pointerToOldState -> s_a2 == 0) || (pointerToOldState -> s_a2 == NULL)) {
-        child -> p_supportStruct = (support_t *) pointerToOldState -> s_a2;
+        child -> p_supportStruct = (support_t*) pointerToOldState -> s_a2;
       } else {
         child -> p_supportStruct = NULL;
       }
