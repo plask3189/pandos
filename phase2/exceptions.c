@@ -20,6 +20,7 @@ extern int softBlockCount;
 extern int deviceSemaphores[NUMBEROFDEVICES];
 extern cpu_t startTimeOfDayClock;
 extern int* clockSemaphore;
+extern void loadState(state_PTR process);
 
 void createProcess(state_PTR currentProcess1);
 void terminateProcess(pcb_PTR parentProcess1);
@@ -35,6 +36,7 @@ void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 /*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
 void SYSCALLExceptionHandler(){
+  int toCheckIfInUserMode;
   /*----------- Initializing processSyscallState -------------*/
   state_PTR processSyscallState;
   /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
@@ -53,7 +55,10 @@ void SYSCALLExceptionHandler(){
   /*------------- Check for user mode -----------*/
 /* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
   /* int mode = (processSyscallState -> s_status... idk */
-
+  toCheckIfInUserMode = (processSyscallState -> s_status & USERMODEOFF);
+  if(toCheckIfInUserMode != ALLOFF){
+    passUpOrDie(toCheckIfInUserMode, GENERALEXCEPT);
+  }
 switch(syscallCodeNumber1234567or8) {
   case createProcessCase:{
     createProcess(processSyscallState);

@@ -27,7 +27,7 @@ void scheduler() {
     pcb_PTR nextProcess = removeProcQ(&readyQueue);
   }
   if(nextProcess != NULL){
-    currentProcess = next;
+    currentProcess = nextProcess;
     STCK(startTimeOfDayClock);
     /* setTIMER is a control register write command. p. 60 in pops. The timer is set to a quantum which is 5ms. */
     setTIMER(QUANTUM);
@@ -40,7 +40,9 @@ void scheduler() {
     if((processCount > 0) && (softBlockCount > 0)){
       /* " The Scheduler must first set the Status register to enable interrupts and disable the processor Local Timer (also through the Status register)*/
       /* "Interrupts enabled via the STATUS register(setSTATUS)[Section 7.1-pops]" */
-      setSTATUS(ALLOFF | IECON | TEBITON | IMON);
+      int cool;
+      cool = (ALLOFF | IECON | TEBITON | IMON);
+      setSTATUS(cool);
       WAIT();
     }
     if((processCount > 0) && (softBlockCount == 0)){ /* this is a deadlock */
