@@ -271,7 +271,7 @@ void passUpOrDie(state_PTR pointerToOldState, int exception){
   /* if the currentProcess has a support structure */
   if(currentProcess -> p_supportStruct != NULL){
     stateCopy(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
-    LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPointer, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
+    LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
   }
   else {
     terminateProcess(currentProcess);

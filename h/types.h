@@ -86,7 +86,7 @@ typedef struct pcb_t {
 	int			*p_semAdd;	/* Pointer to sema4 on which process blocked */
 
 	/* Support layer information */
-	struct support_t	*p_supportStruct;	/* Pointer to support struct */
+	support_t	*p_supportStruct;	/* Pointer to support struct */
 
 } pcb_t, *pcb_PTR;
 /*******************************************************************************/
@@ -98,13 +98,15 @@ typedef struct semd_t {
 	pcb_t		*s_procQ;	/* Tail pointer to a process queue */
 } semd_t;
 
-
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* p.64 pops */
 typedef struct context{
-    unsigned int c_stackPointer,
-		c_pc,
-		c_status;
+    unsigned int c_stackPtr,
+		c_status,
+		c_pc;
 } context_t;
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* p.36 pandos */
 typedef struct support_t
 {
