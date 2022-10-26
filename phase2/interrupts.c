@@ -67,7 +67,7 @@ void InterruptHandler() {
 /* Interrupt Handler specifically for PLT */
 void pltInterruptHandler(int stopTimer){
   if(currentProcess != NULL) {
-    currentProcess -> p_time = currentProcess -> p_time + (stopTimer - startTimeOfDayClock)
+    currentProcess -> p_time = currentProcess -> p_time + (stopTimer - startTimeOfDayClock);
     stateStoring((state_PTR)BIOSDATAPAGE, &(currentProcess -> p_s));
     insertProcQ(&readyQueue, currentProcess);
     scheduler();    
