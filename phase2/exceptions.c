@@ -31,7 +31,6 @@ void waitForIO(state_PTR currentProcess1);
 void getCPUTime(state_PTR currentProcess1);
 void waitForClock(state_PTR currentProcess1);
 void getSupport(state_PTR currentProcess1);
-
 void passUpOrDie(state_PTR currentProcess1, int exception);
 void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
@@ -287,6 +286,7 @@ void otherException(int cause){
     passUpOrDie((state_PTR) BIOSDATAPAGE, PGFAULTEXCEPT);
   }
 }
+
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
 * Copying the registers
 * Copying entryHI, cause, status, and pc (which are part of the state)
