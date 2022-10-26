@@ -18,12 +18,14 @@
 void scheduler() {
   cpu_t elapsedTime;
   pcb_PTR nextProcess;
+  
+  /* currentProcess is a pointer to a pcb */
   if(currentProcess == NULL){ /* if the currentProcess points to NULL, there is nothing executing so get a pcb from the readyQueue */
     nextProcess = removeProcQ(&readyQueue);
   } else { /* If currentProcess is not null, there is a process running, so check its time */
     STCK(elapsedTime); /* get how long the process has been executing */
     /* Adjust the CPU time used by the process by adding how much time has elapsed since the clock started added to the CPU time used by the processor so far (p_time) */
-    currentProcess -> p_time = (currentProcess -> p_time) + (elapsedTime - startTimeOfDayClock);
+    currentProcess -> p_time = currentProcess -> p_time + (elapsedTime - startTimeOfDayClock);
     LDIT(INTERVALTIMER);
     pcb_PTR nextProcess = removeProcQ(&readyQueue);
   }
@@ -60,17 +62,4 @@ void scheduler() {
 */
 void loadState(state_PTR process){
   LDST(process);
-}
-
-/* A Wait State is where the processor is not executing instructions, but “twid- dling its thumbs” waiting for a device interrupt to occur */
-void waitState(){
-  WAIT();
-}
-
-void haltState(){
-  HALT();
-}
-
-void panicState(){
-  PANIC();
 }
