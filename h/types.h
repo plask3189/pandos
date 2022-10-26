@@ -14,7 +14,7 @@ typedef signed int cpu_t;
 
 typedef unsigned int memaddr;
 
-/*******************************************************************************/
+
 /* Device Register */
 typedef struct {
 	unsigned int d_status;
@@ -28,7 +28,7 @@ typedef struct {
 #define t_transm_status		d_data0
 #define t_transm_command	d_data1
 
-/*******************************************************************************/
+
 /* Bus Register Area */
 typedef struct {
 	unsigned int rambase;
@@ -47,16 +47,16 @@ typedef struct {
 	device_t	devreg[DEVINTNUM * DEVPERINT];
 } devregarea_t;
 
-/*******************************************************************************/
+
 /* Pass Up Vector */
 typedef struct passupvector {
     unsigned int tlb_refll_handler;
     unsigned int tlb_refll_stackPtr;
-    unsigned int exception_handler;
+    unsigned int execption_handler;
     unsigned int exception_stackPtr;
 } passupvector_t;
 
-/*******************************************************************************/
+
 #define STATEREGNUM	31
 typedef struct state_t {
 	unsigned int	s_entryHI;
@@ -67,7 +67,6 @@ typedef struct state_t {
 
 } state_t, *state_PTR;
 
-/*******************************************************************************/
 /* Process control block type */
 typedef struct pcb_t {
 	/* Process queue fields */
@@ -89,7 +88,6 @@ typedef struct pcb_t {
 	struct support_t	*p_supportStruct;	/* Pointer to support struct */
 
 } pcb_t, *pcb_PTR;
-/*******************************************************************************/
 
 /* Semaphore descriptor type */
 typedef struct semd_t {
@@ -98,26 +96,23 @@ typedef struct semd_t {
 	pcb_t		*s_procQ;	/* Tail pointer to a process queue */
 } semd_t;
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* p.64 pops */
-typedef struct context{
-    unsigned int c_stackPtr,
-		c_status,
-		c_pc;
+/* Process Context */
+typedef struct context_t {
+	/* process context fields */
+	unsigned int 	c_stackPtr,	/* stack poiinter value */
+			c_status,	/* status reg value */
+			c_pc;		/* PC address */
 } context_t;
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* p.36 pandos */
-typedef struct support_t
-{
-    int sup_asid;
-    state_t sup_exceptState[2];
-    context_t sup_exceptContext[2];
-
+typedef struct support_t {
+	int		sup_asid;		/* Process ID (asid) */
+	state_t		sup_exceptState[2];	/* stored except states */
+	context_t	sup_exceptContext[2];	/* pass up contexts */
 } support_t;
 
-
-
+/* Exceptions related constants */
+#define PGFAULTEXCEPT	0
+#define GENERALEXCEPT	1
 
 
 /* Registry */
