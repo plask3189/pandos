@@ -34,7 +34,7 @@ void InterruptHandler() {
   
   /* If PLT Interrupt? */
   if ((CAUSE & PLTINT) != 0) {
-    pltInterruptHandler(stopTimer)
+    pltInterruptHandler(stopTimer);
   }
   /* If Interval Clock Interrupt? */
   if ((CAUSE & INTERVALINT) != 0) {
