@@ -35,7 +35,7 @@ void waitForClock(state_PTR currentProcess1);
 void getSupport(state_PTR currentProcess1);
 
 void passUpOrDie(state_PTR currentProcess1, int exception);
-void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
+void stateStoring(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 /*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
 void SYSCALLExceptionHandler(){
@@ -273,7 +273,7 @@ void getSupport(state_PTR pointerToOldState){
 void passUpOrDie(state_PTR pointerToOldState, int exception){
   /* if the currentProcess has a support structure */
   if(currentProcess -> p_supportStruct != NULL){
-    stateCopy(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
+    stateStoring(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
     LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
   }
   else {
