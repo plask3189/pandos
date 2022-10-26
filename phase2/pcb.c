@@ -32,7 +32,6 @@ void freePcb(pcb_t *p){
 	pcbFree_h = p;
 }
 
-
 /* Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element. pcbs get reused, so it is important that no previous value persist in a pcb's when it gets reallocated. */
 pcb_t *allocPcb(){
 	/* If the pcbFree list is occupied, remove an element from the pcbFree list. */
@@ -50,11 +49,11 @@ pcb_t *allocPcb(){
 		p_temp -> p_child = NULL;
 		p_temp -> p_sib = NULL;
 		p_temp -> p_sibPrev = NULL;
-		/* The below assignments are process status information */
+		/* The below assignments are process status information 
 		p_temp -> p_s = NULL;
 		p_temp -> p_time = 0;
 		p_temp -> p_semAdd =NULL;
-		/* The below assignments are support layer information */
+		 The below assignments are support layer information
 		p_temp -> p_supportStruct = NULL;
 		/*Then return a pointer to the removed element. */
 		return p_temp;
@@ -83,7 +82,6 @@ void initPcbs() {
 			freePcb(addressOfPcbArrayElement);
 		}
 }
-
 
 /*------------2.2: Process Queue Maintenance-----------------------------------*/
 /* This section contains queue manipulation methods. The queues that will be manipulated are double, circularly linked lists. */
