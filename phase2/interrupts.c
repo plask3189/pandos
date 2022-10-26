@@ -13,6 +13,7 @@
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
 #include "../h/interrupts.h"
+#include "../h/libumps.h"
 
 /* Inclusions from Initial.c */
 extern int processCount;
