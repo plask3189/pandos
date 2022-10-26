@@ -69,7 +69,7 @@ switch(syscallCodeNumber1234567or8) {
   }
   case TERMINATEPROCESS:{
     if(currentProcess != NULL){
-            terminateProc(currentProcess);
+            terminateProcess(currentProcess);
         }
     break;
   }
