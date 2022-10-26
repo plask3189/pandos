@@ -146,7 +146,7 @@ void deviceInterruptHandler(int lineNum) {
 
 
 /* Creation of a helper function to handle TERMINAL type interrupts, to be used in the deviceInterruptHandler */
-int terminalInterruptHandler(int sema4_d){
+int terminalInterruptHandler(int *sema4_d){
   unsigned int status;
   volatile devregarea_t *dReg;
   dReg = (devregarea_t *) RAMBASEADDR;
