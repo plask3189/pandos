@@ -14,6 +14,8 @@
 #include "../h/scheduler.h"
 #include "../h/libumps.h"
 
+extern cpu_t startTimeOfDayClock;
+
 
 void scheduler() {
   cpu_t elapsedTime;
