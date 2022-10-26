@@ -17,9 +17,11 @@
 
 void scheduler() {
   cpu_t elapsedTime;
+  pcb_PTR nextProcess;
+  
   /* currentProcess is a pointer to a pcb */
   if(currentProcess == NULL){ /* if the currentProcess points to NULL, there is nothing executing so get a pcb from the readyQueue */
-    pcb_PTR nextProcess = removeProcQ(&readyQueue);
+    nextProcess = removeProcQ(&readyQueue);
   } else { /* If currentProcess is not null, there is a process running, so check its time */
     STCK(elapsedTime); /* get how long the process has been executing */
     /* Adjust the CPU time used by the process by adding how much time has elapsed since the clock started added to the CPU time used by the processor so far (p_time) */
