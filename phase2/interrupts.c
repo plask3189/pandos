@@ -64,7 +64,7 @@ void InterruptHandler() {
 
 
 
-/* Interrupt Handler specifically for PLT */
+/* Interrupt Handler specifically for Processor Local Timer */
 void pltInterruptHandler(int stopTimer){
   if(currentProcess != NULL) {
     currentProcess -> p_time = currentProcess -> p_time + (stopTimer - startTimeOfDayClock);
@@ -100,6 +100,7 @@ void deviceInterruptHandler(int lineNum) {
   volatile devregarea_t *dReg;
   int devNum;
   int sema4_d;
+  pcb_PTR proc;
   
   dReg = (devregarea_t *) RAMBASEADDR;
   bitM = dReg -> interrupt_dev[lineNum - DISK];
@@ -134,6 +135,19 @@ void deviceInterruptHandler(int lineNum) {
   } else {
   	status = ((dReg -> devreg[sema4_d]).d_status);
   	(dReg -> devreg[sema4_d]).d_command = ACK;
+  }
+  
+  /* V Operation */
+  deviceSemaphores[sema4_d] = deviceSemaphores[sema4_d] + 1;
+  
+  /* Did we wait for I/O ? */
+  if (deviceSemaphores[sema4_d] <= 0) {
+  	proc = removeBlocked(&(deviceSemaphores[sema4_d]));
+  	if (proc != NULL) {
+  		proc -> p_s.s_v0 = status; /* Store the new status */
+  		insertProcQ(&readyQueue, proc); /* Move the process into the ReadyQueue */
+  		softBlockCount --; /* Decrement SoftBlockCount */
+  	}
   }
   
   /*Finally, call the scheduler if nothing is running */
