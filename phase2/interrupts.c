@@ -134,7 +134,7 @@ void deviceInterruptHandler(int lineNum) {
   }
   
   /*Finally, call the scheduler if nothing is running */
-  if(currentProc == NULL) {
+  if(currentProcess == NULL) {
     scheduler();
   } 
 }
