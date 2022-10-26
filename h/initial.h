@@ -11,4 +11,6 @@ extern int deviceSemaphores[NUMBEROFDEVICES];
 int *clockSemaphore;
 cpu_t startTimeOfDayClock;
 
+extern int main();
+
 #endif
