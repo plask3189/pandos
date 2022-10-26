@@ -128,9 +128,14 @@ void deviceInterruptHandler(int lineNum) {
   /* Set device semaphore */
   sema4_d = ((lineNum - DISK) * DEVPERINT) + devNum;
   
-  /* Terminal Interrupt Handler */
+ /* Terminal Interrupt Handler */
   if (lineNum == TERMINAL){
+    /* Confirmed a Terminal device, call the Terminal Interrupt Handler */
     status = terminalInterruptHandler(&sema4_d);
+  } 
+  else { /* If it is not a Terminal device */
+  	status = ((dReg -> devreg[sema4_d]).d_status);
+  	(dReg -> devreg[sema4_d]).d_command = ACK;
   }
   
   /*Finally, call the scheduler if nothing is running */
