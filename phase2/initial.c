@@ -116,6 +116,6 @@ void exceptionHandler(){
   }
   if(cause == 8) {
     /* For exception code 8 (SYSCALL), processing should be passed along to your Nucleus’s SYSCALL exception handler.  */
-    SYSCALLHandler();
+    SYSCALLExceptionHandler();
   }
 }
