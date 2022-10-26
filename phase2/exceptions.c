@@ -302,7 +302,7 @@ void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState){
     pointertoNewState -> s_pc = pointerToOldState -> s_pc;
     /* There are 31 total state registers (STATEREGNUM). For each register, copy the register*/
     while(i < STATEREGNUM){
-	    newStatePointer -> s_reg[i] = pointerToOldState -> s_reg[i];
+	    pointertoNewState -> s_reg[i] = pointerToOldState -> s_reg[i];
       i++;
     }
 }
