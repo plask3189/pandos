@@ -52,7 +52,7 @@ void InterruptHandler() {
   }
   
   /* If PRINTER Interrupt? */
-  if ((CAUSE & PRINTERINT) != 0) {
+  if ((CAUSE & PRNTINT) != 0) {
     deviceInterruptHandler(PRINTER);
   }
   
