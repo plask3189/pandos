@@ -37,7 +37,7 @@ HIDDEN void exceptionHandler();
 int main() {
   /* Initialization of the phase1 data structures */
   initPcbs();
-  initSemd();
+  initASL();
   processCount = 0;
   softBlockCount = 0;
   int newRamTop;
@@ -68,19 +68,21 @@ int main() {
     deviceSemaphores[i] = 0;
   }
   /***************************** Initiate a single process ***************************************/
-  pcb_PTR initialProcess = allocPcb();
+  pcb_PTR initialProcess;
+  initialProcess = allocPcb();
   if(initialProcess != NULL){  /* If there a process that was removed from the pcbFree list*/
-
+    /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
+    initialProcess  -> p_s.s_sp = (memaddr) newRamTop;
     /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
-    initialProcess -> p_s.s_pc = initialProcess->p_s.s_t9 = (memaddr) test;
+    initialProcess -> p_s.s_pc = (memaddr) test;
+    initialProcess->p_s.s_t9 = (memaddr) test;
     /* In const.h, STCK(T) takes an unsigned integer as its input parameter and populates it with the value of the low-order word of the TOD clock divided by the Time Scale" p.21 principles of operations */
     STCK(startTimeOfDayClock);
     /* LDIT(T) which loads the Interval Timer with the value T (unsigned int) multiplied by the Time Scale value. */
     LDIT(INTERVALTIMER);
     /* Set status of process */
-    initialProcess -> p_s.s_status = ALLOFF | IEON |IMON | TEBITON;
-    /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
-    initialProcess -> p_s.s_sp = RAMTOP;
+    initialProcess -> p_s.s_status = (ALLOFF | IEON |IMON | TEBITON);
+
     initialProcess -> p_time = 0;
     initialProcess -> p_semAdd = NULL;
     initialProcess -> p_supportStruct = NULL;

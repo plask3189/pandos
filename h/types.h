@@ -99,7 +99,7 @@ typedef struct semd_t {
 } semd_t;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* p.64 pops */
+/* p.36 pandos: "A PC/SP/Status combination is also referred to as a context." */
 typedef struct context{
     unsigned int c_stackPtr,
 		c_status,
