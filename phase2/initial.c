@@ -15,6 +15,7 @@
 #include "../h/scheduler.h"
 #include "../h/exceptions.h"
 #include "../h/interrupts.h"
+#include "../h/libumps.h"
 
 /* Initialization of all Nucleus maintained variables */
 int processCount;
