@@ -139,7 +139,7 @@ void createProcess(state_PTR pointerToOldState){
         child -> p_supportStruct = NULL;
       }
     }
-    currentProcess -> p_s.s_v0 = returnStatus;
+    currentProcess -> p_s.s_v0 = returnStatusCode;
     /* loadState is perfomed on a state saved in the BIOS. */
     loadState(pointerToOldState);
   }
