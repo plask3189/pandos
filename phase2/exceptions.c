@@ -181,8 +181,8 @@ void terminateProcess(pcb_PTR parentProcess){
       }
   freePcb(processToTerminate);
   scheduler();
+ }
 }
-
 /* * * * * * * * * * * * * * * * SYS3 * * * * * * * * * * * * * * * */
 void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
