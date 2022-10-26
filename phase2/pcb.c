@@ -55,7 +55,7 @@ pcb_t *allocPcb(){
 		p_temp -> p_semAdd =NULL;
 		 The below assignments are support layer information
 		p_temp -> p_supportStruct = NULL;
-		/*Then return a pointer to the removed element. */
+		Then return a pointer to the removed element. */
 		return p_temp;
   }
 	/* Return NULL if the pcbFree list is empty. */
