@@ -37,14 +37,12 @@ void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
 /*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
 void SYSCALLExceptionHandler(){
   int toCheckIfInUserMode;
-  /*----------- Initializing processSyscallState -------------*/
+  /*--------------------- Initializing processSyscallState -------------*/
   state_PTR processSyscallState;
-  /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
-  Now we have processSyscallState which points to the BIOSDATAPAGE  */
 	processSyscallState = (state_PTR) BIOSDATAPAGE;
   state_PTR t9processSyscallState = processSyscallState -> s_t9;
-  state_PTR pcOfProcessSyscallState = processSyscallState -> s_pc;
   t9processSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
+  state_PTR pcOfProcessSyscallState = processSyscallState -> s_pc;
   pcOfProcessSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
   /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
   /* this variable will hold the integer contained in a0 from the process that was interrupted. */
@@ -54,7 +52,6 @@ void SYSCALLExceptionHandler(){
   /* "The Nucleus will then perform some service on behalf of the process executing the SYSCALL instruction depending on the value found in a0." p. 25 pandos"*/
   /*------------- Check for user mode -----------*/
 /* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
-  /* int mode = (processSyscallState -> s_status... idk */
   toCheckIfInUserMode = (processSyscallState -> s_status & USERMODEOFF);
   if(toCheckIfInUserMode != ALLOFF){
     passUpOrDie(toCheckIfInUserMode, GENERALEXCEPT);
