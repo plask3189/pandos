@@ -52,7 +52,7 @@ typedef struct {
 typedef struct passupvector {
     unsigned int tlb_refll_handler;
     unsigned int tlb_refll_stackPtr;
-    unsigned int execption_handler;
+    unsigned int exception_handler;
     unsigned int exception_stackPtr;
 } passupvector_t;
 
@@ -67,6 +67,7 @@ typedef struct state_t {
 
 } state_t, *state_PTR;
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Process control block type */
 typedef struct pcb_t {
 	/* Process queue fields */
@@ -80,7 +81,7 @@ typedef struct pcb_t {
 				*p_sibPrev;	/* Pointer to previous sibling */
 
 	/* Process status information */
-	state_t**			p_s;		/* Processor state */
+	state_t			p_s;		/* Processor state */
 	cpu_t			p_time;		/* CPU time used by the processor */
 	int			*p_semAdd;	/* Pointer to sema4 on which process blocked */
 
