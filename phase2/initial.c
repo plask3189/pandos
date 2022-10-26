@@ -25,7 +25,6 @@ pcb_PTR currentProcess;
 /* initialization of an array of ints which are semaphores with a size of how many devices there are. */
 int deviceSemaphores[NUMBEROFDEVICES];
 
-/* The clockSemaphore holds to the address of the last element in the device Semaphores array. */
 int *clockSemaphore = &(deviceSemaphores[NUMBEROFDEVICES - 1]);
 /* the TOD clock counts up and is CPU time. */
 cpu_t startTimeOfDayClock;
@@ -46,7 +45,8 @@ int main() {
   /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
   readyQueue = mkEmptyProcQ();
   currentProcess = NULL;
-  /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
+  /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
+  /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
   devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
 
   /* add the RAM Base Physical Address Bus Register to the Installed RAM Size Bus Register. rambase and ramsize are in types.h of a bus register area structure. */
@@ -70,9 +70,8 @@ int main() {
   }
   /***************************** Initiate a single process ***************************************/
   pcb_PTR initialProcess;
-  /* initialProcess is the pointer to the pcb removed from the pcbFree List . This is done by calling allocPcb(). */
   initialProcess = allocPcb();
-  if(initialProcess != NULL){ /* If the removal of a pcb from the pcbFree List was successful*/
+  if(initialProcess != NULL){  /* If there a process that was removed from the pcbFree list*/
     /* The SP is set to RAMTOP (i.e. use the last RAM frame for its stack) */
     initialProcess  -> p_s.s_sp = (memaddr) newRamTop;
     /* Test is a supplied function/process that will help you debug your Nucleus.PC gets the address of a function. "For rather technical reasons, whenever one assigns a value to the PC one must also assign the same value to the general purpose register t9. (a.k.a. s t9 as defined in types.h." p.21 pandos" "PC set to the address of test" */
@@ -110,7 +109,7 @@ void exceptionHandler(){
   /* More to come */
   if(cause == 0){
     /* For exception code 0 (Interrupts), processing should be passed along to your Nucleus’s device interrupt handler. */
-    InterruptHandler(); /* WILL DEFINE LATER !!!!!!!!!! */
+    IOHANDLER(); /* WILL DEFINE LATER !!!!!!!!!! */
   }
   if(cause > 8) {
     otherException(cause);
