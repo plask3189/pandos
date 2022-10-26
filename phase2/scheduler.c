@@ -10,7 +10,7 @@
 #include "../h/const.h"
 #include "../h/pcb.h"
 #include "../h/asl.h"
-#include "../h/nucleusInitialization.h"
+#include "../h/initial.h"
 #include "../h/scheduler.h"
 #include "../h/libumps.h"
 
@@ -18,8 +18,6 @@
 void scheduler() {
   cpu_t elapsedTime;
   pcb_PTR nextProcess;
-
-  /* currentProcess is a pointer to a pcb */
   if(currentProcess == NULL){ /* if the currentProcess points to NULL, there is nothing executing so get a pcb from the readyQueue */
     nextProcess = removeProcQ(&readyQueue);
   } else { /* If currentProcess is not null, there is a process running, so check its time */
