@@ -5,13 +5,14 @@
  *
  */
 
- #include "../h/types.h"
- #include "../h/const.h"
- #include "../h/pcb.h"
- #include "../h/asl.h"
- #include "../h/scheduler.h"
- #include "../h/exceptions.h"
- #include "../h/initial.h"
+#include "../h/types.h"
+#include "../h/const.h"
+#include "../h/pcb.h"
+#include "../h/asl.h"
+#include "../h/scheduler.h"
+#include "../h/exceptions.h"
+#include "../h/initial.h"
+#include "../h/libumps.h"
 
 extern pcb_PTR currentProcess;
 extern pcb_PTR readyQueue;
@@ -135,7 +136,7 @@ void createProcess(state_PTR pointerToOldState){
         child -> p_supportStruct = NULL;
       }
     }
-    currentProcess -> p_s.s_v0 = returnStatus;
+    currentProcess -> p_s.s_v0 = returnStatusCode;
     /* loadState is perfomed on a state saved in the BIOS. */
     loadState(pointerToOldState);
   }
@@ -166,7 +167,7 @@ void terminateProcess(pcb_PTR parentProcess){
        /*---------------------- Process Blocked on Semaphore ----------------------*/
       /* outBlocked removes the pcb pointed to by processToTerminate from the process queue associated with processToTerminate's semaphore. If pcb pointed to by processToTerminate is in the process queue associated with processToTerminate’s semaphore this is NOT NULL;*/
       if((outBlocked(processToTerminate)) != NULL){
-          if(((processToTerminate -> p_semAdd) >= &deviceSemaphores[0]) && ((processToTerminate -> p_semAdd) <= &deviceSemaphores[DEVNUM]){
+          if(((processToTerminate -> p_semAdd) >= &deviceSemaphores[0]) && ((processToTerminate -> p_semAdd) <= &deviceSemaphores[DEVNUM])){
               softBlockCount--;
               /* "If a terminated process is blocked on a device semaphore, the semaphore should NOT be adjusted. When the interrupt eventually occurs the semaphore will get V’ed (and hence incremented) by the interrupt handler." p.39 pandos */
           } else {
@@ -177,8 +178,8 @@ void terminateProcess(pcb_PTR parentProcess){
       }
   freePcb(processToTerminate);
   scheduler();
+ }
 }
-
 /* * * * * * * * * * * * * * * * SYS3 * * * * * * * * * * * * * * * */
 void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
@@ -298,7 +299,7 @@ void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState){
     pointertoNewState -> s_pc = pointerToOldState -> s_pc;
     /* There are 31 total state registers (STATEREGNUM). For each register, copy the register*/
     while(i < STATEREGNUM){
-	    newStatePointer -> s_reg[i] = pointerToOldState -> s_reg[i];
+	    pointertoNewState -> s_reg[i] = pointerToOldState -> s_reg[i];
       i++;
     }
 }

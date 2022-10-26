@@ -13,6 +13,7 @@
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
 #include "../h/interrupts.h"
+#include "../h/libumps.h"
 
 /* Inclusions from Initial.c */
 extern int processCount;
@@ -33,7 +34,7 @@ void InterruptHandler() {
   
   /* If PLT Interrupt? */
   if ((CAUSE & PLTINT) != 0) {
-    pltInterruptHandler(stopTimer)
+    pltInterruptHandler(stopTimer);
   }
   /* If Interval Clock Interrupt? */
   if ((CAUSE & INTERVALINT) != 0) {
@@ -51,7 +52,7 @@ void InterruptHandler() {
   }
   
   /* If PRINTER Interrupt? */
-  if ((CAUSE & PRINTERINT) != 0) {
+  if ((CAUSE & PRNTINT) != 0) {
     deviceInterruptHandler(PRINTER);
   }
   
@@ -66,7 +67,7 @@ void InterruptHandler() {
 /* Interrupt Handler specifically for PLT */
 void pltInterruptHandler(int stopTimer){
   if(currentProcess != NULL) {
-    currentProcess -> p_time = currentProcess -> p_time + (stopTimer - startTimeOfDayClock)
+    currentProcess -> p_time = currentProcess -> p_time + (stopTimer - startTimeOfDayClock);
     stateStoring((state_PTR)BIOSDATAPAGE, &(currentProcess -> p_s));
     insertProcQ(&readyQueue, currentProcess);
     scheduler();    
@@ -127,20 +128,25 @@ void deviceInterruptHandler(int lineNum) {
   /* Set device semaphore */
   sema4_d = ((lineNum - DISK) * DEVPERINT) + devNum;
   
-  /* Terminal Interrupt Handler */
+ /* Terminal Interrupt Handler */
   if (lineNum == TERMINAL){
+    /* Confirmed a Terminal device, call the Terminal Interrupt Handler */
     status = terminalInterruptHandler(&sema4_d);
+  } 
+  else { /* If it is not a Terminal device */
+  	status = ((dReg -> devreg[sema4_d]).d_status);
+  	(dReg -> devreg[sema4_d]).d_command = ACK;
   }
   
   /*Finally, call the scheduler if nothing is running */
-  if(currentProc == NULL) {
+  if(currentProcess == NULL) {
     scheduler();
   } 
 }
 
 
 /* Creation of a helper function to handle TERMINAL type interrupts, to be used in the deviceInterruptHandler */
-int terminalInterruptHandler(int sema4_d){
+int terminalInterruptHandler(int *sema4_d){
   unsigned int status;
   volatile devregarea_t *dReg;
   dReg = (devregarea_t *) RAMBASEADDR;
@@ -160,7 +166,7 @@ int terminalInterruptHandler(int sema4_d){
   
 /* Function to help with storing the processor state */
 void stateStoring(state_t *stateObtained, state_t *stateStored) {
-  int i:
+  int i;
   for (i = 0; i < STATEREGNUM; i++) {
     stateStored -> s_reg[i] = stateObtained -> s_reg[i];
   }
