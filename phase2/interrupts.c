@@ -137,6 +137,7 @@ int terminalInterruptHandler(int *sema4_d){
   return (status);
 }
 
+/* I already did this in exceptions.c it's called copyState(). */
 /* Function to help with storing the processor state */
 void stateStoring(state_t *stateObtained, state_t *stateStored) {
   int i;

@@ -12,9 +12,7 @@
  #include "../h/scheduler.h"
  #include "../h/exceptions.h"
  #include "../h/initial.h"
- #include "../h/interrupts.h"
- #include "../h/libumps.h"
- 
+
 
 extern pcb_PTR currentProcess;
 extern pcb_PTR readyQueue;
@@ -35,7 +33,8 @@ void waitForClock(state_PTR currentProcess1);
 void getSupport(state_PTR currentProcess1);
 
 void passUpOrDie(state_PTR currentProcess1, int exception);
-void stateStoring(state_PTR pointerToOldState, state_PTR pointertoNewState);
+void otherException();
+void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 /*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
 void SYSCALLExceptionHandler(){
@@ -45,10 +44,8 @@ void SYSCALLExceptionHandler(){
   /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
   Now we have processSyscallState which points to the BIOSDATAPAGE  */
 	processSyscallState = (state_PTR) BIOSDATAPAGE;
-  state_PTR t9processSyscallState = processSyscallState -> s_t9;
-  state_PTR pcOfProcessSyscallState = processSyscallState -> s_pc;
-  t9processSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
-  pcOfProcessSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
+  processSyscallState -> s_t9 = processSyscallState -> s_pc = processSyscallState -> s_pc + FOURTOINCREMENTTHEPC;
+
   /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
   /* this variable will hold the integer contained in a0 from the process that was interrupted. */
   int syscallCodeNumber1234567or8;
@@ -60,7 +57,7 @@ void SYSCALLExceptionHandler(){
   /* int mode = (processSyscallState -> s_status... idk */
   toCheckIfInUserMode = (processSyscallState -> s_status & USERMODEOFF);
   if(toCheckIfInUserMode != ALLOFF){
-    passUpOrDie(toCheckIfInUserMode, GENERALEXCEPT);
+    passUpOrDie(processSyscallState, GENERALEXCEPT);
   }
 switch(syscallCodeNumber1234567or8) {
   case CREATEPROCESS:{
@@ -136,9 +133,9 @@ void createProcess(state_PTR pointerToOldState){
       copyState((state_PTR) (pointerToOldState -> s_a1), &(child -> p_s));
       /* a2 holds pointer to a support structure */
       if((pointerToOldState -> s_a2 == 0) || (pointerToOldState -> s_a2 == NULL)) {
-        child -> p_supportStruct = (support_t*) pointerToOldState -> s_a2;
-      } else {
         child -> p_supportStruct = NULL;
+      } else {
+        child -> p_supportStruct = (support_t*) pointerToOldState -> s_a2;
       }
     }
     currentProcess -> p_s.s_v0 = returnStatusCode;
@@ -185,6 +182,7 @@ void terminateProcess(pcb_PTR parentProcess){
   scheduler();
  }
 }
+
 /* * * * * * * * * * * * * * * * SYS3 * * * * * * * * * * * * * * * */
 void passeren(state_PTR pointerToOldState){
   /* The semaphore's physical address to be P'ed on is in a1 */
@@ -193,7 +191,7 @@ void passeren(state_PTR pointerToOldState){
   (*semAdd)--;
    /*block the process on the ASL if semaphore less than zero.*/
    if((*semAdd) < 0){
-     currentProcess -> p_s = *pointerToOldState;
+     copyState(pointerToOldState, &(currentProcess -> p_s));
      /* The process transitions from running to blocked */
      insertBlocked(semAdd, currentProcess);
      scheduler();
