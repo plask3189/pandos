@@ -22,44 +22,6 @@ extern pcb_PTR currentProcess;
 extern int deviceSemaphores[NUMBEROFDEVICES];
 extern cpu_t startTimeOfDayClock;
 
-void interruptHandler() {
-  /* Variable and STCK creation */
-  cpu_t stopTimer;
-  cpu_t timeRemaining;
-
-  STCK (stopTimer);
-  timeRemaining = getTIMER();
-  unsigned int CAUSE = ((state_PTR)BIOSDATAPAGE) -> s_cause;
-
-  /* If PLT Interrupt? */
-  if ((CAUSE & PLTINT) != 0) {
-    pltInterruptHandler(stopTimer);
-  }
-  /* If Interval Clock Interrupt? */
-  if ((CAUSE & INTERVALINT) != 0) {
-    intervalInterruptHandler();
-  }
-
-  /* If DISK Interrupt? */
-  if ((CAUSE & DISKINT) != 0) {
-    deviceInterruptHandler(DISK);
-  }
-
-  /* If FLASH Interrupt? */
-  if ((CAUSE & FLASHINT) != 0) {
-    deviceInterruptHandler(FLASH);
-  }
-
-  /* If PRINTER Interrupt? */
-  if ((CAUSE & PRNTINT) != 0) {
-    deviceInterruptHandler(PRINTER);
-  }
-
-  /* If Terminal Interrupt? */
-  if ((CAUSE & TERMINT) != 0) {
-    deviceInterruptHandler(TERMINAL);
-  }
-}
 
 
 
@@ -187,4 +149,43 @@ void stateStoring(state_t *stateObtained, state_t *stateStored) {
   stateStored -> s_cause = stateObtained -> s_cause;
   stateStored -> s_status = stateObtained -> s_status;
   stateStored -> s_pc = stateObtained -> s_pc;
+}
+
+void interruptHandler() {
+  /* Variable and STCK creation */
+  cpu_t stopTimer;
+  cpu_t timeRemaining;
+
+  STCK (stopTimer);
+  timeRemaining = getTIMER();
+  unsigned int CAUSE = ((state_PTR)BIOSDATAPAGE) -> s_cause;
+
+  /* If PLT Interrupt? */
+  if ((CAUSE & PLTINT) != 0) {
+    pltInterruptHandler(stopTimer);
+  }
+  /* If Interval Clock Interrupt? */
+  if ((CAUSE & INTERVALINT) != 0) {
+    intervalInterruptHandler();
+  }
+
+  /* If DISK Interrupt? */
+  if ((CAUSE & DISKINT) != 0) {
+    deviceInterruptHandler(DISK);
+  }
+
+  /* If FLASH Interrupt? */
+  if ((CAUSE & FLASHINT) != 0) {
+    deviceInterruptHandler(FLASH);
+  }
+
+  /* If PRINTER Interrupt? */
+  if ((CAUSE & PRNTINT) != 0) {
+    deviceInterruptHandler(PRINTER);
+  }
+
+  /* If Terminal Interrupt? */
+  if ((CAUSE & TERMINT) != 0) {
+    deviceInterruptHandler(TERMINAL);
+  }
 }
