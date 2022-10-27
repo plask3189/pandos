@@ -10,12 +10,10 @@
 #include "../h/const.h"
 #include "../h/pcb.h"
 #include "../h/asl.h"
-
-#include "../h/initial.h"
 #include "../h/scheduler.h"
 #include "../h/exceptions.h"
 #include "../h/interrupts.h"
-#include "../h/libumps.h"
+
 
 /* Initialization of all Nucleus maintained variables */
 int processCount;
@@ -39,12 +37,9 @@ int main() {
   /* Initialization of the phase1 data structures */
   initPcbs();
   initASL();
-  processCount = 0;
-  softBlockCount = 0;
+
   int newRamTop;
-  /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
-  readyQueue = mkEmptyProcQ();
-  currentProcess = NULL;
+
   /* RAMTOP is calculated by adding the RAM base physical address (fixed at 0x2000.0000) to the installed RAM size. */
   /* RAMBASEADDR is the RAM Base Physical Address Bus Register which is located at 0x1000.0000. It is set to 0x2000.0000. Create a pointer called ramPointer that points to the address held by RAMBASEADDR which is of TYPE devregarea_t*/
   devregarea_t* ramPointer = (devregarea_t*) RAMBASEADDR;
@@ -62,7 +57,11 @@ int main() {
   nucleusPointer->exception_handler = (memaddr) exceptionHandler;
   /* Set the Stack pointer for the Nucleus exception handler to the top of the Nucleus stack page: 0x2000.1000. */
   nucleusPointer->exception_stackPtr = NUCLEUSSTACKPAGE;
-
+  softBlockCount = 0;
+  processCount = 0;
+  /* Remember that mkEmptyProcQ is used to initialize a variable to be tail pointer to a process queue. Return a pointer to the tail of an empty process queue; i.e. NULL. */
+  readyQueue = mkEmptyProcQ();
+  currentProcess = NULL;
   /* Since the device semaphores will be used for synchronization, as opposed to mutual exclusion, they should all be initialized to zero. */
   int i;
   for(i = 0; i < NUMBEROFDEVICES; i++){

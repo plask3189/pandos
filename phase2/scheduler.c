@@ -12,15 +12,11 @@
 #include "../h/asl.h"
 #include "../h/initial.h"
 #include "../h/scheduler.h"
-#include "../h/libumps.h"
-
-extern cpu_t startTimeOfDayClock;
-
 
 void scheduler() {
   cpu_t elapsedTime;
   pcb_PTR nextProcess;
-  
+
   /* currentProcess is a pointer to a pcb */
   if(currentProcess == NULL){ /* if the currentProcess points to NULL, there is nothing executing so get a pcb from the readyQueue */
     nextProcess = removeProcQ(&readyQueue);
