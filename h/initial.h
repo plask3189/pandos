@@ -3,6 +3,9 @@
 #ifndef INITIAL
 #define INITIAL
 
+#include "../h/types.h"
+#include "../h/const.h"
+
 extern int processCount;
 extern int softBlockCount;
 extern pcb_PTR currentProcess;
