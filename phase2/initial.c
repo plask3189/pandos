@@ -109,7 +109,7 @@ void exceptionHandler(){
   /* More to come */
   if(cause == 0){
     /* For exception code 0 (Interrupts), processing should be passed along to your Nucleus’s device interrupt handler. */
-    InterruptHandler();
+    interruptHandler();
   }
   if(cause > 8) {
     otherException(cause);
