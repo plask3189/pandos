@@ -28,7 +28,7 @@
 #define MAXPROC       20        /* Maximum concurrent processes */
 #define MAXINT        0xFFFFFFFF
 
-#define NULL 			    ((void *)0xFFFFFFFF)
+#define NULL		((void *)0xFFFFFFFF)
 
 
 /* Device constants */

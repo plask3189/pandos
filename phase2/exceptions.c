@@ -5,14 +5,16 @@
  *
  */
 
-#include "../h/types.h"
-#include "../h/const.h"
-#include "../h/pcb.h"
-#include "../h/asl.h"
-#include "../h/scheduler.h"
-#include "../h/exceptions.h"
-#include "../h/initial.h"
-#include "../h/libumps.h"
+ #include "../h/types.h"
+ #include "../h/const.h"
+ #include "../h/pcb.h"
+ #include "../h/asl.h"
+ #include "../h/scheduler.h"
+ #include "../h/exceptions.h"
+ #include "../h/initial.h"
+ #include "../h/interrupts.h"
+ #include "../h/libumps.h"
+ 
 
 extern pcb_PTR currentProcess;
 extern pcb_PTR readyQueue;
@@ -31,18 +33,21 @@ void waitForIO(state_PTR currentProcess1);
 void getCPUTime(state_PTR currentProcess1);
 void waitForClock(state_PTR currentProcess1);
 void getSupport(state_PTR currentProcess1);
+
 void passUpOrDie(state_PTR currentProcess1, int exception);
-void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
+void stateStoring(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 /*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
 void SYSCALLExceptionHandler(){
   int toCheckIfInUserMode;
-  /*--------------------- Initializing processSyscallState -------------*/
+  /*----------- Initializing processSyscallState -------------*/
   state_PTR processSyscallState;
+  /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
+  Now we have processSyscallState which points to the BIOSDATAPAGE  */
 	processSyscallState = (state_PTR) BIOSDATAPAGE;
   state_PTR t9processSyscallState = processSyscallState -> s_t9;
-  t9processSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
   state_PTR pcOfProcessSyscallState = processSyscallState -> s_pc;
+  t9processSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
   pcOfProcessSyscallState = (processSyscallState -> s_pc + FOURTOINCREMENTTHEPC);
   /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
   /* this variable will hold the integer contained in a0 from the process that was interrupted. */
@@ -52,6 +57,7 @@ void SYSCALLExceptionHandler(){
   /* "The Nucleus will then perform some service on behalf of the process executing the SYSCALL instruction depending on the value found in a0." p. 25 pandos"*/
   /*------------- Check for user mode -----------*/
 /* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
+  /* int mode = (processSyscallState -> s_status... idk */
   toCheckIfInUserMode = (processSyscallState -> s_status & USERMODEOFF);
   if(toCheckIfInUserMode != ALLOFF){
     passUpOrDie(toCheckIfInUserMode, GENERALEXCEPT);
@@ -63,7 +69,7 @@ switch(syscallCodeNumber1234567or8) {
   }
   case TERMINATEPROCESS:{
     if(currentProcess != NULL){
-            terminateProc(currentProcess);
+            terminateProcess(currentProcess);
         }
     break;
   }
@@ -166,7 +172,7 @@ void terminateProcess(pcb_PTR parentProcess){
        /*---------------------- Process Blocked on Semaphore ----------------------*/
       /* outBlocked removes the pcb pointed to by processToTerminate from the process queue associated with processToTerminate's semaphore. If pcb pointed to by processToTerminate is in the process queue associated with processToTerminate’s semaphore this is NOT NULL;*/
       if((outBlocked(processToTerminate)) != NULL){
-          if(((processToTerminate -> p_semAdd) >= &deviceSemaphores[0]) && ((processToTerminate -> p_semAdd) <= &deviceSemaphores[DEVNUM])){
+          if(((processToTerminate -> p_semAdd) >= &deviceSemaphores[0]) && ((processToTerminate -> p_semAdd) <= &deviceSemaphores[NUMBEROFDEVICES])){
               softBlockCount--;
               /* "If a terminated process is blocked on a device semaphore, the semaphore should NOT be adjusted. When the interrupt eventually occurs the semaphore will get V’ed (and hence incremented) by the interrupt handler." p.39 pandos */
           } else {
@@ -267,7 +273,7 @@ void getSupport(state_PTR pointerToOldState){
 void passUpOrDie(state_PTR pointerToOldState, int exception){
   /* if the currentProcess has a support structure */
   if(currentProcess -> p_supportStruct != NULL){
-    stateCopy(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
+    stateStoring(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
     LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
   }
   else {
@@ -286,7 +292,6 @@ void otherException(int cause){
     passUpOrDie((state_PTR) BIOSDATAPAGE, PGFAULTEXCEPT);
   }
 }
-
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
 * Copying the registers
 * Copying entryHI, cause, status, and pc (which are part of the state)

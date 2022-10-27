@@ -2,6 +2,9 @@
 #define EXCEPTIONS
 
 #include "../h/types.h"
-extern void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
+#include "../h/const.h"
+
+extern void SYSCALLExceptionHandler();
+extern void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 #endif
