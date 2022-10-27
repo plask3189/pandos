@@ -14,7 +14,6 @@
 #include "../h/scheduler.h"
 #include "../h/interrupts.h"
 #include "../h/libumps.h"
-
 /* Inclusions from Initial.c */
 extern int processCount;
 extern int softBlockCount;
@@ -23,15 +22,15 @@ extern pcb_PTR currentProcess;
 extern int deviceSemaphores[NUMBEROFDEVICES];
 extern cpu_t startTimeOfDayClock;
 
-void InterruptHandler() {
+void interruptHandler() {
   /* Variable and STCK creation */
   cpu_t stopTimer;
   cpu_t timeRemaining;
-  
+
   STCK (stopTimer);
   timeRemaining = getTIMER();
   unsigned int CAUSE = ((state_PTR)BIOSDATAPAGE) -> s_cause;
-  
+
   /* If PLT Interrupt? */
   if ((CAUSE & PLTINT) != 0) {
     pltInterruptHandler(stopTimer);
@@ -40,22 +39,22 @@ void InterruptHandler() {
   if ((CAUSE & INTERVALINT) != 0) {
     intervalInterruptHandler();
   }
-  
+
   /* If DISK Interrupt? */
   if ((CAUSE & DISKINT) != 0) {
     deviceInterruptHandler(DISK);
   }
-  
+
   /* If FLASH Interrupt? */
   if ((CAUSE & FLASHINT) != 0) {
     deviceInterruptHandler(FLASH);
   }
-  
+
   /* If PRINTER Interrupt? */
   if ((CAUSE & PRNTINT) != 0) {
     deviceInterruptHandler(PRINTER);
   }
-  
+
   /* If Terminal Interrupt? */
   if ((CAUSE & TERMINT) != 0) {
     deviceInterruptHandler(TERMINAL);
@@ -67,10 +66,10 @@ void InterruptHandler() {
 /* Interrupt Handler specifically for PLT */
 void pltInterruptHandler(int stopTimer){
   if(currentProcess != NULL) {
-    currentProcess -> p_time = currentProcess -> p_time + (stopTimer - startTimeOfDayClock);
+    currentProcess -> p_time = currentProcess -> p_time + (stopTimer -  startTimeOfDayClock);
     stateStoring((state_PTR)BIOSDATAPAGE, &(currentProcess -> p_s));
     insertProcQ(&readyQueue, currentProcess);
-    scheduler();    
+    scheduler();
     }
     else {
       PANIC();
@@ -87,7 +86,7 @@ void intervalInterruptHandler() {
     temp = removeBlocked(&deviceSemaphores[NUMBEROFDEVICES - 1]);
   }
   deviceSemaphores[NUMBEROFDEVICES - 1] = 0;
-  
+
   if(currentProcess == NULL) {
     scheduler();
   }
@@ -100,10 +99,10 @@ void deviceInterruptHandler(int lineNum) {
   volatile devregarea_t *dReg;
   int devNum;
   int sema4_d;
-  
+
   dReg = (devregarea_t *) RAMBASEADDR;
   bitM = dReg -> interrupt_dev[lineNum - DISK];
-  
+
   /* Which device is causing the interrupt? */
   if ((bitM & DEVREG0) !=0) {
       devNum = 0;
@@ -123,25 +122,25 @@ void deviceInterruptHandler(int lineNum) {
       devNum = 7;
   } else {
     PANIC();
-  }  
-  
+  }
+
   /* Set device semaphore */
   sema4_d = ((lineNum - DISK) * DEVPERINT) + devNum;
-  
+
  /* Terminal Interrupt Handler */
   if (lineNum == TERMINAL){
     /* Confirmed a Terminal device, call the Terminal Interrupt Handler */
     status = terminalInterruptHandler(&sema4_d);
-  } 
+  }
   else { /* If it is not a Terminal device */
   	status = ((dReg -> devreg[sema4_d]).d_status);
   	(dReg -> devreg[sema4_d]).d_command = ACK;
   }
-  
+
   /*Finally, call the scheduler if nothing is running */
   if(currentProcess == NULL) {
     scheduler();
-  } 
+  }
 }
 
 
@@ -150,12 +149,12 @@ int terminalInterruptHandler(int *sema4_d){
   unsigned int status;
   volatile devregarea_t *dReg;
   dReg = (devregarea_t *) RAMBASEADDR;
-  
+
   /* Priority is being given to Writing over Reading in the Terminal */
   if((dReg -> devreg[(*sema4_d)].t_transm_status & SHIFT) != READY) {
     status = dReg -> devreg[(*sema4_d)].t_transm_status;
     dReg -> devreg[(*sema4_d)].t_transm_command = ACK;
-  
+
   } else {
     status = dReg -> devreg[(*sema4_d)].t_recv_status;
     dReg -> devreg[(*sema4_d)].t_recv_command = ACK;
@@ -163,19 +162,17 @@ int terminalInterruptHandler(int *sema4_d){
   }
   return (status);
 }
-  
+
 /* Function to help with storing the processor state */
 void stateStoring(state_t *stateObtained, state_t *stateStored) {
   int i;
   for (i = 0; i < STATEREGNUM; i++) {
     stateStored -> s_reg[i] = stateObtained -> s_reg[i];
   }
-  
+
   /* Begin shifting the old states to the new states */
   stateStored -> s_entryHI = stateObtained -> s_entryHI;
   stateStored -> s_cause = stateObtained -> s_cause;
   stateStored -> s_status = stateObtained -> s_status;
   stateStored -> s_pc = stateObtained -> s_pc;
 }
-  
-
