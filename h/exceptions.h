@@ -5,6 +5,6 @@
 #include "../h/const.h"
 
 extern void SYSCALLExceptionHandler();
-extern void stateCopy(state_PTR pointerToOldState, state_PTR pointertoNewState);
+extern void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
 #endif
