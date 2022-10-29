@@ -44,7 +44,7 @@ void intervalInterruptHandler() {
   pcb_PTR temp = removeBlocked(&deviceSemaphores[NUMBEROFDEVICES - 1]);
   while(temp != NULL) {
     insertProcQ(&readyQueue, temp);
-    softBlockCount++;
+    softBlockCount--;
     temp = removeBlocked(&deviceSemaphores[NUMBEROFDEVICES - 1]);
   }
   deviceSemaphores[NUMBEROFDEVICES - 1] = 0;
