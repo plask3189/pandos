@@ -25,7 +25,7 @@ HIDDEN pcb_PTR pcbFree_h; /* declaration for private global variable that points
 /*------------2.1: The Allocation and Deallocation of pcbs--------------------
 
 * freePcb() pushes a node pointed to by p onto the pcbFree list stack. */
-void freePcb(pcb_t *p){
+void freePcb(pcb_PTR p){
 	/* Load the address of the current head into the next of the new node which is being pointed to by p */
 	p -> p_next = pcbFree_h;
 	/* Set the address of the new node to the address that the head holds. Now the head points to the new node that is on top of the stack holding the free pcbs. */
