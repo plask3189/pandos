@@ -5,13 +5,15 @@
  *
  */
 
- #include "../h/types.h"
- #include "../h/const.h"
- #include "../h/pcb.h"
- #include "../h/asl.h"
- #include "../h/scheduler.h"
- #include "../h/exceptions.h"
- #include "../h/initial.h"
+#include "../h/types.h"
+#include "../h/const.h"
+#include "../h/pcb.h"
+#include "../h/asl.h"
+#include "../h/initial.h"
+#include "../h/scheduler.h"
+#include "../h/interrupts.h"
+#include "../h/exceptions.h"
+#include "../h/libumps.h"
 
 
 extern pcb_PTR currentProcess;
@@ -32,7 +34,7 @@ void getCPUTime(state_PTR currentProcess1);
 void waitForClock(state_PTR currentProcess1);
 void getSupport(state_PTR currentProcess1);
 
-void passUpOrDie(state_PTR currentProcess1, int exception);
+void passUpOrDie(int exception);
 void otherException();
 void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState);
 
@@ -43,8 +45,8 @@ void SYSCALLExceptionHandler(){
   state_PTR processSyscallState;
   /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
   Now we have processSyscallState which points to the BIOSDATAPAGE  */
-	processSyscallState = (state_PTR) BIOSDATAPAGE;
-  processSyscallState -> s_t9 = processSyscallState -> s_pc = processSyscallState -> s_pc + FOURTOINCREMENTTHEPC;
+  processSyscallState = (state_PTR) BIOSDATAPAGE;
+  processSyscallState -> s_pc = processSyscallState -> s_pc + FOURTOINCREMENTTHEPC;
 
   /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
   /* this variable will hold the integer contained in a0 from the process that was interrupted. */
@@ -53,11 +55,11 @@ void SYSCALLExceptionHandler(){
 	syscallCodeNumber1234567or8 = processSyscallState -> s_a0;
   /* "The Nucleus will then perform some service on behalf of the process executing the SYSCALL instruction depending on the value found in a0." p. 25 pandos"*/
   /*------------- Check for user mode -----------*/
-/* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
+  /* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
   /* int mode = (processSyscallState -> s_status... idk */
   toCheckIfInUserMode = (processSyscallState -> s_status & USERMODEOFF);
   if(toCheckIfInUserMode != ALLOFF){
-    passUpOrDie(processSyscallState, GENERALEXCEPT);
+    passUpOrDie(GENERALEXCEPT);
   }
 switch(syscallCodeNumber1234567or8) {
   case CREATEPROCESS:{
@@ -95,7 +97,7 @@ switch(syscallCodeNumber1234567or8) {
     break;
   }
   default:{
-     passUpOrDie(processSyscallState, GENERALEXCEPT);
+     passUpOrDie(GENERALEXCEPT);
      break;
    }
  }
@@ -116,7 +118,7 @@ void createProcess(state_PTR pointerToOldState){
   int returnStatusCode = -1;
   /* If the child pointer points to NULL, a new process cannot be allocated. */
   if(child == NULL) {
-    returnStatusCode = -1;
+    returnStatusCode = 0;
     /* Puts -1 into the process' v0. */
     currentProcess -> p_s.s_v0 = returnStatusCode;
     loadState(pointerToOldState);
@@ -124,9 +126,9 @@ void createProcess(state_PTR pointerToOldState){
   /* If a new process can be allocated */
   else {
     if(child != NULL){
-      processCount++;
+      processCount ++;
       /* initialize the process queue fields */
-      insertProcQ(&(readyQueue), child);
+      insertProcQ(&readyQueue, child);
       /* initialize the process tree fields */
       insertChild(currentProcess, child);
       /* copy the value that  the child's state pointer holds. This value is actually a pointer to a state. Copy this state into the oldState's a1, pointed to by pointerToOldState */
@@ -145,12 +147,11 @@ void createProcess(state_PTR pointerToOldState){
 }
 /* * * * * * * * * * * * * * * * SYS2 * * * * * * * * * * * * * * * * * * * * *
 This causes the executing process to cease to exist. All progeny of this process are terminated as well. "Processes (i.e. pcb’s) can’t hide. A pcb is either the Current Process (“run- ning”), sitting on the Ready Queue (“ready”), blocked on a device semaphore (“blocked”), or blocked on a non-device semaphore (“blocked”)." p.39 pandos */
-void terminateProcess(pcb_PTR parentProcess){
-  processCount--;
-  pcb_PTR processToTerminate = parentProcess;
+void terminateProcess(pcb_PTR processToTerminate){
+ processCount --;
   /* -------------------- Process Tree Adjustments ----------------------------*/
   /* emptyChild() asks if the pcb pointed to by p has children. If there are progeny, (aka emptyChild() is false (0), remove them. */
-  while(emptyChild(processToTerminate) == 0){
+  while(!emptyChild(processToTerminate)){
     terminateProcess(removeChild(processToTerminate));
   }
   /* if the current process is the one we want to remove. */
@@ -268,26 +269,26 @@ void getSupport(state_PTR pointerToOldState){
 }
 
 /* * * * * * * * * * * * * *  * * * * Pass up or Die * * * * * * * * * * * * * * * * * */
-void passUpOrDie(state_PTR pointerToOldState, int exception){
+void passUpOrDie(int exception){
   /* if the currentProcess has a support structure */
   if(currentProcess -> p_supportStruct != NULL){
-    stateStoring(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
-    LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
+    copyState((state_PTR)BIOSDATAPAGE, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
+    LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, 
+    	  currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, 
+    	  currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
   }
-  else {
+ 
     terminateProcess(currentProcess);
-    currentProcess = NULL;
     scheduler();
-  }
 }
 
 
 /* * * * * * * * * * * * * * * * Support methods * * * * * * * * * * * * * * * */
 void otherException(int cause){
   if(cause >=4 ){
-    passUpOrDie((state_PTR) BIOSDATAPAGE, GENERALEXCEPT);
+    passUpOrDie(GENERALEXCEPT);
   } else {
-    passUpOrDie((state_PTR) BIOSDATAPAGE, PGFAULTEXCEPT);
+    passUpOrDie(PGFAULTEXCEPT);
   }
 }
 /* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
