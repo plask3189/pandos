@@ -12,6 +12,15 @@
 #include "../h/asl.h"
 #include "../h/initial.h"
 #include "../h/scheduler.h"
+#include "../h/interrupts.h"
+#include "../h/exceptions.h"
+#include "../h/libumps.h"
+
+extern cpu_t startTimeOfDayClock;
+extern int processCount;
+extern int softBlockCount;
+extern pcb_PTR currentProcess;
+extern pcb_PTR readyQueue;
 
 void scheduler() {
   cpu_t elapsedTime;
@@ -29,11 +38,8 @@ void scheduler() {
   }
   if(nextProcess != NULL){
     currentProcess = nextProcess;
-    STCK(startTimeOfDayClock);
-    /* setTIMER is a control register write command. p. 60 in pops. The timer is set to a quantum which is 5ms. */
-    setTIMER(QUANTUM);
-    /* get the process state of the current process */
-    loadState(&(currentProcess -> p_s));
+    timerPrep(currentProcess, QUANTUM);
+
     /* more stuff */
   } else { /* if the Ready Queue is empty */
     /* processCount and softBlockCount are initialized in nucleusInitialization.c */
@@ -41,7 +47,10 @@ void scheduler() {
     if((processCount > 0) && (softBlockCount > 0)){
       /* " The Scheduler must first set the Status register to enable interrupts and disable the processor Local Timer (also through the Status register)*/
       /* "Interrupts enabled via the STATUS register(setSTATUS)[Section 7.1-pops]" */
-      int cool;
+      currentProcess = NULL;
+      setTIMER(MAXINT);
+      
+      unsigned int cool;
       cool = (ALLOFF | IECON | TEBITON | IMON);
       setSTATUS(cool);
       WAIT();
@@ -61,3 +70,16 @@ void scheduler() {
 void loadState(state_PTR process){
   LDST(process);
 }
+
+/* Context Switch! */
+void BOOM(pcb_PTR nowProcess) {
+  currentProcess = nowProcess;
+  loadState(&(nowProcess -> p_s));
+ }
+ 
+ /* will add comments when I know this works */
+ void timerPrep(pcb_PTR currentProcess, cpu_t time) {
+   STCK(startTimeOfDayClock);
+   setTIMER(time);
+   BOOM(currentProcess);
+ }
