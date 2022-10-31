@@ -48,30 +48,30 @@ void SYSCALLHandler(){
     case CREATEPROCESS:{ /* if syscallNumber == 1 */
         createProc(ps);
         break;}
-    
+
     case TERMINATEPROCESS:{ /* if syscallNumber == 2 */
         if(currentProc != NULL){
             terminateProc(currentProc);
         }
         scheduler();
         break;}
-    
+
     case PASSEREN:{ /* if syscallNumber == 3 */
         passeren(ps);
         break;}
-    
+
     case VERHOGEN:{ /* if syscallNumber == 4 */
         ver(ps);
         break;}
-    
+
     case WAITIO:{ /* if syscallNumber == 5 */
         waitForIO(ps);
         break;}
-    
+
     case GETCPUTIME:{ /* if syscallNumber == 6 */
         getCPUTime(ps);
         break;}
-    
+
     case WAITCLOCK:{ /* if syscallNumber == 7 */
         waitForClock(ps);
         break;}
@@ -79,9 +79,9 @@ void SYSCALLHandler(){
     case GETSUPPORTPTR:{ /* if syscallNumber == 8 */
         getSupport(ps);
         break;}
-    
+
     default:{
-        passUpOrDie(ps, GENERALEXCEPT); 
+        passUpOrDie(ps, GENERALEXCEPT);
         break;}
     }
 }
@@ -103,7 +103,7 @@ void createProc(state_PTR oldState){
         returnStatus = 0;
     }
     currentProc->p_s.s_v0 = returnStatus;
-    loadState(oldState);   
+    loadState(oldState);
 }
 
 void terminateProc(pcb_PTR parentProc){
@@ -113,7 +113,7 @@ void terminateProc(pcb_PTR parentProc){
 
     if(currentProc == parentProc){
 	    outChild(parentProc);
-    } 
+    }
 
     if(parentProc->p_semAdd == NULL){
 	    outProcQ(&readyQueue, parentProc);
@@ -126,9 +126,9 @@ void terminateProc(pcb_PTR parentProc){
                 softBlockCount--;
             } else {
                 (*semdAdd)++;
-            }	
+            }
         }
-        
+
     }
     freePcb(parentProc);
     processCount--;
@@ -136,14 +136,14 @@ void terminateProc(pcb_PTR parentProc){
 }
 /* the wait() operation: When a process is waiting for IO and we want another process to execute while we're waiting.   */
 void passeren(state_PTR oldState){
-     int* semdAdd = (int*) oldState->s_a1; 
+     int* semdAdd = (int*) oldState->s_a1;
     (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
     if((*semdAdd)<0){
 	stateCopy(oldState, &(currentProc->p_s));
         insertBlocked(semdAdd, currentProc);
         scheduler();
     }
-    loadState(oldState);   
+    loadState(oldState);
 }
 
 /* the signal() operation */
@@ -184,7 +184,7 @@ void getCPUTime(state_PTR oldState){
     time -= startTOD;
     currentProc->p_time += time;
     currentProc->p_s.s_v0 = currentProc->p_time;
-    loadState(&currentProc->p_s);   
+    loadState(&currentProc->p_s);
 }
 
 
@@ -203,13 +203,13 @@ void waitForClock(state_PTR oldState){
 void getSupport(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
     currentProc->p_s.s_v0 =(int) currentProc->p_supportStruct;
-    loadState(&currentProc->p_s);   
+    loadState(&currentProc->p_s);
 }
 
 /* passes up process */
 void passUpOrDie(state_PTR oldState, int exception){
     if(currentProc->p_supportStruct == NULL){
-        terminateProc(currentProc); 
+        terminateProc(currentProc);
         currentProc = NULL;
     }else{
         stateCopy(oldState, &(currentProc->p_supportStruct->sup_exceptState[exception]));

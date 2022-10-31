@@ -12,7 +12,7 @@ The Scheduler is called! So dispatch next process from the readyQueue. */
 extern cpu_t startTOD;
 void scheduler(){
     cpu_t howManyProcessorCyclesElapsed;
-    if(currentProc != NULL){ 
+    if(currentProc != NULL){
         STCK(howManyProcessorCyclesElapsed); /* STCK() stores how many processor cycles have elapsed*/
         currentProc->p_time = currentProc->p_time + (howManyProcessorCyclesElapsed - startTOD);
         LDIT(IOCLOCK); /* load the interval timer with IOCLOCK value */
@@ -30,7 +30,7 @@ void scheduler(){
         if(processCount == 0){ /* If the readyQueue is empty so there are no more process to run! */
             HALT();
         }
-        if(processCount > 0){ 
+        if(processCount > 0){
             if (softBlockCount > 0){ /* If for some reason there are pcbs in the readyQueue  and there are pcbs on the ASL but we can't make a pointer to it called next...*/
                 int mask = ALLOFF | IECON | IMON ;
                 setSTATUS(mask);
@@ -46,7 +46,3 @@ void scheduler(){
 void loadState(state_PTR ps){
     LDST(ps);
 }
-
-
-
-

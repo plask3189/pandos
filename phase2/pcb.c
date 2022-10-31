@@ -198,10 +198,7 @@ pcb_PTR allocPcb()
         allocate->p_time = NULL;
         allocate->p_supportStruct = NULL;
     }
-    
+
     return allocate;
 
 }
-
-
-
