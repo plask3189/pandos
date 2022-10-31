@@ -148,7 +148,6 @@ void createProcess(state_PTR pointerToOldState){
 /* * * * * * * * * * * * * * * * SYS2 * * * * * * * * * * * * * * * * * * * * *
 This causes the executing process to cease to exist. All progeny of this process are terminated as well. "Processes (i.e. pcb’s) can’t hide. A pcb is either the Current Process (“run- ning”), sitting on the Ready Queue (“ready”), blocked on a device semaphore (“blocked”), or blocked on a non-device semaphore (“blocked”)." p.39 pandos */
 void terminateProcess(pcb_PTR processToTerminate){
- processCount --;
   /* -------------------- Process Tree Adjustments ----------------------------*/
   /* emptyChild() asks if the pcb pointed to by p has children. If there are progeny, (aka emptyChild() is false (0), remove them. */
   while(!emptyChild(processToTerminate)){
@@ -179,9 +178,11 @@ void terminateProcess(pcb_PTR processToTerminate){
           }
         }
       }
+  }
   freePcb(processToTerminate);
+  processCount --;
+  currentProcess = NULL;
   scheduler();
- }
 }
 
 /* * * * * * * * * * * * * * * * SYS3 * * * * * * * * * * * * * * * */
