@@ -1,11 +1,6 @@
 #ifndef TYPES
 #define TYPES
 
-/****************************************************************************
- *
- * This header file contains utility types definitions.
- *
- ****************************************************************************/
 
 #include "../h/const.h"
 
@@ -57,66 +52,22 @@ typedef struct passupvector {
 } passupvector_t;
 
 
-#define STATEREGNUM	31
+
 typedef struct state_t {
 	unsigned int	s_entryHI;
 	unsigned int	s_cause;
 	unsigned int	s_status;
 	unsigned int 	s_pc;
-	int	 			s_reg[STATEREGNUM];
+	int	 	s_reg[STATEREGNUM];
 
 } state_t, *state_PTR;
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* Process control block type */
-typedef struct pcb_t {
-	/* Process queue fields */
-	struct pcb_t		*p_next, 	/* Pointer to next entry */
-				*p_prev,	/* Pointer to prev entry */
-
-	/* Process tree fields */
-				*p_prnt, 	/* Pointer to parent */
-				*p_child,	/* Pointer to first child */
-				*p_sib,		/* Pointer to sibling */
-				*p_sibPrev;	/* Pointer to previous sibling */
-
-	/* Process status information */
-	state_t			p_s;		/* Processor state */
-	cpu_t			p_time;		/* CPU time used by the processor */
-	int			*p_semAdd;	/* Pointer to sema4 on which process blocked */
-
-	/* Support layer information */
-	struct support_t	*p_supportStruct;	/* Pointer to support struct */
-
-} pcb_t, *pcb_PTR;
-
-/* Semaphore descriptor type */
-typedef struct semd_t {
-	struct semd_t	*s_next;	/* Next element on the ASL */
-	int		*s_semAdd;	/* Pointer to the semaphore */
-	pcb_t		*s_procQ;	/* Tail pointer to a process queue */
-} semd_t;
-
-/* Process Context */
-typedef struct context_t {
-	/* process context fields */
-	unsigned int 	c_stackPtr,	/* stack poiinter value */
-			c_status,	/* status reg value */
-			c_pc;		/* PC address */
-} context_t;
-
-typedef struct support_t {
-	int		sup_asid;		/* Process ID (asid) */
-	state_t		sup_exceptState[2];	/* stored except states */
-	context_t	sup_exceptContext[2];	/* pass up contexts */
-} support_t;
-
-/* Exceptions related constants */
-#define PGFAULTEXCEPT	0
-#define GENERALEXCEPT	1
+typedef struct pteEntry_t {
+	unsigned int	entryHI;
+	unsigned int	entryLO;
+} pteEntry_t, *pteEntry_PTR;
 
 
-/* Registry */
 #define	s_at	s_reg[0]
 #define	s_v0	s_reg[1]
 #define s_v1	s_reg[2]
@@ -148,7 +99,47 @@ typedef struct support_t {
 #define s_ra	s_reg[28]
 #define s_HI	s_reg[29]
 #define s_LO	s_reg[30]
+typedef struct context{
+    unsigned int c_stackPtr,
+                 c_status,
+                 c_pc;
+} context_t;
+typedef struct support_t
+{
+    int sup_asid;
+    state_t sup_exceptState[2];
+    context_t sup_exceptContext[2];
+	unsigned int sup_stackTLB[501];
+	unsigned int sup_stackGen[501];
+} support_t;
 
+typedef struct pcb_t
+{
+    struct pcb_t
+        *p_next, /* pointer to next entry */
+        *p_prev, /* pointer to prev entry */
+
+        *p_prnt, /* pointer to parent */
+        *p_child, /* pointer to 1st child */
+        *p_sib; /* pointer to sibling */
+    state_t p_s; /* processor state */
+    cpu_t p_time; /* cpu time used by proc */
+    int *p_semAdd; /* pointer to sema4 in which process blocked */
+    /* support layer information */
+    support_t *p_supportStruct; /* ptr to support struct */
+} pcb_t, *pcb_PTR;
+
+typedef struct semd_t{
+ struct semd_t *s_next; /* next element on the ASL*/
+ int *s_semAdd; /* pointer to the semaphore */
+ pcb_t *s_procQ; /* processs queue */
+} semd_t;
+
+typedef struct swap_t{
+	unsigned int sw_asid;
+	unsigned int sw_pageNo;
+	pteEntry_t * sw_pte;
+} swap_t;
 
 
 #endif

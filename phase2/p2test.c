@@ -1,3 +1,4 @@
+#include <stdio.h>
 /* File: $Id: p2test.c,v 1.1 1998/01/20 09:28:08 morsiani Exp morsiani $ */ 
 
 /*********************************P2TEST.C*******************************
@@ -43,10 +44,6 @@ typedef unsigned int devregtr;
 #define KUPBITON		0x8
 #define KUPBITOFF		0xFFFFFFF7
 #define TEBITON			0x08000000
-#define ALLOFF			0x0
-
-#define	ON				1
-#define OFF				0
 
 #define CAUSEINTMASK	0xFD00
 #define CAUSEINTOFFS	10
@@ -446,10 +443,10 @@ void p5gen() {
 	exeCode = (exeCode & CAUSEMASK) >> 2;
 	switch (exeCode) {
 	case BUSERROR:
-		print("Bus Error: Access non-existent memory\n");
+		print("Bus Error: Access non-existent memory. Kate is cool.\n");
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].s_pc = (memaddr)p5a;   /* Continue with p5a() */
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].s_t9 = (memaddr)p5a;   /* Continue with p5a() */
-		break;
+		 break;
 		
 	case RESVINSTR:
 		print("privileged instruction\n");
@@ -458,7 +455,7 @@ void p5gen() {
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].s_t9 = (memaddr)p5b;   /* Continue with p5b() */
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].s_status = pFiveSupport.sup_exceptState[GENERALEXCEPT].s_status & KUPBITOFF;
 		break;
-		
+		 
 	case ADDRERROR:
 		print("Address Error: non-kuseg access w/KU=1\n");
 		/* return in kernel mode */

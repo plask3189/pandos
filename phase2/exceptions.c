@@ -1,308 +1,242 @@
-/* ------------------------------------- Exceptions.c -----------------------------------------
- * Written by Kate Plas and Travis Wahl
- * For CSCI-320 Operating Systems
- *
- *
- */
-
- #include "../h/types.h"
- #include "../h/const.h"
- #include "../h/pcb.h"
- #include "../h/asl.h"
- #include "../h/scheduler.h"
- #include "../h/exceptions.h"
- #include "../h/initial.h"
+#include <stdio.h>
+#include "../h/types.h"
+#include "../h/const.h"
+#include "../h/pcb.h"
+#include "../h/asl.h"
+#include "../h/scheduler.h"
+#include "../h/exceptions.h"
+#include "../h/initial.h"
 
 
-extern pcb_PTR currentProcess;
+extern pcb_PTR currentProc;
 extern pcb_PTR readyQueue;
 extern int processCount;
 extern int softBlockCount;
-extern int deviceSemaphores[NUMBEROFDEVICES];
-extern cpu_t startTimeOfDayClock;
-extern int* clockSemaphore;
-extern void loadState(state_PTR process);
+extern int semDevices[DEVNUM];
+extern cpu_t startTOD;
+extern int* clockSem;
+extern void loadState(state_PTR ps);
 
-void createProcess(state_PTR currentProcess1);
-void terminateProcess(pcb_PTR parentProcess1);
-void passeren(state_PTR currentProcess1);
-void verhogen(state_PTR currentProcess1);
-void waitForIO(state_PTR currentProcess1);
-void getCPUTime(state_PTR currentProcess1);
-void waitForClock(state_PTR currentProcess1);
-void getSupport(state_PTR currentProcess1);
 
-void passUpOrDie(state_PTR currentProcess1, int exception);
-void otherException();
-void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState);
+void createProc(state_PTR curr);
+void terminateProc(pcb_PTR prnt);
+void passeren(state_PTR curr);
+void ver(state_PTR curr);
+void waitForIO(state_PTR curr);
+void getCPUTime(state_PTR curr);
+void waitForClock(state_PTR curr);
+void getSupport(state_PTR curr);
 
-/*  "A SYSCALL exception occurs when the SYSCALL assembly instruction is executed.  The SYSCALL instruction is used by processes to request operating system services. */
-void SYSCALLExceptionHandler(){
-  int toCheckIfInUserMode;
-  /*----------- Initializing processSyscallState -------------*/
-  state_PTR processSyscallState;
-  /* Casting! Make a state_PTR hold 0x0FFFF000 (BIOSDATAPAGE)
-  Now we have processSyscallState which points to the BIOSDATAPAGE  */
-	processSyscallState = (state_PTR) BIOSDATAPAGE;
-  processSyscallState -> s_t9 = processSyscallState -> s_pc = processSyscallState -> s_pc + FOURTOINCREMENTTHEPC;
+void passUpOrDie(state_PTR curr, int exception);
+void otherExceptions();
 
-  /*----------- Initializing syscallCodeNumber1234567or8 ---------*/
-  /* this variable will hold the integer contained in a0 from the process that was interrupted. */
-  int syscallCodeNumber1234567or8;
-  /* We need to access a0 so that we can check its value for 1-8 if request was in kernel mode */
-	syscallCodeNumber1234567or8 = processSyscallState -> s_a0;
-  /* "The Nucleus will then perform some service on behalf of the process executing the SYSCALL instruction depending on the value found in a0." p. 25 pandos"*/
-  /*------------- Check for user mode -----------*/
-/* Mode will be either 0 (kernel mode) or 1. If in user mode, passUpOrDie.   */
-  /* int mode = (processSyscallState -> s_status... idk */
-  toCheckIfInUserMode = (processSyscallState -> s_status & USERMODEOFF);
-  if(toCheckIfInUserMode != ALLOFF){
-    passUpOrDie(processSyscallState, GENERALEXCEPT);
-  }
-switch(syscallCodeNumber1234567or8) {
-  case CREATEPROCESS:{
-    createProcess(processSyscallState);
-    break;
-  }
-  case TERMINATEPROCESS:{
-    if(currentProcess != NULL){
-            terminateProcess(currentProcess);
+void stateCopy(state_PTR oldState, state_PTR newState);
+
+
+void SYSCALLHandler(){
+    state_PTR ps = (state_PTR) BIOSDATAPAGE;
+    ps->s_t9 = ps->s_pc+PCINC;
+    ps->s_pc = ps->s_pc+PCINC;
+    int userMode = (ps->s_status & UMOFF);
+    if(userMode != ALLOFF){
+	    passUpOrDie(ps, GENERALEXCEPT);
+    }
+
+    int syscallNumber = (ps->s_a0);
+    switch (syscallNumber)
+    {
+    case CREATEPROCESS:{ /* if syscallNumber == 1 */
+        createProc(ps);
+        break;}
+    
+    case TERMINATEPROCESS:{ /* if syscallNumber == 2 */
+        if(currentProc != NULL){
+            terminateProc(currentProc);
         }
-    break;
-  }
-  case PASSEREN:{
-    passeren(processSyscallState);
-    break;
-  }
-  case VERHOGEN:{
-    verhogen(processSyscallState);
-    break;
-  }
-  case WAITFORIO:{
-    waitForIO(processSyscallState);
-    break;
-  }
-  case GETCPUTIME:{
-    getCPUTime(processSyscallState);
-    break;
-  }
-  case WAITFORCLOCK:{
-    waitForClock(processSyscallState);
-    break;
-  }
-  case GETSUPPORTPOINTER:{
-    getSupport(processSyscallState);
-    break;
-  }
-  default:{
-     passUpOrDie(processSyscallState, GENERALEXCEPT);
-     break;
-   }
- }
+        scheduler();
+        break;}
+    
+    case PASSEREN:{ /* if syscallNumber == 3 */
+        passeren(ps);
+        break;}
+    
+    case VERHOGEN:{ /* if syscallNumber == 4 */
+        ver(ps);
+        break;}
+    
+    case WAITIO:{ /* if syscallNumber == 5 */
+        waitForIO(ps);
+        break;}
+    
+    case GETCPUTIME:{ /* if syscallNumber == 6 */
+        getCPUTime(ps);
+        break;}
+    
+    case WAITCLOCK:{ /* if syscallNumber == 7 */
+        waitForClock(ps);
+        break;}
+
+    case GETSUPPORTPTR:{ /* if syscallNumber == 8 */
+        getSupport(ps);
+        break;}
+    
+    default:{
+        passUpOrDie(ps, GENERALEXCEPT); 
+        break;}
+    }
 }
 
-/* * * * * * * * * * * * * * * * SYS1 * * * * * * * * * * * * * * * *
-A new pcb is allocated as the child of the currently running process and fields are initialized:
-- p_s from a1.
-- p_supportStruct from a2. If no parameter is provided, this field is set to NULL.
-- The process queue fields (e.g. p next) by the call to insertProcQ
-- The process tree fields (e.g. p child) by the call to insertChild.
-- p_time is set to zero; the new process has yet to accumulate any cpu time.
-- p_semAdd is set to NULL; this pcb/process is in the “ready” state, not the “blocked” state. */
-void createProcess(state_PTR pointerToOldState){
-  /* Allocate a new pcb as the child of the currently running process */
-  pcb_PTR child = allocPcb();
-  /* The returnStatusCode is set as a default -1 which is placed in v0 to show an error. */
-  int returnStatusCode = -1;
-  /* If the child pointer points to NULL, a new process cannot be allocated. */
-  if(child == NULL) {
-    returnStatusCode = -1;
-    /* Puts -1 into the process' v0. */
-    currentProcess -> p_s.s_v0 = returnStatusCode;
-    loadState(pointerToOldState);
-  }
-  /* If a new process can be allocated */
-  else {
+
+void createProc(state_PTR oldState){
+    pcb_PTR child = allocPcb();
+    int returnStatus = -1;
     if(child != NULL){
-      processCount++;
-      /* initialize the process queue fields */
-      insertProcQ(&(readyQueue), child);
-      /* initialize the process tree fields */
-      insertChild(currentProcess, child);
-      /* copy the value that  the child's state pointer holds. This value is actually a pointer to a state. Copy this state into the oldState's a1, pointed to by pointerToOldState */
-      copyState((state_PTR) (pointerToOldState -> s_a1), &(child -> p_s));
-      /* a2 holds pointer to a support structure */
-      if((pointerToOldState -> s_a2 == 0) || (pointerToOldState -> s_a2 == NULL)) {
-        child -> p_supportStruct = NULL;
-      } else {
-        child -> p_supportStruct = (support_t*) pointerToOldState -> s_a2;
-      }
-    }
-    currentProcess -> p_s.s_v0 = returnStatusCode;
-    /* loadState is perfomed on a state saved in the BIOS. */
-    loadState(pointerToOldState);
-  }
-}
-/* * * * * * * * * * * * * * * * SYS2 * * * * * * * * * * * * * * * * * * * * *
-This causes the executing process to cease to exist. All progeny of this process are terminated as well. "Processes (i.e. pcb’s) can’t hide. A pcb is either the Current Process (“run- ning”), sitting on the Ready Queue (“ready”), blocked on a device semaphore (“blocked”), or blocked on a non-device semaphore (“blocked”)." p.39 pandos */
-void terminateProcess(pcb_PTR parentProcess){
-  processCount--;
-  pcb_PTR processToTerminate = parentProcess;
-  /* -------------------- Process Tree Adjustments ----------------------------*/
-  /* emptyChild() asks if the pcb pointed to by p has children. If there are progeny, (aka emptyChild() is false (0), remove them. */
-  while(emptyChild(processToTerminate) == 0){
-    terminateProcess(removeChild(processToTerminate));
-  }
-  /* if the current process is the one we want to remove. */
-  if(processToTerminate == currentProcess){
-      /* outChild() makes the pcb pointed to by parentProcess an orphan (no longer the child of its parent on the process tree). */
-    outChild(processToTerminate);
-    currentProcess = NULL;
-  }
-  else{
-      /*-----------------------ReadyQueue Adjustments---------------------------*/
-     if(processToTerminate -> p_semAdd == NULL){
-       /* Remove the pcb pointed to by processToTerminate from the process queue whose tail pointer is pointed to by the tail pointer held as a value in ReadyQueue. (ReadyQueue is a pointer to a tail pointer of a queue of pcbs. We need it to identify the readyQueue)*/
-       outProcQ(&readyQueue, processToTerminate);
-     }
-     else {
-       /*---------------------- Process Blocked on Semaphore ----------------------*/
-      /* outBlocked removes the pcb pointed to by processToTerminate from the process queue associated with processToTerminate's semaphore. If pcb pointed to by processToTerminate is in the process queue associated with processToTerminate’s semaphore this is NOT NULL;*/
-      if((outBlocked(processToTerminate)) != NULL){
-          if(((processToTerminate -> p_semAdd) >= &deviceSemaphores[0]) && ((processToTerminate -> p_semAdd) <= &deviceSemaphores[NUMBEROFDEVICES])){
-              softBlockCount--;
-              /* "If a terminated process is blocked on a device semaphore, the semaphore should NOT be adjusted. When the interrupt eventually occurs the semaphore will get V’ed (and hence incremented) by the interrupt handler." p.39 pandos */
-          } else {
-            /* if pcb pointed to by processToTerminate is not in the process queue associated with processToTerminate’s semaphore (OutBlocked(processToTerminate)) == NULL)). Increment semaphore*/
-              *(processToTerminate -> p_semAdd)++;
-          }
+        insertChild(currentProc, child);
+        insertProcQ(&readyQueue, child);
+        stateCopy((state_PTR) (oldState->s_a1), &(child->p_s));
+        if(oldState->s_a2 != 0 || oldState->s_a2 != NULL){
+            child->p_supportStruct = (support_t *) oldState->s_a2;
+        } else {
+            child->p_supportStruct = NULL;
         }
-      }
-  freePcb(processToTerminate);
-  scheduler();
- }
-}
-
-/* * * * * * * * * * * * * * * * SYS3 * * * * * * * * * * * * * * * */
-void passeren(state_PTR pointerToOldState){
-  /* The semaphore's physical address to be P'ed on is in a1 */
-  int* semAdd;
-  semAdd = pointerToOldState -> s_a1;
-  (*semAdd)--;
-   /*block the process on the ASL if semaphore less than zero.*/
-   if((*semAdd) < 0){
-     copyState(pointerToOldState, &(currentProcess -> p_s));
-     /* The process transitions from running to blocked */
-     insertBlocked(semAdd, currentProcess);
-     scheduler();
-   }
-   loadState(pointerToOldState);
-}
-
-/* * * * * * * * * * * * * * * * SYS4 * * * * * * * * * * * * * * * */
-void verhogen(state_PTR pointerToOldState){
-  pcb_PTR temp;
-  /*a1 holds a pointer to a process state. semAdd is a pointer to a semaphore */
-  int* semAdd;
-  semAdd = pointerToOldState -> s_a1;
-  (*semAdd)++;
-  if((*semAdd) <= 0){
-    temp = removeBlocked(semAdd);
-    if(temp != NULL) {
-      insertProcQ((&readyQueue), temp);
+        processCount++;
+        returnStatus = 0;
     }
-  }
-  loadState(pointerToOldState);
+    currentProc->p_s.s_v0 = returnStatus;
+    loadState(oldState);   
 }
-/* * * * * * * * * * * * * * * * SYS5 * * * * * * * * * * * * * * * */
-/* When an I/O operation is initiated, the initiating process is blocked until the IO completes. SYS5 transitions the current process from running to blocked. We get the semaphore for the I/O device indicated by a1, a2, and a3. Then do a P operation. */
-void waitForIO(state_PTR pointerToOldState){
-  copyState(pointerToOldState, &(currentProcess -> p_s));
-  /* a1 holds the interrupt line number ([3. . .7]) */
-  int lineNumberForDevice = pointerToOldState -> s_a1;
-  /* Need to subract 3 because "when bit i in word j is set to one then device i attached to interrupt line j + 3 has a pending interrupt." p. 29 pops.  */
-  int wordNumberForDevice = (lineNumberForDevice - 3);
-  /* a2 holds the device number ([0. . .7]) */
-  int deviceNumber = pointerToOldState -> s_a2;
-  /* a3 holds true (1) or false (0) to tell if waiting for a terminal read operation */
-  int areWeWaitingForTerminalReadOperation = pointerToOldState -> s_a3;
-  /* calculate the semaphore index that the device has.
-      DEVPERINT is in const.h and represents the # of devices per interrupt line, which is 8. */
-  int deviceSemaphoreIndex = ((wordNumberForDevice + areWeWaitingForTerminalReadOperation) * DEVPERINT + deviceNumber);
-  deviceSemaphores[deviceSemaphoreIndex]--;
-  softBlockCount++;
-  insertBlocked(&(deviceSemaphores[deviceSemaphoreIndex]), currentProcess);
-  currentProcess = NULL;
-  scheduler();
+
+void terminateProc(pcb_PTR parentProc){
+    while(!emptyChild(parentProc)){
+	    terminateProc(removeChild(parentProc));
+    }
+
+    if(currentProc == parentProc){
+	    outChild(parentProc);
+    } 
+
+    if(parentProc->p_semAdd == NULL){
+	    outProcQ(&readyQueue, parentProc);
+    }
+   else {
+        int* semdAdd = parentProc->p_semAdd;
+        pcb_PTR r = outBlocked(parentProc);
+        if(r != NULL){
+            if( semdAdd >= &semDevices[ZERO] && semdAdd <= &semDevices[DEVNUM]){
+                softBlockCount--;
+            } else {
+                (*semdAdd)++;
+            }	
+        }
+        
+    }
+    freePcb(parentProc);
+    processCount--;
+    scheduler();
 }
-/* * * * * * * * * * * * * * * * * * SYS 6 * * * * * * * * * * * * * * * * * */
-/* This service requests that the accumulated processor time (in microseconds) used by the requesting process be placed/returned in the caller’s v0.  */
-void getCPUTime(state_PTR pointerToOldState){
-  copyState(pointerToOldState, &(currentProcess -> p_s));
-  cpu_t whatTimeIsIt;
-  /*  STCK(whatTimeIsIt) does this: whatTimeIsIt = TODLOADD / TIMESCALEADDR */
-  STCK(whatTimeIsIt);
-  /* Remember that the TOD clock increments every processor cycle */
-  whatTimeIsIt = whatTimeIsIt - startTimeOfDayClock;
-  /* add time to current process time */
-  (currentProcess -> p_time) = (currentProcess -> p_time) + whatTimeIsIt;
-  currentProcess -> p_s.s_v0 = currentProcess -> p_time;
-  loadState(&currentProcess -> p_s);
+/* the wait() operation: When a process is waiting for IO and we want another process to execute while we're waiting.   */
+void passeren(state_PTR oldState){
+     int* semdAdd = (int*) oldState->s_a1; 
+    (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
+    if((*semdAdd)<0){
+	stateCopy(oldState, &(currentProc->p_s));
+        insertBlocked(semdAdd, currentProc);
+        scheduler();
+    }
+    loadState(oldState);   
 }
-/* * * * * * * * * * * * * * * * * * SYS 7 * * * * * * * * * * * * * * * * * */
-void waitForClock(state_PTR pointerToOldState){
-  copyState(pointerToOldState, &(currentProcess -> p_s));
-  (*clockSemaphore)--;
-  if(!((*clockSemaphore)>= 0)){
-    insertBlocked(clockSemaphore, currentProcess);
-    currentProcess = NULL;
+
+/* the signal() operation */
+void ver(state_PTR oldState){
+    int* semdAdd = (int*)oldState->s_a1;
+
+    (*semdAdd)++;
+
+    if((*semdAdd)<=0){
+        pcb_PTR temp = removeBlocked(semdAdd);
+        if(temp != NULL) {
+            insertProcQ(&readyQueue, temp);
+        }
+    }
+    loadState(oldState);
+}
+
+
+void waitForIO(state_PTR oldState){
+    stateCopy(oldState, &(currentProc->p_s));
+
+    int lineNo = oldState->s_a1;
+    int devNo = oldState->s_a2;
+    int waitterm = oldState->s_a3;
+    int devi = ((lineNo - 3 + waitterm) * DEVPERINT + devNo);
+    semDevices[devi]--;
     softBlockCount++;
+    insertBlocked(&(semDevices[devi]), currentProc);
+    currentProc = NULL;
     scheduler();
-  }
-}
-/* * * * * * * * * * * * * *  * * * * SYS 8 * * * * * * * * * * * * * * * * * */
-void getSupport(state_PTR pointerToOldState){
-  copyState(pointerToOldState, &(currentProcess -> p_s));
-  currentProcess -> p_s.s_v0 = (int) currentProcess -> p_supportStruct;
-  loadState(&(currentProcess -> p_s));
-}
-
-/* * * * * * * * * * * * * *  * * * * Pass up or Die * * * * * * * * * * * * * * * * * */
-void passUpOrDie(state_PTR pointerToOldState, int exception){
-  /* if the currentProcess has a support structure */
-  if(currentProcess -> p_supportStruct != NULL){
-    stateStoring(pointerToOldState, &(currentProcess -> p_supportStruct -> sup_exceptState[exception]));
-    LDCXT(currentProcess->p_supportStruct->sup_exceptContext[exception].c_stackPtr, currentProcess->p_supportStruct->sup_exceptContext[exception].c_status, currentProcess->p_supportStruct->sup_exceptContext[exception].c_pc);
-  }
-  else {
-    terminateProcess(currentProcess);
-    currentProcess = NULL;
-    scheduler();
-  }
 }
 
 
-/* * * * * * * * * * * * * * * * Support methods * * * * * * * * * * * * * * * */
-void otherException(int cause){
-  if(cause >=4 ){
-    passUpOrDie((state_PTR) BIOSDATAPAGE, GENERALEXCEPT);
-  } else {
-    passUpOrDie((state_PTR) BIOSDATAPAGE, PGFAULTEXCEPT);
-  }
+void getCPUTime(state_PTR oldState){
+    stateCopy(oldState, &(currentProc->p_s));
+    cpu_t time;
+    STCK(time);
+    time -= startTOD;
+    currentProc->p_time += time;
+    currentProc->p_s.s_v0 = currentProc->p_time;
+    loadState(&currentProc->p_s);   
 }
-/* copyState takes two state pointers and copies the oldState's state into newState's state. This is done by:
-* Copying the registers
-* Copying entryHI, cause, status, and pc (which are part of the state)
- */
-void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState){
-    int i = 0;
-    pointertoNewState -> s_entryHI = pointerToOldState -> s_entryHI;
-    pointertoNewState -> s_cause = pointerToOldState -> s_cause;
-    pointertoNewState -> s_status = pointerToOldState -> s_status;
-    pointertoNewState -> s_pc = pointerToOldState -> s_pc;
-    /* There are 31 total state registers (STATEREGNUM). For each register, copy the register*/
-    while(i < STATEREGNUM){
-	    pointertoNewState -> s_reg[i] = pointerToOldState -> s_reg[i];
-      i++;
+
+
+void waitForClock(state_PTR oldState){
+    stateCopy(oldState, &(currentProc->p_s));
+    (*clockSem)--;
+    if((*clockSem)<0){
+        insertBlocked(clockSem, currentProc);
+        softBlockCount++;
+        currentProc = NULL;
+        scheduler();
+    }
+}
+
+
+void getSupport(state_PTR oldState){
+    stateCopy(oldState, &(currentProc->p_s));
+    currentProc->p_s.s_v0 =(int) currentProc->p_supportStruct;
+    loadState(&currentProc->p_s);   
+}
+
+/* passes up process */
+void passUpOrDie(state_PTR oldState, int exception){
+    if(currentProc->p_supportStruct == NULL){
+        terminateProc(currentProc); 
+        currentProc = NULL;
+    }else{
+        stateCopy(oldState, &(currentProc->p_supportStruct->sup_exceptState[exception]));
+        unsigned int stackPtrToLoad = currentProc->p_supportStruct->sup_exceptContext[exception].c_stackPtr;
+       unsigned int statusToLoad = currentProc->p_supportStruct->sup_exceptContext[exception].c_status;
+       unsigned int pcToLoad = currentProc->p_supportStruct->sup_exceptContext[exception].c_pc;
+        /* load context */
+        LDCXT(stackPtrToLoad, statusToLoad, pcToLoad);
+    }
+}
+
+void stateCopy(state_PTR oldState, state_PTR newState){
+    int i;
+    for(i=0; i<STATEREGNUM; i++){
+	    newState->s_reg[i] = oldState->s_reg[i];
+    }
+    newState->s_entryHI = oldState->s_entryHI;
+    newState->s_cause = oldState->s_cause;
+    newState->s_status = oldState->s_status;
+    newState->s_pc = oldState->s_pc;
+}
+
+
+void otherExceptions(int reason){
+    if(reason<4){
+        passUpOrDie((state_PTR) BIOSDATAPAGE,  PGFAULTEXCEPT);
+    } else{
+        passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
     }
 }

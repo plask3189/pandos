@@ -1,22 +1,16 @@
 #ifndef CONSTS
 #define CONSTS
 
-/****************************************************************************
- *
- * This header file contains utility constants & macro definitions.
- *
- ****************************************************************************/
-
 /* Hardware & software constants */
 #define PAGESIZE		  4096			/* page size in bytes	*/
 #define WORDLEN			  4				  /* word size in bytes	*/
 
 
 /* timer, timescale, TOD-LO and other bus regs */
-#define RAMBASEADDR 	0x10000000 /* RAM base physical address bus register located at 0x1000000 */
+#define RAMBASEADDR		0x10000000
 #define RAMBASESIZE		0x10000004
 #define TODLOADDR		  0x1000001C
-#define INTERVALTMR		0x10000020
+#define INTERVALTMR		0x10000020	
 #define TIMESCALEADDR	0x10000024
 
 
@@ -25,57 +19,20 @@
 #define	FALSE			    0
 #define HIDDEN			  static
 #define EOS				    '\0'
-#define MAXPROC       20        /* Maximum concurrent processes */
-#define MAXINT        0xFFFFFFFF
 
-#define NULL		((void *)0xFFFFFFFF)
+#define NULL 			    ((void *)0xFFFFFFFF)
 
+/* device interrupts */
+#define DISKINT			  3
+#define FLASHINT 		  4
+#define NETWINT 		  5
+#define PRNTINT 		  6
+#define TERMINT			  7
 
-/* Device constants */
-#define PLT       1
-#define INTERVAL  2
-#define DISK      3
-#define FLASH     4
-#define NETWORK   5
-#define PRINTER   6
-#define TERMINAL  7
-
-/* Device Interrupt constants */
-#define PLTINT      0x00000200
-#define INTERVALINT 0x00000400
-#define DISKINT     0x00000800
-#define FLASHINT    0x00001000
-#define NETWINT     0x00002000
-#define PRNTINT     0x00004000
-#define TERMINT     0x00008000
-
-#define DEVREG0     0x00000001
-#define DEVREG1     0x00000002
-#define DEVREG2     0x00000004
-#define DEVREG3     0x00000008
-#define DEVREG4     0x00000010
-#define DEVREG5     0x00000020
-#define DEVREG6     0x00000040
-#define DEVREG7     0x00000080
-
-
- /* How Many devices? 
-  * 16 Terminal (one each for Read and Write thus 8 x 2)
-  * 8 Disks
-  * 8 Flash (USB's)
-  * 8 Network
-  * 8 Printer
-  * 1 for the timer
-  * Thus, 49 */
-#define NUMBEROFDEVICES 49
-
-/* Clock Constants */
-#define CLOCKTIME 100000
-
-
+#define DEVNUM            49
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
-#define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */
+#define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */	
 #define DEVREGSIZE	  16 		/* device register size in bytes */
 
 /* device register field number for non-terminal devices */
@@ -99,6 +56,8 @@
 #define RESET			    0
 #define ACK				    1
 
+#define STATEREGNUM	31
+
 /* Memory related constants */
 #define KSEG0           0x00000000
 #define KSEG1           0x20000000
@@ -106,17 +65,7 @@
 #define KUSEG           0x80000000
 #define RAMSTART        0x20000000
 #define BIOSDATAPAGE    0x0FFFF000
-#define	PASSUPVECTOR	  0x0FFFF900
-
-/* messing with bits */
-#define	ALLOFF      0x00000000
-#define	IECON       0x00000001  /* interrupt current on */
-#define	IEON        0x00000004  /* interrupts on */
-#define TEBITON     0x08000000  /* enable the processor Local Timer */
-#define	IMON        0x0000FF00  /* turn on interrupt mask */
-#define	KUON        0x00000008  /* Kernel mode on */
-#define USERMODEOFF 0x00000002  /* User mode off */
-#define SHIFT       0x0F        /*Set 4 lowest bits */
+#define	PASSUPVECTOR	  0x0FFFF900 /* The pass up vector is where the BIOS finds the address of the Nucleus functions to pass control */
 
 /* Exceptions related constants */
 #define	PGFAULTEXCEPT	  0
@@ -129,30 +78,58 @@
 #define	ALIGNED(A)		(((unsigned)A & 0x3) == 0)
 
 /* Macro to load the Interval Timer */
-#define LDIT(T)	((* ((cpu_t *) INTERVALTMR)) = (T) * (* ((cpu_t *) TIMESCALEADDR)))
+#define LDIT(T)	((* ((cpu_t *) INTERVALTMR)) = (T) * (* ((cpu_t *) TIMESCALEADDR))) 
 
 /* Macro to read the TOD clock */
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
-/* The time slice value is 5ms. A QUANTUM is the "time used by scheduling algorithms as a basis for determining when to preempt a thread from the CPU to allow another to run." - Operating Systems Concepts*/
+#define MAXPROC 20
+#define IOCLOCK 100000
 #define QUANTUM 5000
+#define INTERVAL 
 
-#define ONE 1
-#define FOURTOINCREMENTTHEPC 4
-
-
+/* syscalls */
 #define CREATEPROCESS 1
 #define TERMINATEPROCESS 2
 #define PASSEREN 3
 #define VERHOGEN 4
-#define WAITFORIO 5
+#define WAITIO 5
 #define GETCPUTIME 6
-#define WAITFORCLOCK 7
-#define GETSUPPORTPOINTER 8
+#define WAITCLOCK 7
+#define GETSUPPORTPTR 8
 
-
+/* important places */
 #define NUCLEUSSTACKPAGE 0x20001000
+#define STATUSREG 0x10400000
 
-/* "The Time Scale’s value indicates the number of clock ticks that will occur in a microsecond," p.21 pandos. So 100 milliseconds is 100,000 microseconds. */
-#define INTERVALTIMER 100000
+/* bit operations */
+#define ALLOFF 0x00000000
+#define IEON 0x00000004
+#define IECON	0x00000001
+#define IMON 0x0000FF00
+#define TEBITON 0x08000000
+#define UMOFF 0x00000002
+#define KUON 0x00000008
+
+/* masks */
+#define EXCODEMASK 0x0000007c
+#define IPMASK 0x00FF00
+#define LINE0INTON 1
+#define LINE1INTON 2
+#define LINE2INTON 4
+#define LINE3INTON 8
+#define LINE4INTON 16
+#define LINE5INTON 32
+#define LINE6INTON 64
+#define LINE7INTON 128
+#define TRANSBITS 15
+
+/*extra useful numbers */
+#define PCINC 4
+#define ZERO 0
+#define ONE 1
+#define ON 1
+#define OFF 0
+#define SHIFT 2
+
 
 #endif

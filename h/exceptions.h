@@ -1,10 +1,6 @@
 #ifndef EXCEPTIONS
-#define EXCEPTIONS
-
-#include "../h/types.h"
-#include "../h/const.h"
-
-extern void SYSCALLExceptionHandler();
-extern void copyState(state_PTR pointerToOldState, state_PTR pointertoNewState);
-
+#define  EXCEPTIONS
+extern void SYSCALLHandler();
+extern void stateCopy(state_PTR oldState, state_PTR newState);
+extern void otherExceptions(int reason);
 #endif

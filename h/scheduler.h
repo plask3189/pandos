@@ -1,8 +1,6 @@
 #ifndef SCHEDULER
 #define SCHEDULER
 
-#include "../h/types.h"
-
 extern void scheduler();
-
+extern void loadState(state_PTR ps);
 #endif
