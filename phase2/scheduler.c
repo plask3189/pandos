@@ -79,10 +79,10 @@ void BOOM(pcb_PTR nowProcess) {
  
  /* take the interval timer and get it ready to accept a new process as a way of adding a failsafe,
   *then hand over that process via a Context Switch*/
- void timerPrep(pcb_PTR currentProcess, cpu_t time) {
+ void timerPrep(pcb_PTR currProc, cpu_t time) {
    STCK(startTimeOfDayClock);
    /* Time set for the given process */ 
    setTIMER(time);
    /* Context Switch! */
-   BOOM(currentProcess);
+   BOOM(currProc);
  }
