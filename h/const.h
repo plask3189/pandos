@@ -71,6 +71,7 @@
 #define	PGFAULTEXCEPT	  0
 #define GENERALEXCEPT	  1
 
+#define CAUSEMASK		0xFF
 
 /* operations */
 #define	MIN(A,B)		((A) < (B) ? A : B)
@@ -83,7 +84,7 @@
 /* Macro to read the TOD clock */
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
 #define MAXPROC 20
-#define IOCLOCK 100000
+#define IOCLOCK 100000 /* aka 100 ms */
 #define QUANTUM 5000
 #define INTERVAL 
 
@@ -108,10 +109,10 @@
 #define IMON 0x0000FF00
 #define TEBITON 0x08000000
 #define UMOFF 0x00000002
-#define KUON 0x00000008
+#define KUON 0x00000008 
 
 /* masks */
-#define EXCODEMASK 0x0000007c
+#define EXCODEMASK 0x0000007C
 #define IPMASK 0x00FF00
 #define LINE0INTON 1
 #define LINE1INTON 2
@@ -123,13 +124,18 @@
 #define LINE7INTON 128
 #define TRANSBITS 15
 
-/*extra useful numbers */
+
 #define PCINC 4
 #define ZERO 0
 #define ONE 1
 #define ON 1
 #define OFF 0
 #define SHIFT 2
+
+
+#define IOINTERRUPT 0
+#define TLBEXCEPTION 3
+#define SYSEXCEPTION 8
 
 
 #endif
