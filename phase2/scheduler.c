@@ -1,5 +1,10 @@
-/* This is a round-roobin scheduling algorithm with a time slice value of 5ms.
-The Scheduler is called! So dispatch next process from the readyQueue. */
+/************ SCHEDULER.C ************/
+/*
+ * Written By: Kate Plas && Travis Wahl
+ * For: PandOS project CSCI 320
+ * This is a round-robin scheduling algorithm with a time slice value of 5ms.
+ * The Scheduler is called! So dispatch next process from the readyQueue.
+ */
 
 #include <stdio.h>
 #include "../h/types.h"
@@ -8,8 +13,14 @@ The Scheduler is called! So dispatch next process from the readyQueue. */
 #include "../h/asl.h"
 #include "../h/scheduler.h"
 #include "../h/initial.h"
-#include "/usr/include/umps3/umps/libumps.h"
+#include "../h/libumps.h"
+
+/* Bring in the Start Time Of Day Clock variable */
 extern cpu_t startTOD;
+
+/* Start the scheduler! Round-Robin method is implemented and controls the schedule of 
+ * each process that needs to be executed.
+ */
 void scheduler(){
     cpu_t howManyProcessorCyclesElapsed;
     if(currentProc != NULL){ 
@@ -19,29 +30,38 @@ void scheduler(){
     }
     pcb_PTR next; /* next is a pointer to a pcb that will be removed from the readyQueue. */
     next = removeProcQ(&readyQueue); /* Remove a pcb from the head of the readyQueue */
+    
     /* * * * If we CAN get a pcb * * * */
     if (next != NULL){ /* If there is a pcb that next can point to. */
         currentProc = next;
         STCK(startTOD);
         setTIMER(QUANTUM); /* start timer for 5 ms */
-        loadState(&(currentProc->p_s));
-    /* * * * If we CANNOT get a pcb * * * */
+        loadState(&(currentProc->p_s)); /* BOOM! Context Switch */
+   
+        /* * * * If we CANNOT get a pcb * * * */
     } else { /* if next == NULL */
         if(processCount == 0){ /* If the readyQueue is empty so there are no more process to run! */
             HALT();
         }
-        if ((softBlockCount == 0) && (processCount > 0)){ /* deadlock */
-             PANIC();
+       
+        /* The deadlock case
+         * There are processes, but they're not in the Blocked or Ready queues.
+         */
+        if ((softBlockCount == 0) && (processCount > 0)){
+             PANIC(); /* Stop, Panic time */
         }
-        if ((softBlockCount > 0) && (processCount > 0)){ /* If for some reason there are pcbs in the readyQueue  and there are pcbs on the ASL but we can't make a pointer to it called next...*/
+        
+        /* If for some reason there are pcbs in the readyQueue and there are pcbs on the ASL but we can't make a pointer to it called next...*/
+        if ((softBlockCount > 0) && (processCount > 0)){ 
             int maskForStatus = ALLOFF | IECON | IMON ;
-            setSTATUS(maskForStatus);
+            setSTATUS(maskForStatus); 
             WAIT(); /*WAIT() unblocks a pcb from the ASL and populates the readyQueue */
             } 
         }
  }
 
 
+/* BOOM! Context Switch! */
 void loadState(state_PTR ps){
     LDST(ps);
 }
