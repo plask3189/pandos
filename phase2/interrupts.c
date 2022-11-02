@@ -5,7 +5,7 @@
 #include "../h/asl.h"
 #include "../h/scheduler.h"
 #include "../h/exceptions.h"
-#include "../h/initial.h"
+#include "/usr/include/umps3/umps/libumps.h"
 
 extern int semDevices[DEVNUM];
 extern pcb_PTR readyQueue;
@@ -32,7 +32,7 @@ void IOHandler(){
     } else if (ip_bits & LINE2INTON) {
 
         LDIT(IOCLOCK);
-
+ 
         STCK(stopTOD);
 
         pcb_PTR proc = removeBlocked(clockSem);
@@ -46,8 +46,8 @@ void IOHandler(){
         }
         *clockSem = 0;
         prepToSwitch();
-    }
-    if (ip_bits & LINE3INTON) {
+    } 
+    if (ip_bits & LINE3INTON) { 
         intlNo = 3;
     } else if (ip_bits & LINE4INTON) {
         intlNo = 4;
@@ -104,7 +104,7 @@ void IOHandler(){
             if(proc!=NULL){
                 STCK(stopTOD);
                 proc->p_time += (stopTOD- startTOD);
-
+ 
                 proc->p_s.s_v0 = statusCp;
 
                 softBlockCount--;

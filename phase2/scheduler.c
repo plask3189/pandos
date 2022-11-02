@@ -8,11 +8,11 @@ The Scheduler is called! So dispatch next process from the readyQueue. */
 #include "../h/asl.h"
 #include "../h/scheduler.h"
 #include "../h/initial.h"
-
+#include "/usr/include/umps3/umps/libumps.h"
 extern cpu_t startTOD;
 void scheduler(){
     cpu_t howManyProcessorCyclesElapsed;
-    if(currentProc != NULL){
+    if(currentProc != NULL){ 
         STCK(howManyProcessorCyclesElapsed); /* STCK() stores how many processor cycles have elapsed*/
         currentProc->p_time = currentProc->p_time + (howManyProcessorCyclesElapsed - startTOD);
         LDIT(IOCLOCK); /* load the interval timer with IOCLOCK value */
@@ -30,19 +30,22 @@ void scheduler(){
         if(processCount == 0){ /* If the readyQueue is empty so there are no more process to run! */
             HALT();
         }
-        if(processCount > 0){
-            if (softBlockCount > 0){ /* If for some reason there are pcbs in the readyQueue  and there are pcbs on the ASL but we can't make a pointer to it called next...*/
-                int mask = ALLOFF | IECON | IMON ;
-                setSTATUS(mask);
-                WAIT(); /*WAIT() unblocks a pcb from the ASL and populates the readyQueue */
-            }
-            if (softBlockCount == 0){ /* deadlock */
+        if ((softBlockCount == 0) && (processCount > 0)){ /* deadlock */
              PANIC();
-             }
         }
-    }
-}
+        if ((softBlockCount > 0) && (processCount > 0)){ /* If for some reason there are pcbs in the readyQueue  and there are pcbs on the ASL but we can't make a pointer to it called next...*/
+            int maskForStatus = ALLOFF | IECON | IMON ;
+            setSTATUS(maskForStatus);
+            WAIT(); /*WAIT() unblocks a pcb from the ASL and populates the readyQueue */
+            } 
+        }
+ }
+
 
 void loadState(state_PTR ps){
     LDST(ps);
 }
+
+
+
+

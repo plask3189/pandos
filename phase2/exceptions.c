@@ -6,7 +6,7 @@
 #include "../h/scheduler.h"
 #include "../h/exceptions.h"
 #include "../h/initial.h"
-
+#include "/usr/include/umps3/umps/libumps.h"
 
 extern pcb_PTR currentProc;
 extern pcb_PTR readyQueue;
@@ -17,7 +17,8 @@ extern cpu_t startTOD;
 extern int* clockSem;
 extern void loadState(state_PTR ps);
 
-
+void tlbTrapHandler();
+void programTrapHandler();
 void createProc(state_PTR curr);
 void terminateProc(pcb_PTR prnt);
 void passeren(state_PTR curr);
@@ -34,9 +35,12 @@ void stateCopy(state_PTR oldState, state_PTR newState);
 
 
 void SYSCALLHandler(){
-    state_PTR ps = (state_PTR) BIOSDATAPAGE;
-    ps->s_t9 = ps->s_pc+PCINC;
+    /* Save the processor state. */
+    state_PTR ps = (state_PTR) BIOSDATAPAGE; 
     ps->s_pc = ps->s_pc+PCINC;
+    ps->s_t9 = ps->s_pc+PCINC;
+    
+    /* Check if in usermode. */
     int userMode = (ps->s_status & UMOFF);
     if(userMode != ALLOFF){
 	    passUpOrDie(ps, GENERALEXCEPT);
@@ -48,30 +52,30 @@ void SYSCALLHandler(){
     case CREATEPROCESS:{ /* if syscallNumber == 1 */
         createProc(ps);
         break;}
-
+    
     case TERMINATEPROCESS:{ /* if syscallNumber == 2 */
         if(currentProc != NULL){
             terminateProc(currentProc);
         }
         scheduler();
         break;}
-
+    
     case PASSEREN:{ /* if syscallNumber == 3 */
         passeren(ps);
         break;}
-
+    
     case VERHOGEN:{ /* if syscallNumber == 4 */
         ver(ps);
         break;}
-
+    
     case WAITIO:{ /* if syscallNumber == 5 */
         waitForIO(ps);
         break;}
-
+    
     case GETCPUTIME:{ /* if syscallNumber == 6 */
         getCPUTime(ps);
         break;}
-
+    
     case WAITCLOCK:{ /* if syscallNumber == 7 */
         waitForClock(ps);
         break;}
@@ -79,14 +83,14 @@ void SYSCALLHandler(){
     case GETSUPPORTPTR:{ /* if syscallNumber == 8 */
         getSupport(ps);
         break;}
-
+    
     default:{
-        passUpOrDie(ps, GENERALEXCEPT);
+        passUpOrDie(ps, GENERALEXCEPT); 
         break;}
     }
 }
 
-
+/* "The sys1 service is requested by the calling process by placing the value 1 in a0, a pointer to a processor state in a1, a pointer to a support struct in a2, and then executing the syscall instruction." p.25 pandos*/ 
 void createProc(state_PTR oldState){
     pcb_PTR child = allocPcb();
     int returnStatus = -1;
@@ -103,7 +107,7 @@ void createProc(state_PTR oldState){
         returnStatus = 0;
     }
     currentProc->p_s.s_v0 = returnStatus;
-    loadState(oldState);
+    loadState(oldState);   
 }
 
 void terminateProc(pcb_PTR parentProc){
@@ -113,45 +117,44 @@ void terminateProc(pcb_PTR parentProc){
 
     if(currentProc == parentProc){
 	    outChild(parentProc);
-    }
+    } 
 
     if(parentProc->p_semAdd == NULL){
 	    outProcQ(&readyQueue, parentProc);
     }
    else {
-        int* semdAdd = parentProc->p_semAdd;
-        pcb_PTR r = outBlocked(parentProc);
-        if(r != NULL){
+        
+        pcb_PTR removed = outBlocked(parentProc);
+        if(removed != NULL){
+        	int* semdAdd = removed->p_semAdd;
             if( semdAdd >= &semDevices[ZERO] && semdAdd <= &semDevices[DEVNUM]){
                 softBlockCount--;
             } else {
                 (*semdAdd)++;
-            }
+            }	
         }
-
+        
     }
     freePcb(parentProc);
     processCount--;
-    scheduler();
+    /* we call the scheduler in the switch case statements */
 }
 /* the wait() operation: When a process is waiting for IO and we want another process to execute while we're waiting.   */
 void passeren(state_PTR oldState){
-     int* semdAdd = (int*) oldState->s_a1;
+     int* semdAdd = (int*) oldState->s_a1; 
     (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
-    if((*semdAdd)<0){
-	stateCopy(oldState, &(currentProc->p_s));
-        insertBlocked(semdAdd, currentProc);
+    if((*semdAdd)<0){ /* if semdAdd is negative then there are process waiting on the semaphore. */
+	stateCopy(oldState, &(currentProc->p_s)); /* save the currentProc state, then we'll insert the currentProc on the asl */
+       insertBlocked(semdAdd, currentProc); 
         scheduler();
     }
-    loadState(oldState);
+    loadState(oldState);   
 }
 
 /* the signal() operation */
 void ver(state_PTR oldState){
     int* semdAdd = (int*)oldState->s_a1;
-
     (*semdAdd)++;
-
     if((*semdAdd)<=0){
         pcb_PTR temp = removeBlocked(semdAdd);
         if(temp != NULL) {
@@ -164,7 +167,6 @@ void ver(state_PTR oldState){
 
 void waitForIO(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
-
     int lineNo = oldState->s_a1;
     int devNo = oldState->s_a2;
     int waitterm = oldState->s_a3;
@@ -184,7 +186,7 @@ void getCPUTime(state_PTR oldState){
     time -= startTOD;
     currentProc->p_time += time;
     currentProc->p_s.s_v0 = currentProc->p_time;
-    loadState(&currentProc->p_s);
+    loadState(&currentProc->p_s);   
 }
 
 
@@ -203,16 +205,17 @@ void waitForClock(state_PTR oldState){
 void getSupport(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
     currentProc->p_s.s_v0 =(int) currentProc->p_supportStruct;
-    loadState(&currentProc->p_s);
+    loadState(&currentProc->p_s);   
 }
 
 /* passes up process */
 void passUpOrDie(state_PTR oldState, int exception){
-    if(currentProc->p_supportStruct == NULL){
-        terminateProc(currentProc);
-        currentProc = NULL;
+	support_t *supportStruct = currentProc->p_supportStruct;
+    if((supportStruct == NULL) || supportStruct == 0) {
+        terminateProc(currentProc); 
+        scheduler();
     }else{
-        stateCopy(oldState, &(currentProc->p_supportStruct->sup_exceptState[exception]));
+       stateCopy(oldState, &(currentProc->p_supportStruct->sup_exceptState[exception])); 
         unsigned int stackPtrToLoad = currentProc->p_supportStruct->sup_exceptContext[exception].c_stackPtr;
        unsigned int statusToLoad = currentProc->p_supportStruct->sup_exceptContext[exception].c_status;
        unsigned int pcToLoad = currentProc->p_supportStruct->sup_exceptContext[exception].c_pc;
@@ -233,10 +236,12 @@ void stateCopy(state_PTR oldState, state_PTR newState){
 }
 
 
-void otherExceptions(int reason){
-    if(reason<4){
-        passUpOrDie((state_PTR) BIOSDATAPAGE,  PGFAULTEXCEPT);
-    } else{
-        passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
-    }
+void tlbTrapHandler(){
+	passUpOrDie((state_PTR) BIOSDATAPAGE,  PGFAULTEXCEPT);
 }
+
+void programTrapHandler(){
+passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
+}
+
+
