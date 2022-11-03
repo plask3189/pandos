@@ -241,7 +241,7 @@ void tlbTrapHandler(){
 }
 
 void programTrapHandler(){
-passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
+	passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
 }
 
 
