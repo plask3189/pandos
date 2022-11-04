@@ -30,28 +30,28 @@ void IOHandler(){
     } else if (ipBits & LINE2INTON) { /* "Interrupt line 2 is reserved for the system wide interval timer." p.27 pops */
         LDIT(IOCLOCK); /* acknowledge the PLT interrupt by loading the timer with a new value. */
         /* * * * * Unblock a pcb, add to readyQueue * * * */
-        STCK(stopTOD);  
+        STCK(stopTOD);
         pcb_PTR proc = removeBlocked(clockSem);  /* unblock pcb blocked on the pseudo-clock semphore.*/
         if (proc != NULL) {
-        	softBlockCount--; /* since we unblocked pcb from the asl, decrement softBlockCount. */
+        	softBlockCount--; /* decrement softBlockCount. */
         }
         while (proc!=NULL)
         {
             proc->p_time = (proc->p_time) + (stopTOD- startTOD);
             insertProcQ(&readyQueue, proc);
             proc = removeBlocked(clockSem);
-            
+
         }
         *clockSem = 0;
-        prepToSwitchProcessAfterIoHandled(); 
-    } 
+        prepToSwitchProcessAfterIoHandled();
+    }
     else if (ipBits & LINE1INTON) { /* Processor Local Timer Interrupt. The PLT supports the Scheduler*/
-        prepToSwitchProcessAfterIoHandled(); 
-    } 
+        prepToSwitchProcessAfterIoHandled();
+    }
     /* For interrupt lines 3-7, the Interrupting Devices Bit Map will indicate which devices on each of these interrupt lines have a pending interrupt. */
-    if (ipBits & LINE3INTON) { 
+    if (ipBits & LINE3INTON) {
         interruptLineNumber = 3; /* Interrupt line 3 corresponds to disk devices. */
-    } else if (ipBits & LINE4INTON) { 
+    } else if (ipBits & LINE4INTON) {
         interruptLineNumber = 4; /* Interrupt line 4 corresponds to flash devices. */
     } else if (ipBits & LINE5INTON) {
         interruptLineNumber = 5; /* Interrupt line 5 corresponds to network devices. */
@@ -85,7 +85,7 @@ void IOHandler(){
 /* * * * Non-timer interrupts * * * */
     if( interruptLineNumber >= 3){
     	int actualDeviceNumber = (interruptLineNumber - 3);
-        int deviceSemaphore = actualDeviceNumber * DEVPERINT + deviceNumber; 
+        int deviceSemaphore = actualDeviceNumber * DEVPERINT + deviceNumber;
         int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) + (deviceNumber * 0x10); /* according to p.28 pandos, this is how to compute the starting address of the device's device register */
         int statusOfCurrentProcess;
         device_t* dev = (device_t *) startingAddressOfDeviceRegister;
@@ -104,7 +104,7 @@ void IOHandler(){
             }
         }
         /* * * * Unblock from the asl. * * * */
-        int *semad = &semDevices[deviceSemaphore]; 
+        int *semad = &semDevices[deviceSemaphore];
         (*semad)++; /* increment the device's semaphore. */
         if(*semad >= ZERO){
             pcb_PTR proc = removeBlocked(semad); /* unblock the process from the semaphore. We're not blocked anymore, now we're ready! */
@@ -127,7 +127,7 @@ void IOHandler(){
 void prepToSwitchProcessAfterIoHandled(){
     state_PTR oldState = (state_PTR) BIOSDATAPAGE;
     if(currentProc != NULL){ /* change the current process state from running to ready */
-        stateCopy(oldState, &(currentProc->p_s)); 
+        stateCopy(oldState, &(currentProc->p_s));
         insertProcQ(&readyQueue, currentProc); /* place the current process on the ready queue; transitioning the current process from running to ready state. */
     }
     scheduler();
