@@ -83,7 +83,7 @@ int main(){
         insertProcQ(&readyQueue, firstProc); /* onto the readyQueue, insert firstProc */
         processCount++; /* Increment process count # */
         LDIT(IOCLOCK); /* load the system-wide interval timer w/ 100 ms */
-         firstProc = NULL; 
+        firstProc = NULL; 
         STCK(startTOD); 
         scheduler(); /* Pass off the reins to the Scheduler */
     }
@@ -103,15 +103,15 @@ void exceptionHandler(){
     /* initiailze the variable holding the Exception cause from the BIOSDATAPAGE */
     int reason = ((oldstate->s_cause & EXCODEMASK) >> SHIFT);
     if(reason == IOINTERRUPT){ /* IOInterrupt = 0 , const.h */
-     IOHandler();
-     }
+        IOHandler();
+    }
     if(reason <= TLBEXCEPTION){ /* TLBException = 3, const.h */
     	tlbTrapHandler();
     }
     if(reason == SYSEXCEPTION){ /* SYSException = 8, const.h */
-     SYSCALLHandler();
-     }
-     else{ /* If none of the above, call the program trap handler */
+        SYSCALLHandler();
+    }
+    else{ /* If none of the above, call the program trap handler */
      	programTrapHandler();
      }
 }
