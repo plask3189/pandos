@@ -3,9 +3,9 @@
 #include "../h/const.h"
 #include "../h/pcb.h"
 #include "../h/asl.h"
+#include "../h/initial.h"
 #include "../h/scheduler.h"
 #include "../h/exceptions.h"
-#include "../h/initial.h"
 #include "/usr/include/umps3/umps/libumps.h"
 
 extern pcb_PTR currentProc;
@@ -32,7 +32,7 @@ void passUpOrDie(state_PTR curr, int exception);
 void otherExceptions();
 
 void stateCopy(state_PTR oldState, state_PTR newState);
-
+HIDDEN void blocking(int* processToBlock);
 
 void SYSCALLHandler(){
     /* Save the processor state. */
@@ -114,7 +114,6 @@ void terminateProc(pcb_PTR parentProc){
     while(!emptyChild(parentProc)){
 	    terminateProc(removeChild(parentProc));
     }
-
     if(currentProc == parentProc){
 	    outChild(parentProc);
     } 
@@ -132,8 +131,7 @@ void terminateProc(pcb_PTR parentProc){
             } else {
                 (*semdAdd)++;
             }	
-        }
-        
+        }  
     }
     freePcb(parentProc);
     processCount--;
@@ -144,9 +142,7 @@ void passeren(state_PTR oldState){
      int* semdAdd = (int*) oldState->s_a1; 
     (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
     if((*semdAdd)<0){ /* if semdAdd is negative then there are process waiting on the semaphore. */
-	stateCopy(oldState, &(currentProc->p_s)); /* save the currentProc state, then we'll insert the currentProc on the asl */
-       insertBlocked(semdAdd, currentProc); 
-        scheduler();
+	blocker(semdAdd);
     }
     loadState(oldState);   
 }
@@ -164,27 +160,25 @@ void ver(state_PTR oldState){
     loadState(oldState);
 }
 
-
+/* the initiating process is blocked until the IO completes. */
 void waitForIO(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
-    int lineNo = oldState->s_a1;
-    int devNo = oldState->s_a2;
+    int lineNumber = oldState->s_a1;
+    int deviceNumber = oldState->s_a2;
     int waitterm = oldState->s_a3;
-    int devi = ((lineNo - 3 + waitterm) * DEVPERINT + devNo);
-    semDevices[devi]--;
+    int deviceSemaphore = ((lineNumber - 3 + waitterm) * DEVPERINT + deviceNumber);
+    semDevices[deviceSemaphore]--;
     softBlockCount++;
-    insertBlocked(&(semDevices[devi]), currentProc);
-    currentProc = NULL;
-    scheduler();
+    blocker(&(semDevices[DEVNUM]));
 }
 
-
+/* requests the accumulated processor time used by the requesting process. places it in the caller's v0. */
 void getCPUTime(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
     cpu_t time;
     STCK(time);
-    time -= startTOD;
-    currentProc->p_time += time;
+    time = time - startTOD;
+    currentProc->p_time = currentProc->p_time + time; 
     currentProc->p_s.s_v0 = currentProc->p_time;
     loadState(&currentProc->p_s);   
 }
@@ -194,14 +188,12 @@ void waitForClock(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
     (*clockSem)--;
     if((*clockSem)<0){
-        insertBlocked(clockSem, currentProc);
         softBlockCount++;
-        currentProc = NULL;
-        scheduler();
+        blocker(&(semDevices[DEVNUM-1]));
     }
 }
 
-
+/* requests a pointer to the current process' support structure. */
 void getSupport(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
     currentProc->p_s.s_v0 =(int) currentProc->p_supportStruct;
@@ -230,8 +222,8 @@ void stateCopy(state_PTR oldState, state_PTR newState){
 	    newState->s_reg[i] = oldState->s_reg[i];
     }
     newState->s_entryHI = oldState->s_entryHI;
-    newState->s_cause = oldState->s_cause;
     newState->s_status = oldState->s_status;
+    newState->s_cause = oldState->s_cause;
     newState->s_pc = oldState->s_pc;
 }
 
@@ -241,7 +233,16 @@ void tlbTrapHandler(){
 }
 
 void programTrapHandler(){
-	passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
+passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
 }
 
+/* store time that the proc took to run, insert it into the asl, get the next proc by calling the scheduler. */
+HIDDEN void blocker(int* processToBlock){
+	cpu_t stopTOD;
+	STCK(stopTOD);
+	currentProc -> p_time = currentProc -> p_time + (stopTOD-startTOD);
+	insertBlocked(blocking, currentProc);
+	currentProc = NULL;
+	scheduler();
+}
 
