@@ -22,8 +22,8 @@ extern cpu_t startTOD;
  * each process that needs to be executed.
  */
 void scheduler(){
-    cpu_t howManyProcessorCyclesElapsed;
-    if(currentProc != NULL){ 
+    cpu_t howManyProcessorCyclesElapsed; /* Initialize variable to track proc cycles */
+    if(currentProc != NULL){ /* if a process is current there */
         STCK(howManyProcessorCyclesElapsed); /* STCK() stores how many processor cycles have elapsed*/
         currentProc->p_time = currentProc->p_time + (howManyProcessorCyclesElapsed - startTOD);
         LDIT(IOCLOCK); /* load the interval timer with IOCLOCK value */
