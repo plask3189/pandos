@@ -61,8 +61,10 @@ void scheduler(){
  }
 
 
-/* BOOM! Context Switch! */
+/* BOOM! Context Switch!
+ * Pass in a new process that will now be in control of the machine */
 void loadState(state_PTR ps){
+    /* Load the passed-in process, becoming the new currentProc */ 
     LDST(ps);
 }
 
