@@ -10,7 +10,7 @@
 #define RAMBASEADDR		0x10000000
 #define RAMBASESIZE		0x10000004
 #define TODLOADDR		  0x1000001C
-#define INTERVALTMR		0x10000020	
+#define INTERVALTMR		0x10000020
 #define TIMESCALEADDR	0x10000024
 
 
@@ -32,7 +32,7 @@
 #define DEVNUM            49
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
-#define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */	
+#define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */
 #define DEVREGSIZE	  16 		/* device register size in bytes */
 
 /* device register field number for non-terminal devices */
@@ -79,14 +79,14 @@
 #define	ALIGNED(A)		(((unsigned)A & 0x3) == 0)
 
 /* Macro to load the Interval Timer */
-#define LDIT(T)	((* ((cpu_t *) INTERVALTMR)) = (T) * (* ((cpu_t *) TIMESCALEADDR))) 
+#define LDIT(T)	((* ((cpu_t *) INTERVALTMR)) = (T) * (* ((cpu_t *) TIMESCALEADDR)))
 
 /* Macro to read the TOD clock */
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
 #define MAXPROC 20
 #define IOCLOCK 100000 /* aka 100 ms */
-#define QUANTUM 5000
-#define INTERVAL 
+#define QUANTUM 5000 /* the PLT holds 5ms (a quantum) */
+#define INTERVAL
 
 /* syscalls */
 #define CREATEPROCESS 1
@@ -103,13 +103,13 @@
 #define STATUSREG 0x10400000
 
 /* bit operations */
-#define ALLOFF 0x00000000
+#define ALLOFF 0x00000000 /* Set all of the bits in the status register to 0. */
 #define IEON 0x00000004
 #define IECON	0x00000001
 #define IMON 0x0000FF00
-#define TEBITON 0x08000000
+#define TEBITON 0x08000000 /* In the status register, turn the TE Bit on which means that we enable the processor local timer. */
 #define UMOFF 0x00000002
-#define KUON 0x00000008 
+#define KUON 0x00000008
 
 /* masks */
 #define EXCODEMASK 0x0000007C
