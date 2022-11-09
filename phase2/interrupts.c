@@ -94,7 +94,8 @@ void IOHandler(){
     	int actualDeviceNumber = (interruptLineNumber - 3);
         int deviceSemaphore = actualDeviceNumber * DEVPERINT + deviceNumber;
         /* according to p.28 pandos, this is how to compute the starting address of the device's device register */
-	int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) + (deviceNumber * 0x10);
+	int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) + 
+		(deviceNumber * 0x10);
         int statusOfCurrentProcess;
         device_t* dev = (device_t *) startingAddressOfDeviceRegister;
         if (interruptLineNumber != 7){ /* If the interrupt line number does NOT correspond to terminal devices. */
@@ -115,7 +116,8 @@ void IOHandler(){
         int *semad = &semDevices[deviceSemaphore];
         (*semad)++; /* increment the device's semaphore. */
         if(*semad >= ZERO){
-            pcb_PTR proc = removeBlocked(semad); /* unblock the process from the semaphore. We're not blocked anymore, now we're ready! */
+            pcb_PTR proc = removeBlocked(semad); /* unblock the process from the semaphore. We're not blocked anymore, now 
+	    					  * we're ready! */
             if(proc!=NULL){
                 STCK(stopTOD);
                 softBlockCount--;
