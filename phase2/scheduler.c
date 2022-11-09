@@ -64,7 +64,8 @@ void scheduler(){
              PANIC(); /* Stop, Panic time */
         }
 
-        /* If for some reason there are pcbs in the readyQueue and there are pcbs on the ASL but we can't make a pointer to it called next...*/
+        /* If for some reason there are pcbs in the readyQueue and there are pcbs on the ASL but we can't make a pointer to it 
+         * called next...*/
         if ((softBlockCount > 0) && (processCount > 0)){
             int maskForStatus = ALLOFF | IECON | IMON ;
             setSTATUS(maskForStatus);
