@@ -118,13 +118,15 @@ void createProc(state_PTR oldState){
 /* Remove the parent process and its children. */
 void terminateProc(pcb_PTR parentProc){
     while(emptyChild(parentProc)==TRUE){ /* While the pcb pointed to by parentProc has children. */
-      pcb_PTR kidToTerminate = removeChild(parentProc);/* get the pointer to kid to removed which is its parent pcb pointed to by parentProc.*/
+      pcb_PTR kidToTerminate = removeChild(parentProc);/* get the pointer to kid to removed which is 
+      							its parent pcb pointed to by parentProc.*/
 	    terminateProc(kidToTerminate);
     }
     if(currentProc == parentProc){
 	    outChild(parentProc); /* make the pcb pointed to by parentProc no longer the child of its parent */
     }
-    /* if the process to remove is in the readyQueue (aka the pointer to the semaphore on which the process is blocked is NULL b/c it's not there. )*/
+    /* if the process to remove is in the readyQueue (aka the pointer to the semaphore on which the process is 
+    blocked is NULL b/c it's not there. )*/
     if(parentProc->p_semAdd == NULL){
 	outProcQ(&readyQueue, parentProc);
     }
@@ -146,7 +148,8 @@ void terminateProc(pcb_PTR parentProc){
 /* the wait() operation: When a process is waiting for IO and we want another process to execute while we're waiting.   */
 void passeren(state_PTR oldState){
      int* semdAdd = (int*) oldState->s_a1;
-    (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
+    (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude 
+    		  of process waiting on the semaphore.*/
     if((*semdAdd)<0){ /* if semdAdd is negative then there are process waiting on the semaphore. */
 	blocker(semdAdd);
     }
