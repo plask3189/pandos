@@ -1,3 +1,8 @@
+/* EXCEPTIONS.C */
+/* The Exception Handler for PandOS and its included helper functions
+ * Written by Kate Plas && Travis Wahl
+ * For CSCI-320 Operating Systems */
+
 #include <stdio.h>
 #include "../h/types.h"
 #include "../h/const.h"
