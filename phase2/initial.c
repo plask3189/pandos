@@ -58,7 +58,8 @@ int main(){
 
     /* Ensure the current process is NULL as no process has been called yet */
     currentProc = NULL;
-    /* make a new empty process queue with tail pointer called readyQueue. The initial pcb will be placed in this queue. */
+    /* make a new empty process queue with tail pointer called readyQueue. The initial pcb will be 
+     * placed in this queue. */
     readyQueue = mkEmptyProcQ();
 
     /* Initialize a Process Count and Soft Block Count of 0 */
@@ -83,7 +84,10 @@ int main(){
         firstProc->p_supportStruct = NULL;
         insertProcQ(&readyQueue, firstProc); /* onto the readyQueue, insert firstProc */
         processCount++; /* Increment process count to accurately reflect how many pcbs are in the readyQueue. */
-        LDIT(IOCLOCK); /* load the system-wide interval timer w/ 100 ms * time scale value. When it starts to count down, it indicates how long a pcb has been in the readyQueue. We don't want the pcb to stay in the readyQueue forever, so we need to generate an interrupt when it's time for the process to execute. */
+        LDIT(IOCLOCK); /* load the system-wide interval timer w/ 100 ms * time scale value. When it starts to 
+                        count down, it indicates how long a pcb has been in the readyQueue. We don't want the 
+                        pcb to stay in the readyQueue forever, so we need to generate an interrupt when it's 
+                        time for the process to execute. */
         firstProc = NULL;
         STCK(startTOD);
         scheduler(); /* Pass off the reins to the Scheduler so that the process can execute on the CPU. */
