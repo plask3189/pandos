@@ -4,7 +4,7 @@
  * For: PandOS project CSCI 320
  *
  * Initial.c serves as the housing for the main() function that starts the PandOS Operating System.
- If possible, we remove a pcb from the pcbFree list and put it on the readyQueue.
+ * If possible, we remove a pcb from the pcbFree list and put it on the readyQueue.
  * Global variables are initialized here and will continue to be used throughout the Phase 2 implementation
  * of this Operating System. Methods from other files including Phase 1 ASL and PCB are also included here.
  */
