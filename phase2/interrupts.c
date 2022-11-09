@@ -3,7 +3,8 @@
 /* For PandOS Project */
 /* CSCI-320 */
 
-/* An interrupt happens when a previously initiated IO request completes or when the PLT or Interval Timer makes a 0x0000.0000 -> 0xFFFFFFFF transition. */
+/* An interrupt happens when a previously initiated IO request completes or when the PLT or Interval Timer makes 
+* a 0x0000.0000 -> 0xFFFFFFFF transition. */
 
 #include <stdio.h>
 #include "../h/types.h"
@@ -53,7 +54,8 @@ void IOHandler(){
     else if (ipBits & LINE1INTON) { /* Processor Local Timer Interrupt. The PLT supports the Scheduler*/
         prepToSwitchProcessAfterIoHandled();
     }
-    /* For interrupt lines 3-7, the Interrupting Devices Bit Map will indicate which devices on each of these interrupt lines have a pending interrupt. */
+    /* For interrupt lines 3-7, the Interrupting Devices Bit Map will indicate which devices on each of these 
+     * interrupt lines have a pending interrupt. */
     if (ipBits & LINE3INTON) {
         interruptLineNumber = 3; /* Interrupt line 3 corresponds to disk devices. */
     } else if (ipBits & LINE4INTON) {
@@ -91,7 +93,8 @@ void IOHandler(){
     if( interruptLineNumber >= 3){
     	int actualDeviceNumber = (interruptLineNumber - 3);
         int deviceSemaphore = actualDeviceNumber * DEVPERINT + deviceNumber;
-        int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) + (deviceNumber * 0x10); /* according to p.28 pandos, this is how to compute the starting address of the device's device register */
+        /* according to p.28 pandos, this is how to compute the starting address of the device's device register */
+	int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) + (deviceNumber * 0x10);
         int statusOfCurrentProcess;
         device_t* dev = (device_t *) startingAddressOfDeviceRegister;
         if (interruptLineNumber != 7){ /* If the interrupt line number does NOT correspond to terminal devices. */
@@ -133,7 +136,8 @@ void prepToSwitchProcessAfterIoHandled(){
     state_PTR oldState = (state_PTR) BIOSDATAPAGE;
     if(currentProc != NULL){ /* change the current process state from running to ready */
         stateCopy(oldState, &(currentProc->p_s));
-        insertProcQ(&readyQueue, currentProc); /* place the current process on the ready queue; transitioning the current process from running to ready state. */
+        insertProcQ(&readyQueue, currentProc); /* place the current process on the ready queue; transitioning the current 
+						* process from running to ready state. */
     }
     scheduler();
 }
