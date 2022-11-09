@@ -46,7 +46,8 @@ pcb_t *allocPcb(){
 	  pcbFree_h = p_temp -> p_next; /* access the head's next that pcbFree_h points to. Set this next to pcbFree_h so that pcbFree_h 
 	  				points to the node below the old head. */
 
-		/* The below assignments provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0).  These fields are from page 8 of pandos. */
+		/* The below assignments provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0).  These fields are from 
+		page 8 of pandos. */
 	  /* The below assignments are process queue fields */
 		p_temp -> p_next = NULL;
 		p_temp -> p_prev = NULL;
