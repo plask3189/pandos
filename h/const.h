@@ -65,7 +65,8 @@
 #define KUSEG           0x80000000
 #define RAMSTART        0x20000000
 #define BIOSDATAPAGE    0x0FFFF000
-#define	PASSUPVECTOR	  0x0FFFF900 /* The pass up vector is where the BIOS finds the address of the Nucleus functions to pass control */
+#define	PASSUPVECTOR	  0x0FFFF900 /* The pass up vector is where the BIOS finds the address of the Nucleus functions to 
+                                    pass control */
 
 /* Exceptions related constants */
 #define	PGFAULTEXCEPT	  0
