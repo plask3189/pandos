@@ -1,3 +1,8 @@
+/* INTERRUPTS.C */
+/* Written by Kate Plas && Travis Wahl
+/* For PandOS Project */
+/* CSCI-320 */
+
 /* An interrupt happens when a previously initiated IO request completes or when the PLT or Interval Timer makes a 0x0000.0000 -> 0xFFFFFFFF transition. */
 
 #include <stdio.h>
