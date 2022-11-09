@@ -90,14 +90,19 @@ void SYSCALLHandler(){
     }
 }
 
-/* "The sys1 service is requested by the calling process by placing the value 1 in a0, a pointer to a processor state in a1, a pointer to a support struct in a2, and then executing the syscall instruction." p.25 pandos*/
+/* "The sys1 service is requested by the calling process by placing the value 1 in a0, a pointer to a processor state 
+in a1, a pointer to a support struct in a2, and then executing the syscall instruction." p.25 pandos*/
 void createProc(state_PTR oldState){
     pcb_PTR child = allocPcb(); /* Allocate a pcb from the pcbFree list. */
     int returnStatus = -1;
     if(child != NULL){ /* If we can allocate a fresh pcb from the pcbFree list. */
         insertChild(currentProc, child); /* Make "child" a child of currentProc */
         insertProcQ(&readyQueue, child); /* Add the child to the readyQueue. */
-        stateCopy((state_PTR) (oldState->s_a1), &(child->p_s)); /* copy oldState's state registers into child's state registers. a1 holds the address (is a pointer to) a process state pointer. This process state pointer holds the state registers in CP0. We copy the pointer to a process state pointer into the address of child's process state pointer.  Since a1 points to p_s, we've changed what child's a1 points to since child's p_s now points to a copy of oldState's p_s. */
+        /* copy oldState's state registers into child's state registers. a1 holds the address (is a pointer to) 
+	a process state pointer. This process state pointer holds the state registers in CP0. We copy the pointer 
+	to a process state pointer into the address of child's process state pointer.  Since a1 points to p_s, 
+	we've changed what child's a1 points to since child's p_s now points to a copy of oldState's p_s. */
+	stateCopy((state_PTR) (oldState->s_a1), &(child->p_s)); 
         if(oldState->s_a2 != 0 || oldState->s_a2 != NULL){
             child->p_supportStruct = (support_t *) oldState->s_a2;
         } else {
@@ -119,8 +124,9 @@ void terminateProc(pcb_PTR parentProc){
     if(currentProc == parentProc){
 	    outChild(parentProc); /* make the pcb pointed to by parentProc no longer the child of its parent */
     }
-    if(parentProc->p_semAdd == NULL){ /* if the process to remove is in the readyQueue (aka the pointer to the semaphore on which the process is blocked is NULL b/c it's not there. )*/
-	    outProcQ(&readyQueue, parentProc);
+    /* if the process to remove is in the readyQueue (aka the pointer to the semaphore on which the process is blocked is NULL b/c it's not there. )*/
+    if(parentProc->p_semAdd == NULL){
+	outProcQ(&readyQueue, parentProc);
     }
    else {
         pcb_PTR removed = outBlocked(parentProc);
