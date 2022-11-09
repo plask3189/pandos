@@ -1,7 +1,12 @@
 /* EXCEPTIONS.C */
 /* The Exception Handler for PandOS and its included helper functions
  * Written by Kate Plas && Travis Wahl
- * For CSCI-320 Operating Systems */
+ * For CSCI-320 Operating Systems
+ *
+ * Exceptions.c handles the SYSCALLs of the operating system.  If a SYSCALL is being requested
+ * by a program in user mode or if it is not a SYSCALL of 1 thru 8, PassUpOrDie gets invoked. Otherwise, 
+ * a syscall exception can take place and handled properly below.  Helper functions are also defined here
+ * such as handling a Program trap and a TLB trap. */
 
 #include <stdio.h>
 #include "../h/types.h"
