@@ -1,5 +1,12 @@
-
-/* When an exception happens, service routines are entered in kernel mode. The kernel inspects the interrupting instruction to determine what system call happened. The syscallNumber indicates the type of service that the user program is requesting. */
+/* EXCEPTIONS.C */
+/* The Exception Handler for PandOS and its included helper functions
+ * Written by Kate Plas && Travis Wahl
+ * For CSCI-320 Operating Systems
+ *
+ * Exceptions.c handles the SYSCALLs of the operating system.  If a SYSCALL is being requested
+ * by a program in user mode or if it is not a SYSCALL of 1 thru 8, PassUpOrDie gets invoked. Otherwise,
+ * a syscall exception can take place and handled properly below.  Helper functions are also defined here
+ * such as handling a Program trap and a TLB trap. */
 
 #include <stdio.h>
 #include "../h/types.h"
@@ -93,7 +100,8 @@ void SYSCALLHandler(){
     }
 }
 
-/* "The sys1 service is requested by the calling process by placing the value 1 in a0, a pointer to a processor state in a1, a pointer to a support struct in a2, and then executing the syscall instruction." p.25 pandos*/
+/* "The sys1 service is requested by the calling process by placing the value 1 in a0, a pointer to a processor state
+in a1, a pointer to a support struct in a2, and then executing the syscall instruction." p.25 pandos*/
 void createProc(state_PTR oldState){
     pcb_PTR child = allocPcb(); /* Allocate a pcb from the pcbFree list. */
     int returnStatus = -1;

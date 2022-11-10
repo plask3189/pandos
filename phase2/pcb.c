@@ -28,20 +28,27 @@ HIDDEN pcb_PTR pcbFree_h; /* declaration for private global variable that points
 void freePcb(pcb_t *p){
 	/* Load the address of the current head into the next of the new node which is being pointed to by p */
 	p -> p_next = pcbFree_h;
-	/* Set the address of the new node to the address that the head holds. Now the head points to the new node that is on top of the stack holding the free pcbs. */
+	/* Set the address of the new node to the address that the head holds. Now the head points to the new node that is on 
+	top of the stack holding the free pcbs. */
 	pcbFree_h = p;
 }
 
 
-/* Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element. pcbs get reused, so it is important that no previous value persist in a pcb's when it gets reallocated. */
+/* Return NULL if the pcbFree list is empty. Otherwise, remove an element from the pcbFree list, provide initial values for ALL 
+of the pcb's ﬁelds (i.e. NULL and/or 0) and then return a pointer to the removed element. pcbs get reused, so it is important 
+that no previous value persist in a pcb's when it gets reallocated. */
 pcb_t *allocPcb(){
 	/* If the pcbFree list is occupied, remove an element from the pcbFree list. */
   if (pcbFree_h != NULL){
-	  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of the old head, which will be removed and the pointer to it returned. */
-	  p_temp = pcbFree_h; /* set address of current head to address of temp so that we can return the pointer to the removed element */
-	  pcbFree_h = p_temp -> p_next; /* access the head's next that pcbFree_h points to. Set this next to pcbFree_h so that pcbFree_h points to the node below the old head. */
+	  pcb_PTR p_temp; /* initialize p_temp pointer. We need temp pointer so we can keep track of the old head, which will 
+	  			be removed and the pointer to it returned. */
+	  p_temp = pcbFree_h; /* set address of current head to address of temp so that we can return the pointer to the 
+	  			removed element */
+	  pcbFree_h = p_temp -> p_next; /* access the head's next that pcbFree_h points to. Set this next to pcbFree_h so 
+	  				that pcbFree_h points to the node below the old head. */
 
-		/* The below assignments provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0).  These fields are from page 8 of pandos. */
+		/* The below assignments provide initial values for ALL of the pcbs' ﬁelds (i.e. NULL and/or 0).  These fields
+		are from page 8 of pandos. */
 	  /* The below assignments are process queue fields */
 		p_temp -> p_next = NULL;
 		p_temp -> p_prev = NULL;

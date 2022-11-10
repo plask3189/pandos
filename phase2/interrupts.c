@@ -93,7 +93,9 @@ void IOHandler(){
     if( interruptLineNumber >= 3){
     	int actualDeviceNumber = (interruptLineNumber - 3);
         int deviceSemaphore = actualDeviceNumber * DEVPERINT + deviceNumber;
-        int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) + (deviceNumber * 0x10); /* according to p.28 pandos, this is how to compute the starting address of the device's device register */
+        /* according to p.28 pandos, this is how to compute the starting address of the device's device register */
+	int startingAddressOfDeviceRegister = DEVICEREGISTERSSTARTINGADDRESS + ((interruptLineNumber -3) * 0x80) +
+		(deviceNumber * 0x10);
         int statusOfCurrentProcess;
         device_t* dev = (device_t *) startingAddressOfDeviceRegister;
         if (interruptLineNumber != 7){ /* If the interrupt line number does NOT correspond to terminal devices. */
@@ -114,7 +116,8 @@ void IOHandler(){
         int *semad = &semDevices[deviceSemaphore];
         (*semad)++; /* increment the device's semaphore. */
         if(*semad >= ZERO){
-            pcb_PTR proc = removeBlocked(semad); /* unblock the process from the semaphore. We're not blocked anymore, now we're ready! */
+            pcb_PTR proc = removeBlocked(semad); /* unblock the process from the semaphore. We're not blocked anymore, now
+	    					  * we're ready! */
             if(proc!=NULL){
                 STCK(stopTOD);
                 softBlockCount--;
@@ -135,7 +138,8 @@ void prepToSwitchProcessAfterIoHandled(){
     state_PTR oldState = (state_PTR) BIOSDATAPAGE;
     if(currentProc != NULL){
         stateCopy(oldState, &(currentProc->p_s));
-        insertProcQ(&readyQueue, currentProc); /* place the current process on the ready queue; transitioning the current process from running to ready state. */
+        insertProcQ(&readyQueue, currentProc); /* place the current process on the ready queue; transitioning the current
+						* process from running to ready state. */
     }
     scheduler();
 }

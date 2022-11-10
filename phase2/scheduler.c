@@ -33,9 +33,11 @@ void scheduler(){
 
     /* * * * If we CAN get a pcb that should start executing on the CPU * * * */
     if (next != NULL){ /* If there is a pcb in the readyQueue that next can point to. */
-        currentProc = next; /* Set the pcb that we just removed from the readyQueue (aka next) to be the currentProc since we're putting this pcb on the CPU to execute. */
+        currentProc = next; /* Set the pcb that we just removed from the readyQueue (aka next) to be the currentProc since we're
+                            putting this pcb on the CPU to execute. */
         STCK(startTOD); /* Populate startTOD with which clock tick we start executing the process on.*/
-        setTIMER(QUANTUM); /* Set timer for 5 ms. The PLT will begin counting down and will generate an interrupt when the 5ms are up and it's time to relinquish the CPU to another process.  */
+        setTIMER(QUANTUM); /* Set timer for 5 ms. The PLT will begin counting down and will generate an interrupt when the
+                            5ms are up and it's time to relinquish the CPU to another process.  */
         loadState(&(currentProc->p_s)); /* load this process onto the CPU to begin executing on the CPU. */
 
     /* * * * If we CANNOT get a pcb that should start executing on the CPU * * * */
@@ -45,11 +47,14 @@ void scheduler(){
         }
 
         /* The deadlock case */
-        if ((softBlockCount == 0) && (processCount > 0)){ /* In this case, the processes on the readyQueue would be ready forever since no interrupt would ever happen to the processes waiting on the asl (since there are none). */
+        if ((softBlockCount == 0) && (processCount > 0)){ /* In this case, the processes on the readyQueue would be ready forever
+                                                            since no interrupt would ever happen to the processes waiting on the
+                                                            asl (since there are none). */
              PANIC(); /* Stop, Panic time */
         }
 
-        /* If for some reason there are pcbs in the readyQueue and there are pcbs on the ASL but we can't make a pointer to it called next...*/
+        /* If for some reason there are pcbs in the readyQueue and there are pcbs on the ASL but we can't make a pointer to it
+         * called next...*/
         if ((softBlockCount > 0) && (processCount > 0)){
             int maskForStatus = ALLOFF | IECON | IMON ;
             setSTATUS(maskForStatus);
@@ -59,7 +64,9 @@ void scheduler(){
  }
 
 
-/* Returning to a previously interrupted execution stream is ac- complished via the LDST command which performs the complementary pop operation on the KU/IE stacks. Thus returning the processor to whatever interrupt state and mode was in effect when the exception occurred. */
+/* Returning to a previously interrupted execution stream is ac- complished via the LDST command which performs the
+* complementary pop operation on the KU/IE stacks. Thus returning the processor to whatever interrupt state and
+* mode was in effect when the exception occurred. */
 
 
  /* Pass in a new process that will now be in control of the machine */
