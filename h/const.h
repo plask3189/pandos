@@ -114,6 +114,7 @@
 /* masks */
 #define EXCODEMASK 0x0000007C
 #define IPMASK 0x00FF00
+
 #define LINE0INTON 1
 #define LINE1INTON 2
 #define LINE2INTON 4

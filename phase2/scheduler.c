@@ -3,10 +3,10 @@
  * Written By: Kate Plas && Travis Wahl
  * For: PandOS project CSCI
 
- * Our goal is to have some process running at all times to maximize CPU utilization. Whenever the CPU becomes idle (like after an IO when waiting for response), the OS selects one of the pcbs in the ready queue to be executed.
-
- * This is a round-robin scheduling algorithm with a time slice value of 5ms.
- * The Scheduler is called! So dispatch next process from the readyQueue.
+ *  Our goal is to have some process running at all times to maximize CPU utilization. Whenever the CPU becomes idle (like after an IO when waiting for response), the OS selects one of the pcbs in the ready queue to be executed. This is a round-robin scheduling algorithm with a time slice value of 5ms.
+ When the scheduler is called, it dispatches the next process from the readyQueue.
+    Here is an example of when the scheduler would be called:
+  a process just sent out an IO request so now it's waiting. We want to put this process on pause so we can run another process while we're waiting.
  */
 
 #include <stdio.h>
@@ -21,13 +21,10 @@
 /* Bring in the Start Time Of Day Clock variable */
 extern cpu_t startTOD;
 
-/* Start the scheduler! Round-Robin method is implemented and controls the schedule of each process that needs to be executed.
-* A possible situation where the scheduler() was called: a process just sent out an IO request so now it's waiting. We want to put this process on pause so we can run another process while we're waiting. */
-
 void scheduler(){
     cpu_t howManyProcessorCyclesElapsed; /* Initialize variable to track proc cycles */
     if(currentProc != NULL){ /* There is a process currently running. We want to check how long it has been executing on the CPU/ */
-        STCK(howManyProcessorCyclesElapsed); /* This is an assignment statement!! We populate howManyProcessorCyclesElapsed with the TOD clock/time scale (We need this to check how long this currently running process has been executing). */
+        STCK(howManyProcessorCyclesElapsed); /* This is an assignment!! We populate howManyProcessorCyclesElapsed with the TOD clock/time scale (We need this to check how long this currently running process has been executing). */
         currentProc->p_time = currentProc->p_time + (howManyProcessorCyclesElapsed - startTOD); /* update how long this executing process has been hogging the CPU. */
         LDIT(IOCLOCK); /* Set the interval timer to generate an interrupt if necessary. */
     }

@@ -1,3 +1,6 @@
+
+/* When an exception happens, service routines are entered in kernel mode. The kernel inspects the interrupting instruction to determine what system call happened. The syscallNumber indicates the type of service that the user program is requesting. */
+
 #include <stdio.h>
 #include "../h/types.h"
 #include "../h/const.h"
@@ -46,7 +49,7 @@ void SYSCALLHandler(){
 	    passUpOrDie(ps, GENERALEXCEPT);
     }
 
-    int syscallNumber = (ps->s_a0);
+    int syscallNumber = (ps->s_a0); /* syscallNumber can be an integer [1-8]. */
     switch (syscallNumber)
     {
     case CREATEPROCESS:{ /* if syscallNumber == 1 */
@@ -57,7 +60,7 @@ void SYSCALLHandler(){
         if(currentProc != NULL){
             terminateProc(currentProc);
         }
-        scheduler();
+        scheduler(); /* Call the scheduler here so that this line is executed after ALL progeny of the currentProc are terminated. */
         break;}
 
     case PASSEREN:{ /* if syscallNumber == 3 */
@@ -97,7 +100,7 @@ void createProc(state_PTR oldState){
     if(child != NULL){ /* If we can allocate a fresh pcb from the pcbFree list. */
         insertChild(currentProc, child); /* Make "child" a child of currentProc */
         insertProcQ(&readyQueue, child); /* Add the child to the readyQueue. */
-        stateCopy((state_PTR) (oldState->s_a1), &(child->p_s)); /* copy oldState's state registers into child's state registers. a1 holds the address (is a pointer to) a process state pointer. This process state pointer holds the state registers in CP0. We copy the pointer to a process state pointer into the address of child's process state pointer.  Since a1 points to p_s, we've changed what child's a1 points to since child's p_s now points to a copy of oldState's p_s. */
+        stateCopy((state_PTR) (oldState->s_a1), &(child->p_s)); /* Copy oldState's state registers into child's state registers. a1 holds the address (is a pointer to) a process state pointer. This process state pointer holds the state registers in CP0. We copy the pointer to a process state pointer into the address of child's process state pointer.  Since a1 points to p_s, we've changed what child's a1 points to since child's p_s now points to a copy of oldState's p_s. */
         if(oldState->s_a2 != 0 || oldState->s_a2 != NULL){
             child->p_supportStruct = (support_t *) oldState->s_a2;
         } else {
@@ -107,19 +110,19 @@ void createProc(state_PTR oldState){
         returnStatus = 0;
     }
     currentProc->p_s.s_v0 = returnStatus;
-    loadState(oldState); /* continue executing */
+    loadState(oldState); /* Continue executing */
 }
 
 /* Remove the parent process and its children. */
 void terminateProc(pcb_PTR parentProc){
     while(emptyChild(parentProc)==TRUE){ /* While the pcb pointed to by parentProc has children. */
-      pcb_PTR kidToTerminate = removeChild(parentProc);/* get the pointer to kid to removed which is its parent pcb pointed to by parentProc.*/
+      pcb_PTR kidToTerminate = removeChild(parentProc);/* The pointer to the kid to be removed is its parent pcb pointed to by parentProc.*/
 	    terminateProc(kidToTerminate);
     }
     if(currentProc == parentProc){
-	    outChild(parentProc); /* make the pcb pointed to by parentProc no longer the child of its parent */
+	    outChild(parentProc); /* Make the pcb pointed to by parentProc no longer the child of its parent */
     }
-    if(parentProc->p_semAdd == NULL){ /* if the process to remove is in the readyQueue (aka the pointer to the semaphore on which the process is blocked is NULL b/c it's not there. )*/
+    if(parentProc->p_semAdd == NULL){ /* if the process to remove is in the readyQueue (aka the pointer to the semaphore on which the process is blocke is NULL b/c it's not there. )*/
 	    outProcQ(&readyQueue, parentProc);
     }
    else {
@@ -133,14 +136,15 @@ void terminateProc(pcb_PTR parentProc){
             }
         }
     }
-    freePcb(parentProc); /* push the parentProc onto the pcbFree list. */
-    processCount--;
-    /* we call the scheduler in the switch case statements */
+    freePcb(parentProc); /* Push the parentProc onto the pcbFree list. */
+    processCount--; /* Decrement how many processes are on the readyQueue. */
+    /* We call the scheduler in the switch case statements because this method is recursive. We don't want to call the scheduler each time a child is removed. Rather, call the scheduler when all progeny are terminated. */
 }
-/* the wait() operation: When a process is waiting for IO and we want another process to execute while we're waiting.   */
+
+/* The wait() operation: When a process is waiting for IO and we want another process to execute while we're waiting.   */
 void passeren(state_PTR oldState){
      int* semdAdd = (int*) oldState->s_a1;
-    (*semdAdd)--; /* decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
+    (*semdAdd)--; /* Decrement the number of processes waiting on this semaphore to indicate the increased magnitude of process waiting on the semaphore.*/
     if((*semdAdd)<0){ /* if semdAdd is negative then there are process waiting on the semaphore. */
 	blocker(semdAdd);
     }
@@ -183,7 +187,7 @@ void getCPUTime(state_PTR oldState){
     loadState(&currentProc->p_s);
 }
 
-
+/* This service performs a P operation on the Nucleus maintained Pseudo-clock semaphore. This semaphore is V’ed every 100 milliseconds by the Nucleus.*/
 void waitForClock(state_PTR oldState){
     stateCopy(oldState, &(currentProc->p_s));
     (*clockSem)--;
@@ -235,6 +239,8 @@ void tlbTrapHandler(){
 	passUpOrDie((state_PTR) BIOSDATAPAGE,  PGFAULTEXCEPT);
 }
 
+
+/* If user program fails in some way-such as by making an attempt either to execute an illegal instruction or to access memory that is not in the user's address space, then the hardware traps to the operating system. */
 void programTrapHandler(){
 passUpOrDie((state_PTR) BIOSDATAPAGE,  GENERALEXCEPT);
 }
