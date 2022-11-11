@@ -187,7 +187,7 @@ void initASL(){
 
 
 	/* Initialize the last dumb node */
-	dumbLast -> s_semAdd = MAXINT; 	/* Tail dummy gets set to the MAXINT value, defined in const.h */
+	dumbLast -> s_semAdd = MAXPROC; 	/* Tail dummy gets set to the MAXPROC value, defined in const.h */
 	dumbLast -> s_next = NULL;	/* Nothing comes after the Tail dummy, so we set the last dummy's next to NULL */
 	dumbLast -> s_procQ = mkEmptyProcQ();	/* clear s_procQ (sets to NULL) */
 

@@ -54,7 +54,7 @@
 
 /* device common COMMAND codes */
 #define RESET			    0
-#define ACK				    1
+#define ACKNOWLEDGE			    1
 
 #define STATEREGNUM	31
 
@@ -65,7 +65,7 @@
 #define KUSEG           0x80000000
 #define RAMSTART        0x20000000
 #define BIOSDATAPAGE    0x0FFFF000
-#define	PASSUPVECTOR	  0x0FFFF900 /* The pass up vector is where the BIOS finds the address of the Nucleus functions to 
+#define	PASSUPVECTOR	  0x0FFFF900 /* The pass up vector is where the BIOS finds the address of the Nucleus functions to
                                     pass control */
 
 /* Exceptions related constants */
@@ -102,6 +102,7 @@
 /* important places */
 #define NUCLEUSSTACKPAGE 0x20001000
 #define STATUSREG 0x10400000
+#define DEVICEREGISTERSSTARTINGADDRESS  0x10000054
 
 /* bit operations */
 #define ALLOFF 0x00000000 /* Set all of the bits in the status register to 0. */

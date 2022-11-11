@@ -122,6 +122,7 @@ typedef struct pcb_t
 
         *p_prnt, /* pointer to parent */
         *p_child, /* pointer to 1st child */
+				*p_sibPrev,
         *p_sib; /* pointer to sibling */
     state_t p_s; /* processor state */
     cpu_t p_time; /* cpu time used by proc */
