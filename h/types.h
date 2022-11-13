@@ -52,11 +52,10 @@ typedef struct passupvector {
 } passupvector_t;
 
 
-/* "A processor state is defined as the set of values that must be saved when an executing process is interrupted so that it can be restarted at a later point in times if it had not been interrupted. Essentially, a processor state is the contents of all the user and control registers: the current state of the processor. Reloading a processor state allows a process to continue executing from where it left off." p.8 pops */
+
 typedef struct state_t {
-	 /* A processor state in uMPS3 is defined as a 35 word block that contains the following registers: */
 	unsigned int	s_entryHI;
-	unsigned int	s_cause; /* Cause is a CP0 register containing information about the current exception and/or pending device interrupts.*/
+	unsigned int	s_cause;
 	unsigned int	s_status;
 	unsigned int 	s_pc;
 	int	 	s_reg[STATEREGNUM];
@@ -107,11 +106,14 @@ typedef struct context{
 } context_t;
 typedef struct support_t
 {
-    int sup_asid;
-    state_t sup_exceptState[2];
-    context_t sup_exceptContext[2];
-	unsigned int sup_stackTLB[501];
-	unsigned int sup_stackGen[501];
+    int 		sup_asid;
+    state_t 		sup_exceptState[2];
+    context_t 		sup_exceptContext[2];
+    unsigned int 	sup_stackTLB[501];
+    unsigned int 	sup_stackGen[501];
+    pteEntry_t 		sup_PgTable[32];
+    int			sup_privateSema4;
+    
 } support_t;
 
 typedef struct pcb_t
@@ -122,7 +124,6 @@ typedef struct pcb_t
 
         *p_prnt, /* pointer to parent */
         *p_child, /* pointer to 1st child */
-				*p_sibPrev,
         *p_sib; /* pointer to sibling */
     state_t p_s; /* processor state */
     cpu_t p_time; /* cpu time used by proc */
