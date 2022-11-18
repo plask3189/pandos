@@ -106,14 +106,14 @@ typedef struct context{
 } context_t;
 typedef struct support_t
 {
-    int 		sup_asid;
+    int 		sup_asid; /* a six-bit process identifier contained in the EntryHi register. */
     state_t 		sup_exceptState[2];
     context_t 		sup_exceptContext[2];
     unsigned int 	sup_stackTLB[501];
     unsigned int 	sup_stackGen[501];
     pteEntry_t 		sup_PgTable[32];
     int			sup_privateSema4;
-    
+
 } support_t;
 
 typedef struct pcb_t
