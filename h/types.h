@@ -107,11 +107,12 @@ typedef struct context{
 typedef struct support_t
 {
     int 		sup_asid; /* a six-bit process identifier contained in the EntryHi register. */
-    state_t 		sup_exceptState[2];
-    context_t 		sup_exceptContext[2];
-    unsigned int 	sup_stackTLB[501];
-    unsigned int 	sup_stackGen[501];
-    pteEntry_t 		sup_PgTable[32];
+    state_t 		sup_exceptState[2]; /* The two processor state (state t) areas where the processor state at the time of the exception is placed by the Nucleus for passing up exception handling to the Support Level. */
+    context_t 		sup_exceptContext[2]; /* The two processor context (context t) sets. Each context is a PC/SP/Status combination. These are the two pro- cessor contexts which the Nucleus uses for passing up exception handling to the Support Level. */
+		pteEntry_t 		sup_privatePgTbl[32]; /* The process’s Page Table. */
+		unsigned int 	sup_stackTLB[501]; /* The stack area for the process’s TLB exception handler. An integer array of 500 is a 2Kb area. */
+    unsigned int 	sup_stackGen[501]; /* The stack area for the process’s Support Level general exception handler. */
+    
     int			sup_privateSema4;
 
 } support_t;

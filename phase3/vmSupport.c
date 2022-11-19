@@ -31,7 +31,7 @@ void initTLB() {
 	/* The swap pool semaphore is initialized to 1 for mutual exclusion since it controls access to the swap pool data structure. */
 	swapperSema4 = 1;
 	for (i = 0, i < POOLSIZE, i++) {
-		/* Since all valid ASID values are positive numbers, one can indicate that a frame is unoccupied with an entry of -1 in that frame’s ASID entry in the Swap Pool table. */
+		/* Since all valid ASID values are positive numbers, we indicate that a frame is unoccupied with an entry of -1 in that frame’s ASID entry in the Swap Pool table. */
 		swapPool[i].sw_asid = -1;
 	}
 }
@@ -39,17 +39,14 @@ void initTLB() {
 /* The TLB Refill Handler: gets called by a TLB Exception when there is no TLB entry that can be found.  This function will locate the correct Page Table entry in some Support Level data structure (i.e. a U-proc’s Page Table), write it into the TLB, and return control (LDST) to the Current Process to restart the address translation process.
 */
 void uTLBRefillHandler() {
-
 	state_PTR oldState;
 	int pageNumber;
-
 	oldState = (state_PTR)BIOSDATAPAGE;
-  /* Locate the correct page table entry in the current process's page table. */
+  /* Locate the correct page table entry in the current process' page table. */
 	pageNumber = (((oldState -> s_entryHI) & TURNOFFVPNBITS) >> VIRTSHIFT);
 	pageNumber = (pageNumber % PAGEMAX);
-
-	setENTRYHI((currentProc -> p_supportStruct -> sup_PgTable[pageNumber]).entryHI);
-	setENTRYLO((currentProc -> p_supportStruct -> sup_PgTable[pageNumber]).entryLO);
+	setENTRYHI((currentProc -> p_supportStruct -> sup_privatePgTbl[pageNumber]).entryHI);
+	setENTRYLO((currentProc -> p_supportStruct -> sup_privatePgTbl[pageNumber]).entryLO);
   /* Write EntryHi and EntryLo into the TLB using the TLBWR instruction.*/
 	TLBWR();
   /* Return control to the current process to restart the address translation process.*/
@@ -76,7 +73,7 @@ void pager(){
     /* Use the selected frame */
     memaddr page = (memaddr) (SWPSTARTADDR + ((frame)* PAGESIZE));
     /* If frame i is currently occupied, assume it is occupied by logical page number k belonging to process x (ASID) and that it is “dirty” (i.e. been modified): */
-    if(swapPool[frame].sw_asid!=-ONE){
+    if(swapPool[frame].sw_asid != -1){
         interruptsSwitch(0);
         swapPool[frame].sw_pte->entryLO &= ~(VALIDON);
         TLBCLR();
@@ -86,11 +83,11 @@ void pager(){
     }
     /* Read the contents of the Current Process’ backing store/flash device logical page p into frame i. [Section 4.5.1] */
     flashIO(0, missingPageNumber, page, support->sup_asid-ONE);
-    /* Update the Swap Pool table’s entry i to reflect frame i’s new contents: page p belonging to the Current Process’s ASID, and a pointer to the Current Process’s Page Table entry for page p. */
+    /* Update the Swap Pool table’s entry i to reflect frame i’s new contents: page p belonging to the Current Process’ ASID, and a pointer to the Current Process’s Page Table entry for page p. */
     swapPool[frame].sw_asid = support->sup_asid;
     swapPool[frame].sw_pageNo = missingPageNumber;
-    /* Update the Current Process’s Page Table entry for page p to indicate it is now present (V bit) and occupying frame i (PFN field). */
-    swapPool[frame].sw_pte = &(supports[support->sup_asid-ONE].sup_privatPgTb[missingPageNumber]);
+    /* Update the Current Process’ Page Table entry for page p to indicate it is now present (V bit) and occupying frame i (PFN field). */
+    swapPool[frame].sw_pte = &(supports[support->sup_asid-ONE].sup_privatePgTbl[missingPageNumber]);
     interruptsSwitch(0);
     swapPool[frame].sw_pte->entryLO = page | DIRTYON | VALIDON;
     TLBCLR();
