@@ -167,5 +167,34 @@
 #define GETASID 0x00000FC0
 #define SWPSTARTADDR 0x20020000
 
+/*Support for EntryLO */
+#define GON	0x00000100
+#define VON	0x00000200
+#define DBON	0x00000400
+
+#define USTACK	0xC0000000
+#define USTART	0x800000B0
+
+#define PCINC 4
+#define ZERO 0
+#define ONE 1
+#define ON 1
+#define OFF 0
+#define SHIFT 2
+
+#define TLBINV	2
+#define TLBINVS	3
+
+#define IOINTERRUPT 0
+#define TLBEXCEPTION 3
+#define SYSEXCEPTION 8
+
+#define USERPROCMAX	8
+#define POOL		(USERPROCMAX * 2)
+
+#define FLASHREAD	2
+#define FLASHWRITE	3
+
+
 
 #endif
