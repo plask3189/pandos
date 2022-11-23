@@ -66,7 +66,7 @@
  		supp[id].sup_asid = id;
  		
  		supp[id].sup_exceptContext[GENERALEXCEPT].c_status = ALLOFF | IEON | IMON | TEBITON;
- 		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_status = ALLOFF | IEON | IMON | TEBITON'
+ 		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_status = ALLOFF | IEON | IMON | TEBITON;
  		
  		supp[id].sup_exceptContext[GENERALEXCEPT].c_stackPTR = (int) &(supp[id].sup_stackGEN[499];
  		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_stackPTR = (int) &(supp[id].sup_stackPG[499];
