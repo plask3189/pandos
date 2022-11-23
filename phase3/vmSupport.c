@@ -101,11 +101,11 @@ void pager(){
 	}
 }
 
-/* Pick a frame to satisfy a page fault. */
+/* Pick a frame to satisfy a page fault. Which frame is selected is determined by the Pandos page replacement algorithm.  */
 pickFrameFromSwapPool(){
-	static int i = 0;
-	i = (i + 1) % POOLSIZE;
-	return i;
+	static int frameNumber = 0;
+	frameNumber = (frameNumber + 1) % POOLSIZE;
+	return frameNumber;
 }
 
 /*
