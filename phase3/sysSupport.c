@@ -19,65 +19,56 @@ void uSyscallHandler(){
    support_t * support = SYSCALL(GETSUPPORTPTR, ZERO, ZERO, ZERO);
    /* The processor state at the time of the exception is in the Support Structure’s corresponding sup_exceptState field. */
    state_PTR exceptionState = &support->sup_exceptState[GENERALEXCEPT];
+   /*  Increment the exceptionState's PC by 4 to return control to the instruction after the SYSCALL instruction. */
    exceptionState->s_pc = (exceptionState->s_pc + PCINC);
    int cause = exceptionState->s_cause;
 
    if(cause == ONE){
        SYSCALL(TERMINATE, ZERO, ZERO, ZERO);
-   }else{ /*If cause != ONE, then the cause is a syscall exception. */
+   }else{
+     /* The executing process places appropriate values in the general purpose registers a0–a3 immediately prior to executing the SYSCALL instruction. */
        int syscallNumber = exceptionState->s_a0;
        int processASID = support->sup_asid;
        int arg1 = exceptionState->s_a1;
        int arg2 = exceptionState->s_a2;
        int arg3 = exceptionState->s_a3;
        int ret = 0;
-       switch(syscallNumber){
-           case TERMINATE:
+       switch(syscallNumber){ /* Determine which syscall handler to pass control to by comparing the syscallNumber to the syscall codes. */
+           case TERMINATE: /* SYS 9: Terminate process */
                terminateProcess(processASID);
                break;
-           case GETTOD:
-               exceptionState->s_v0 = getTOD();
+           case GETTOD: /* SYS 10: Get TOD */
+               exceptionState->s_v0 = getTOD(); /* The number of microseconds since the system was last booted is placed in the U-proc's v0 register. */
                break;
-           case WRITETOPRINTER:
+           case WRITETOPRINTER: /* SYS 11: Write to the printer */
                exceptionState->s_v0 = writeToPrinter(arg1, arg2, processASID-1);
                break;
-           case WRITETOTERMINAL:
+           case WRITETOTERMINAL: /* SYS 12: Write to the terminal */
                exceptionState->s_v0 = writeToTerminal(arg1, arg2, processASID-1);
                break;
-           case READFROMTERMINAL:
+           case READFROMTERMINAL: /* SYS 13: Read to the terminal */
                exceptionState->s_v0 =  readFromTerminal(arg1);
                break;
            default:
-               terminate(processASID);
+               terminateProcess(processASID); /* If none of the above match the syscallNumber, terminate the process aka SYS 2. */
        }
        LDST(exceptionState);
    }
 }
-void interruptsSwitch(int on){
-
+void interruptsSwitch(int onOrOff){
+  if(!onOrOff){ /* if IEc == 0, keep status at 0. If IEc == 1, change status to 0. */
+      setSTATUS(getSTATUS() & ~ONE);
+  } else {
+      setSTATUS(getSTATUS() | ONE); /* This bitwise operation always results in a one, making the IEc bit hold 1. When 1, interrupt acceptance is controlled by Status.IM (the interrupt mask). */
+  }
 }
 
 void terminateProcess(int asid){
-    SYSCALL(TERMINATETHREAD,0,0,0);
+   /* The SYS9 service is essentially a user-mode “wrapper” for the kernel-mode restricted SYS2 service, so execute SYS2 aka TERMINATEPROCESS. */
+   SYSCALL(TERMINATEPROCESS,ZERO,ZERO,ZERO);
 }
 
 int writeToTerminal(char *msg, int stringLength, int processASID){
-  unsigned int * base = (unsigned int *) (TERM0ADDR + (processASID * 0x10));
-  unsigned int status;
-  SYSCALL(PASSEREN, (int)&devicesSem[34], 0, 0);
-  int i = 0;
-  int ret = 0;
-  for (i;i<strlen;i++) {
-    *(base + 3) = PRINTCHR | (((unsigned int) *msg) << BYTELEN);
-    int status = SYSCALL(WAITIO, TERMINT, 0, 0);
-      if ((status & TERMSTATMASK) != RECVD){
-    ret = -status;
-          break;
-      }
-  msg++;
-  }
-  SYSCALL(VERHOGEN, (int)&devicesSem[34], 0, 0);
-  return ret;
 }
 
 int readFromTerminal(char* virtualAddress){
@@ -90,6 +81,6 @@ int writeToPrinter(char *msg, int stringLength, int processASID){
 
 cpu_t getTOD(){
   cpu_t time;
-	STCK(time);
-	supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = time;
+	STCK(time); /* Populate time with the value of how many microseconds since the system last booted. */
+	supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = time; /* This causes the number of microseconds since the system was last booted/reset to be placed/returned in the U-proc’s v0 register. */
 }

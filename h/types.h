@@ -99,11 +99,13 @@ typedef struct pteEntry_t {
 #define s_ra	s_reg[28]
 #define s_HI	s_reg[29]
 #define s_LO	s_reg[30]
+
 typedef struct context{
     unsigned int c_stackPtr,
                  c_status,
                  c_pc;
 } context_t;
+
 typedef struct support_t
 {
     int 		sup_asid; /* a six-bit process identifier contained in the EntryHi register. */
@@ -112,7 +114,7 @@ typedef struct support_t
 		pteEntry_t 		sup_privatePgTbl[32]; /* The process’s Page Table. */
 		unsigned int 	sup_stackTLB[501]; /* The stack area for the process’s TLB exception handler. An integer array of 500 is a 2Kb area. */
     unsigned int 	sup_stackGen[501]; /* The stack area for the process’s Support Level general exception handler. */
-    
+
     int			sup_privateSema4;
 
 } support_t;

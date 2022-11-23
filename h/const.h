@@ -146,7 +146,7 @@
 #define SYSEXCEPTION 8
 
 #define USERPROCMAX	8
-#define POOLSIZE		(USERPROCMAX * 2)  
+#define POOLSIZE		(USERPROCMAX * 2)
 
 /* phase 3 constants */
 #define MAXUPROC 1
@@ -155,6 +155,7 @@
 #define ASIDSHIFT 6
 #define BYTELENGTH	8
 #define TERMINATE 9
+#define  GETTOD  10
 #define WRITETOPRINTER 11
 #define WRITETOTERMINAL 12
 #define READFROMTERMINAL 13
