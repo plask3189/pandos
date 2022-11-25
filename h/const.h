@@ -161,12 +161,14 @@
 #define READFROMTERMINAL 13
 #define PGTABLESIZE 32
 #define	TERM0ADDR 0x10000254
+#define  DEVICEREGISTERSBUSAREA  0x10000054 /* The device registers are located in low-memory starting at 0x1000.0054. Since this area falls in kseg0, all references are considered physical addresses and access is limited to kernel mode  */
 #define TERMSTATMASK 0xff
 #define DIRTYON 0x00000400
 #define VALIDON 0x00000200
 #define GETPAGENO 0x00007000
 #define GETASID 0x00000FC0
 #define SWPSTARTADDR 0x20020000
+#define MAXSTRING  128
 
 /*Support for EntryLO */
 #define GON	0x00000100
@@ -176,7 +178,7 @@
 #define USTACK	0xC0000000
 #define USTART	0x800000B0
 
-#define PCINC 4
+
 #define ZERO 0
 #define ONE 1
 #define ON 1
@@ -191,7 +193,7 @@
 #define SYSEXCEPTION 8
 
 #define USERPROCMAX	8
-#define POOL		(USERPROCMAX * 2)
+
 
 #define FLASHREAD	2
 #define FLASHWRITE	3
