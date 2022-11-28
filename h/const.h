@@ -22,7 +22,7 @@
 
 #define NULL 			    ((void *)0xFFFFFFFF)
 
-/* device interrupts */
+/* The below constants are correspondence between device class/type and interrupt line. Interrupt lines 3-7 are used for peripheral devices. */
 #define DISKINT			  3
 #define FLASHINT 		  4
 #define NETWINT 		  5
@@ -151,7 +151,7 @@
 /* phase 3 constants */
 #define MAXUPROC 1
 #define PRINTCHR	2
-#define RECVD 5
+#define CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED 5 /* The Character Received/Transmitted code (5) is set when a character is correctly received or transmitted from the terminal and is placed in RECV STATUS.RECV’D-CHAR. */
 #define ASIDSHIFT 6
 #define BYTELENGTH	8
 #define TERMINATE 9

@@ -18,7 +18,7 @@
 
 void SysSupport(){
    support_t* supportStruct = SYSCALL(GETSUPPORTPTR, ZERO, ZERO, ZERO);
-
+   state_PTR exceptionState = &supportStruct->sup_exceptState[GENERALEXCEPT];
    int cause = exceptionState->s_cause;
    if(cause == SYSEXCEPTION){
     uSysHandler(supportStruct);
@@ -83,12 +83,12 @@ int writeToTerminal(char *characterAddress, int length, int processASID){
 		unsigned int status;
 		int error;
 		devregarea_t* devReg = (devregarea_t*) RAMBASEADDR;
-    int deviceSemaphoreNumber = ((TERMINAL - DISK) * DEVPERINT) + processASID;
+    int deviceSemaphoreNumber = ((TERMINT - 3) * DEVPERINT) + processASID; /* essentially 32 + processASID */
     if((int)characterAddress < KUSEG){ /* If there's a write to a terminal device from an address outside of the requesting U-proc’s logical address space, error. */
-      SYSCALL(TERMINATEPROCESS, 0, 0, 0);
+      SYSCALL(TERMINATEPROCESS, ZERO, ZERO, ZERO);
     }
     if((length < 0) || (length > MAXSTRING)){ /* Error if request a SYS12 with a length less than 0, or a length greater than 128. */
-      SYSCALL(TERMINATEPROCESS, 0, 0, 0);
+      SYSCALL(TERMINATEPROCESS, ZERO, ZERO, ZERO);
     }
     /* Start mutual exclusion by P-ing the semaphore. */
     SYSCALL(PASSERN, (int) &semDevices[deviceSemaphoreNumber], 0, 0);
@@ -97,7 +97,7 @@ int writeToTerminal(char *characterAddress, int length, int processASID){
 		while((error == FALSE) && (counter < length)){
       devReg->devreg[deviceSemaphoreNumber].t_transm_command = *characterAddress << BYTELENGTH | 2;
       status = SYSCALL(WAITIO, TERMINAL, processASID, 0);
-			if((status & TERMSTATMASK) != 5){
+			if((status & TERMSTATMASK) != CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED){ /* If the character was incorrectly transmitted, the status code is not 5. */
 			    error = TRUE;
 			}else{
         counter++;
@@ -105,7 +105,7 @@ int writeToTerminal(char *characterAddress, int length, int processASID){
       characterAddress++;
 		}
 		/* Release mutual exclusion by V-ing the semaphore. */
-		SYSCALL(VERHOGEN, (int) &semDevices[deviceSemaphoreNumber], 0, 0);
+		SYSCALL(VERHOGEN, (int) &semDevices[deviceSemaphoreNumber], ZERO, ZERO);
 
 		if(error){
 		    /* If there's an error, the negative of the device’s status value is returned in v0 . */
@@ -127,19 +127,19 @@ int writeToPrinter(char *characterAddress, int stringLength, int processASID){
   unsigned int* printer = (DEVICEREGISTERSBUSAREA + ((3) * 0x80) + (processASID * 0x10));
   unsigned int status;
   int deviceSemaphoreNumber = ((TERMINAL - DISK) * DEVPERINT) + processASID;
-  SYSCALL(PASSEREN, (int)&devicesSem[deviceSemaphoreNumber], 0, 0);
+  SYSCALL(PASSEREN, (int)&semDevices[deviceSemaphoreNumber], ZERO, ZERO);
   int i = 0;
   int ret = 0;
   for (i; i<stringLength; i++) {
     *(printer + 3) = PRINTCHR | (((unsigned int) *characterAddress) << BYTELENGTH);
-    int status = SYSCALL(WAITIO, TERMINT, 0, 0);
-    if ((status & TERMSTATMASK) != RECVD){
+    int status = SYSCALL(WAITIO, TERMINT, ZERO, ZERO);
+    if ((status & TERMSTATMASK) != CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED){
       ret = ret - status;
       break;
     }
     characterAddress++;
   }
-  SYSCALL(VERHOGEN, (int)&devicesSem[deviceSemaphoreNumber], 0, 0);
+  SYSCALL(VERHOGEN, (int)&semDevices[deviceSemaphoreNumber], 0, 0);
   return ret;
   return 0;
 }
