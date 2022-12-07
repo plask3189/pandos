@@ -151,7 +151,7 @@
 /* phase 3 constants */
 #define MAXUPROC 1
 #define PRINTCHR	2
-#define CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED 5 /* The Character Received/Transmitted code (5) is set when a character is correctly received or transmitted from the terminal and is placed in RECV STATUS.RECV’D-CHAR. */
+#define CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED 5 /* The Character Received/ code (5) is set when a character is correctly received or transmitted from the terminal and is placed in RECV STATUS.RECV’D-CHAR. */
 #define ASIDSHIFT 6
 #define BYTELENGTH	8
 #define TERMINATE 9

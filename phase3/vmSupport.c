@@ -69,9 +69,9 @@ void pager(){
     /*Determine the missing page number found in the saved exception state’s EntryHi.*/
     int missingPageNumber = (exceptionState->s_entryHI & TURNOFFVPNBITS);
     /* Pick a frame, i, from the Swap Pool. Which frame is selected is determined by the Pandos page replacement algorithm. */
-    int frame = pickFrameFromSwapPool();
-    /* Use the selected frame */
-    memaddr page = (memaddr) (SWPSTARTADDR + ((frame)* PAGESIZE));
+    int frame = pickFrameFromSwapPool(); /* picks frame from swap pool by mod-ing the pool size. */
+    /* get the address of the frame */
+    memaddr page = (memaddr) (SWPSTARTADDR + ((frame)* PAGESIZE)); /* swapstart address is  ramsize + os frame */
     /* If frame i is currently occupied, assume it is occupied by logical page number k belonging to process x (ASID) and that it is “dirty” (i.e. been modified): */
     if(swapPool[frame].sw_asid != -1){
         interruptsSwitch(0);

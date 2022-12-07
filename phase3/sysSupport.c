@@ -69,9 +69,40 @@ void interruptsSwitch(int onOrOff){
   }
 }
 
+/* The SYS9 service is essentially a user-mode “wrapper” for the kernel-mode restricted SYS2 service, so execute SYS2 aka TERMINATEPROCESS. */
 void terminateProcess(int asid){
-   /* The SYS9 service is essentially a user-mode “wrapper” for the kernel-mode restricted SYS2 service, so execute SYS2 aka TERMINATEPROCESS. */
    SYSCALL(TERMINATEPROCESS,ZERO,ZERO,ZERO);
+}
+
+/* When this service is requested, it causes the number of microseconds since the system was last booted/reset to be placed/returned in the U-proc’s v0 register. */
+cpu_t getTOD(){
+  cpu_t time;
+	STCK(time); /* Populate time with the value of how many microseconds since the system last booted. */
+	supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = time; /* This causes the number of microseconds since the system was last booted/reset to be placed/returned in the U-proc’s v0 register. */
+}
+
+/* SYS11:  When requested, this service causes the requesting U-proc to be suspended until a line of output (string of characters) has been transmitted to the printer device associated with the U-proc.
+Once the process resumes, the number of characters actually transmitted is returned in v0. */
+int writeToPrinter(char *characterAddress, int stringLength, int processASID){
+  /* Given an interrupt line (IntLineNo) and a device number (DevNo) one can compute the starting address of the device’s device register: devAddrBase = 0x1000.0054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10) (p.28 pops) */
+  unsigned int* printer = (DEVICEREGISTERSBUSAREA + ((3) * 0x80) + (processASID * 0x10));
+  unsigned int status;
+  int deviceSemaphoreNumber = ((TERMINAL - DISK) * DEVPERINT) + processASID;
+  SYSCALL(PASSEREN, (int)&semDevices[deviceSemaphoreNumber], ZERO, ZERO);
+  int i = 0;
+  int ret = 0;
+  for (i; i<stringLength; i++) {
+    *(printer + 3) = PRINTCHR | (((unsigned int) *characterAddress) << BYTELENGTH);
+    int status = SYSCALL(WAITIO, TERMINT, ZERO, ZERO);
+    if ((status & TERMSTATMASK) != CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED){
+      ret = ret - status;
+      break;
+    }
+    characterAddress++;
+  }
+  SYSCALL(VERHOGEN, (int)&semDevices[deviceSemaphoreNumber], 0, 0);
+  return ret;
+  return 0;
 }
 
 /* SYS 12: When requested, this service causes the requesting U-proc to be suspended until a line of output (string of characters) has been transmitted to the terminal device associated with the U-proc.
@@ -118,34 +149,4 @@ int writeToTerminal(char *characterAddress, int length, int processASID){
 
 int readFromTerminal(char* virtualAddress){
   return 0;
-}
-
-/* When requested, this service causes the requesting U-proc to be suspended until a line of output (string of characters) has been transmitted to the printer device associated with the U-proc.
-Once the process resumes, the number of characters actually transmitted is returned in v0. */
-int writeToPrinter(char *characterAddress, int stringLength, int processASID){
-  /* Given an interrupt line (IntLineNo) and a device number (DevNo) one can compute the starting address of the device’s device register: devAddrBase = 0x1000.0054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10) (p.28 pops) */
-  unsigned int* printer = (DEVICEREGISTERSBUSAREA + ((3) * 0x80) + (processASID * 0x10));
-  unsigned int status;
-  int deviceSemaphoreNumber = ((TERMINAL - DISK) * DEVPERINT) + processASID;
-  SYSCALL(PASSEREN, (int)&semDevices[deviceSemaphoreNumber], ZERO, ZERO);
-  int i = 0;
-  int ret = 0;
-  for (i; i<stringLength; i++) {
-    *(printer + 3) = PRINTCHR | (((unsigned int) *characterAddress) << BYTELENGTH);
-    int status = SYSCALL(WAITIO, TERMINT, ZERO, ZERO);
-    if ((status & TERMSTATMASK) != CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED){
-      ret = ret - status;
-      break;
-    }
-    characterAddress++;
-  }
-  SYSCALL(VERHOGEN, (int)&semDevices[deviceSemaphoreNumber], 0, 0);
-  return ret;
-  return 0;
-}
-
-cpu_t getTOD(){
-  cpu_t time;
-	STCK(time); /* Populate time with the value of how many microseconds since the system last booted. */
-	supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = time; /* This causes the number of microseconds since the system was last booted/reset to be placed/returned in the U-proc’s v0 register. */
 }
