@@ -27,7 +27,8 @@
  
  
  void test(){
- 	for (int i = 0; i < (DEVCOUNT + DEVPERINT); i++) {
+ 	int i;
+ 	for (i = 0; i < (DEVCOUNT + DEVPERINT); i++) {
  		devSem[i] = 1;
  	}
  	
@@ -41,7 +42,7 @@
  	masterSema4 = 0;
  	
  	/* Blocking the control process */
- 	for (int i = 0, i < USERPROCMAX; i++) {
+ 	for (i = 0; i < USERPROCMAX; i++) {
  		SYSCALL(PASSEREN, (int) &masterSema4, 0, 0);
  	}
  	
@@ -58,7 +59,7 @@
  	
  	/* Initialize the user processes! Maximum user processes is set to 8 in const.h */
  	for(id = 1; id <= USERPROCMAX; id++) {
- 		procState.s_entryHI = id << IDSHIFT;
+ 		procState.s_entryHI = id << ASIDSHIFT;
  		procState.s_sp = (int) USTACK;
  		procState.s_pc = procState.s_t9 = (memaddr) USTART;
  		procState.s_status = ALLOFF | IEON | IMON | KUON | TEBITON;
@@ -68,19 +69,20 @@
  		supp[id].sup_exceptContext[GENERALEXCEPT].c_status = ALLOFF | IEON | IMON | TEBITON;
  		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_status = ALLOFF | IEON | IMON | TEBITON;
  		
- 		supp[id].sup_exceptContext[GENERALEXCEPT].c_stackPTR = (int) &(supp[id].sup_stackGEN[499];
- 		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_stackPTR = (int) &(supp[id].sup_stackPG[499];
+ 		supp[id].sup_exceptContext[GENERALEXCEPT].c_stackPtr = (int) &(supp[id].sup_stackGen[500]);
+ 		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_stackPtr = (int) &(supp[id].sup_stackTLB[500]);
  		
  		supp[id].sup_exceptContext[GENERALEXCEPT].c_pc = (memaddr) SysSupport;
- 		supp[id].sup_exceptContext[PGFAULTEXCEPT].c+pc = (memaddr) pager;
+ 		supp[id].sup_exceptContext[PGFAULTEXCEPT].c_pc = (memaddr) pager;
  		
  		/* Time to make a page table for the process! */
- 		for(int i = 0; i < PAGEMAX; i++) {
- 			supp[id].sup_PgTable[i].entryHI = ((0x800000 + i) << VIRTSHIFT) | (id << IDSHIFT);
- 			supp[id].sup_PgTable[i].entryLO = ALLOFF | DON;
+ 		int i;
+ 		for (i = 0; i < PAGEMAX; i++) {
+ 			supp[id].sup_privatePgTbl[i].entryHI = ((0x800000 + i) << VIRTSHIFT) | (id << ASIDSHIFT);
+ 			supp[id].sup_privatePgTbl[i].entryLO = ALLOFF | DBON;
  		}
  		
- 		supp[id].sup_PgTable[PAGEMAX - 1].entryHI = (0xBFFFF << VIRTSHIFT) | (id << IDSHIFT);
+ 		supp[id].sup_privatePgTbl[PAGEMAX - 1].entryHI = (0xBFFFF << VIRTSHIFT) | (id << ASIDSHIFT);
  		/*SYSCALL 1 */
  		create = SYSCALL(CREATEPROCESS, (int) &procState, (int) &(supp[id]), 0);
  		
