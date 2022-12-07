@@ -45,10 +45,10 @@ typedef struct {
 
 /* Pass Up Vector */
 typedef struct passupvector {
-    unsigned int tlb_refll_handler;
-    unsigned int tlb_refll_stackPtr;
-    unsigned int exception_handler;
-    unsigned int exception_stackPtr;
+    	unsigned int tlb_refll_handler;
+    	unsigned int tlb_refll_stackPtr;
+    	unsigned int exception_handler;
+    	unsigned int exception_stackPtr;
 } passupvector_t;
 
 
@@ -108,14 +108,14 @@ typedef struct context{
 
 typedef struct support_t
 {
-    int 		sup_asid; /* a six-bit process identifier contained in the EntryHi register. */
-    state_t 		sup_exceptState[2]; /* The two processor state (state t) areas where the processor state at the time of the exception is placed by the Nucleus for passing up exception handling to the Support Level. */
-    context_t 		sup_exceptContext[2]; /* The two processor context (context t) sets. Each context is a PC/SP/Status combination. These are the two pro- cessor contexts which the Nucleus uses for passing up exception handling to the Support Level. */
-		pteEntry_t 		sup_privatePgTbl[32]; /* The process’s Page Table. */
+    int 	sup_asid; /* a six-bit process identifier contained in the EntryHi register. */
+    state_t 	sup_exceptState[2]; /* The two processor state (state t) areas where the processor state at the time of the exception is placed by the Nucleus for passing up exception handling to the Support Level. */
+    context_t 	sup_exceptContext[2]; /* The two processor context (context t) sets. Each context is a PC/SP/Status combination. These are the two pro- cessor contexts which the Nucleus uses for passing up exception handling to the Support Level. */
+		pteEntry_t 	sup_privatePgTbl[32]; /* The process’s Page Table. */
 		unsigned int 	sup_stackTLB[501]; /* The stack area for the process’s TLB exception handler. An integer array of 500 is a 2Kb area. */
-    unsigned int 	sup_stackGen[501]; /* The stack area for the process’s Support Level general exception handler. */
+    		unsigned int 	sup_stackGen[501]; /* The stack area for the process’s Support Level general exception handler. */
 
-    int			sup_privateSema4;
+    		int		sup_privateSema4;
 
 } support_t;
 
@@ -128,17 +128,17 @@ typedef struct pcb_t
         *p_prnt, /* pointer to parent */
         *p_child, /* pointer to 1st child */
         *p_sib; /* pointer to sibling */
-    state_t p_s; /* processor state */
-    cpu_t p_time; /* cpu time used by proc */
-    int *p_semAdd; /* pointer to sema4 in which process blocked */
+    	state_t p_s; /* processor state */
+    	cpu_t p_time; /* cpu time used by proc */
+    	int *p_semAdd; /* pointer to sema4 in which process blocked */
     /* support layer information */
-    support_t *p_supportStruct; /* ptr to support struct */
+    	support_t *p_supportStruct; /* ptr to support struct */
 } pcb_t, *pcb_PTR;
 
 typedef struct semd_t{
- struct semd_t *s_next; /* next element on the ASL*/
- int *s_semAdd; /* pointer to the semaphore */
- pcb_t *s_procQ; /* processs queue */
+ 	struct semd_t *s_next; /* next element on the ASL*/
+ 	int *s_semAdd; /* pointer to the semaphore */
+ 	pcb_t *s_procQ; /* processs queue */
 } semd_t;
 
 typedef struct swap_t{
