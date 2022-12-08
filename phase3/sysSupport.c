@@ -34,7 +34,7 @@ void uSysHandler(support_t *supportStruct){
   exceptionState->s_pc = (exceptionState->s_pc + PCINC);
   /* The executing process places appropriate values in the general purpose registers a0–a3 immediately prior to executing the SYSCALL instruction. */
   int syscallNumber = exceptionState->s_a0;
-  int processASID = support->sup_asid;
+  int processASID = supportStruct->sup_asid;
   int arg1 = exceptionState->s_a1;
   int arg2 = exceptionState->s_a2;
   int arg3 = exceptionState->s_a3;
@@ -76,7 +76,8 @@ void terminateProcess(int asid){
 
 /* When this service is requested, it causes the number of microseconds since the system was last booted/reset to be placed/returned in the U-proc’s v0 register. */
 cpu_t getTOD(){
-  cpu_t time;
+  	support_t *supportStruct;
+  	cpu_t time;
 	STCK(time); /* Populate time with the value of how many microseconds since the system last booted. */
 	supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = time; /* This causes the number of microseconds since the system was last booted/reset to be placed/returned in the U-proc’s v0 register. */
 }
@@ -87,7 +88,7 @@ int writeToPrinter(char *characterAddress, int stringLength, int processASID){
   /* Given an interrupt line (IntLineNo) and a device number (DevNo) one can compute the starting address of the device’s device register: devAddrBase = 0x1000.0054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10) (p.28 pops) */
   unsigned int* printer = (DEVICEREGISTERSBUSAREA + ((3) * 0x80) + (processASID * 0x10));
   unsigned int status;
-  int deviceSemaphoreNumber = ((TERMINAL - DISK) * DEVPERINT) + processASID;
+  int deviceSemaphoreNumber = ((TERMINT - DISKINT) * DEVPERINT) + processASID;
   SYSCALL(PASSEREN, (int)&semDevices[deviceSemaphoreNumber], ZERO, ZERO);
   int i = 0;
   int ret = 0;
@@ -109,31 +110,32 @@ int writeToPrinter(char *characterAddress, int stringLength, int processASID){
 @param
 char* characterAddress - The virtual address of the first character of the string is in a1. aka... char* characterAddress = (char*) supportStruct->sup_exceptState[GENERALEXCEPT].s_a1;
 int length - The virtual address of the length of the string is in a2. aka... length = supportStruct->sup_exceptState[GENERALEXCEPT].s_a2; */
-  */
+
 int writeToTerminal(char *characterAddress, int length, int processASID){
-		unsigned int status;
-		int error;
-		devregarea_t* devReg = (devregarea_t*) RAMBASEADDR;
-    int deviceSemaphoreNumber = ((TERMINT - 3) * DEVPERINT) + processASID; /* essentially 32 + processASID */
-    if((int)characterAddress < KUSEG){ /* If there's a write to a terminal device from an address outside of the requesting U-proc’s logical address space, error. */
-      SYSCALL(TERMINATEPROCESS, ZERO, ZERO, ZERO);
-    }
-    if((length < 0) || (length > MAXSTRING)){ /* Error if request a SYS12 with a length less than 0, or a length greater than 128. */
-      SYSCALL(TERMINATEPROCESS, ZERO, ZERO, ZERO);
-    }
-    /* Start mutual exclusion by P-ing the semaphore. */
-    SYSCALL(PASSERN, (int) &semDevices[deviceSemaphoreNumber], 0, 0);
-    int counter = 0;
-    error = FALSE;
+	support_t *supportStruct;
+	unsigned int status;
+	int error;
+	devregarea_t* devReg = (devregarea_t*) RAMBASEADDR;
+    	int deviceSemaphoreNumber = ((TERMINT - 3) * DEVPERINT) + processASID; /* essentially 32 + processASID */
+    	if((int)characterAddress < KUSEG){ /* If there's a write to a terminal device from an address outside of the requesting U-proc’s logical address space, error. */
+      	SYSCALL(TERMINATEPROCESS, ZERO, ZERO, ZERO);
+    	}
+    	if((length < 0) || (length > MAXSTRING)){ /* Error if request a SYS12 with a length less than 0, or a length greater than 128. */
+      		SYSCALL(TERMINATEPROCESS, ZERO, ZERO, ZERO);
+    	}
+    	/* Start mutual exclusion by P-ing the semaphore. */
+    	SYSCALL(PASSEREN, (int) &semDevices[deviceSemaphoreNumber], 0, 0);
+    	int counter = 0;
+    	error = FALSE;
 		while((error == FALSE) && (counter < length)){
-      devReg->devreg[deviceSemaphoreNumber].t_transm_command = *characterAddress << BYTELENGTH | 2;
-      status = SYSCALL(WAITIO, TERMINAL, processASID, 0);
+      	devReg->devreg[deviceSemaphoreNumber].t_transm_command = *characterAddress << BYTELENGTH | 2;
+      	status = SYSCALL(WAITIO, TERMINT, processASID, 0);
 			if((status & TERMSTATMASK) != CODEFORCHARECTERCORRECTLYRECEIVEDORTRANSMITTED){ /* If the character was incorrectly transmitted, the status code is not 5. */
 			    error = TRUE;
 			}else{
         counter++;
-      }
-      characterAddress++;
+      	}
+      	characterAddress++;
 		}
 		/* Release mutual exclusion by V-ing the semaphore. */
 		SYSCALL(VERHOGEN, (int) &semDevices[deviceSemaphoreNumber], ZERO, ZERO);
@@ -142,9 +144,9 @@ int writeToTerminal(char *characterAddress, int length, int processASID){
 		    /* If there's an error, the negative of the device’s status value is returned in v0 . */
         supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = (0 - (status & 0xFF));
 		} else {
-    /* Once the process resumes, the number of characters actually transmitted is returned in v0 if the write was successful. */
-      supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = counter;
-    }
+    	/* Once the process resumes, the number of characters actually transmitted is returned in v0 if the write was successful. */
+      	supportStruct->sup_exceptState[GENERALEXCEPT].s_v0 = counter;
+    	}
 }
 
 int readFromTerminal(char* virtualAddress){
