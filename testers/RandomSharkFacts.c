@@ -27,7 +27,7 @@ void main() {
       break;
     
     case 16-19:
-      print(WRITETERMINAL, "There are over 500 specied of sharks \n");
+      print(WRITETERMINAL, "There are over 500 species of sharks \n");
       break;	
   }
  
