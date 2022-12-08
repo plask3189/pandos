@@ -16,7 +16,7 @@
 #include "../h/scheduler.h"
 #include "../h/exceptions.h"
 #include "../h/interrupts.h"
-#include "/usr/include/umps3/umps/libumps.h"
+#include "../h/libumps.h"
 
 /* Define Global Variables */
 int processCount; /* count the number of processes within the readyQueue */
@@ -30,7 +30,7 @@ int *clockSem = &semDevices[DEVNUM-ONE]; /* Clock semaphores within the device s
 /* Declaration of internal exceptionHandler and external test() and TLB Refill functions */
 HIDDEN void exceptionHandler();
 extern void test();
-extern void uTLB_RefillHandler();
+extern void uTLBRefillHandler();
 
 
 /* main() serves as the beginning of PandOS where the global variables get intitialized to be used throughout
@@ -43,7 +43,7 @@ int main(){
     /* The pass up vector is where the BIOS finds the address of the Nucleus functions to pass control to. */
     passupvector_t* nucleusFunctionAddressThatWillReceiveControl = (passupvector_t *) PASSUPVECTOR; 
     /* Set the Nucleus TLB-Refill event handler address */
-    nucleusFunctionAddressThatWillReceiveControl->tlb_refll_handler = (memaddr) uTLB_RefillHandler;
+    nucleusFunctionAddressThatWillReceiveControl->tlb_refll_handler = (memaddr) uTLBRefillHandler;
     /* Set the Stack Pointer for the Nucleus TLB-Refill event handler to the top of the stack page */
     nucleusFunctionAddressThatWillReceiveControl->tlb_refll_stackPtr = NUCLEUSSTACKPAGE; 
     /* Set the Nucleus exception handler address to the address of the ntry point for Exception Handling */
@@ -115,5 +115,4 @@ void exceptionHandler(){
      	programTrapHandler();
      }
 }
-
 
