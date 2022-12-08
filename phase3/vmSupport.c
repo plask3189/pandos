@@ -14,11 +14,11 @@
 #include "../h/initial.h"
 #include "../h/initProc.h"
 #include "../h/vmSupport.h"
-#include "../h/sysSupport.h"
+#include "../h/sysSupport.h" 
 #include "../h/libumps.h"
 
 HIDDEN void flashIO(int writeOrRead, int blockNumber, memaddr data, int flashDeviceNumber);
-HIDDEN void pickFrameFromSwapPool()
+HIDDEN int pickFrameFromSwapPool();
 
 swap_t swapPool[POOLSIZE];
 int swapperSema4;
@@ -30,7 +30,7 @@ void initTLB() {
 	int i;
 	/* The swap pool semaphore is initialized to 1 for mutual exclusion since it controls access to the swap pool data structure. */
 	swapperSema4 = 1;
-	for (i = 0, i < POOLSIZE, i++) {
+	for (i = 0; i < POOLSIZE; i++) {
 		/* Since all valid ASID values are positive numbers, we indicate that a frame is unoccupied with an entry of -1 in that frame’s ASID entry in the Swap Pool table. */
 		swapPool[i].sw_asid = -1;
 	}
@@ -65,7 +65,7 @@ void pager(){
   int cause = exceptionState->s_cause;
   if(cause != 1){
     /* Gain mutual exclusion over the Swap Pool table. (SYS3 – P operation on the Swap Pool semaphore) */
-    SYSCALL(PASSEREN, &swapSem, ZERO, ZERO);
+    SYSCALL(PASSEREN, &swapperSema4, ZERO, ZERO);
     /*Determine the missing page number found in the saved exception state’s EntryHi.*/
     int missingPageNumber = (exceptionState->s_entryHI & TURNOFFVPNBITS);
     /* Pick a frame, i, from the Swap Pool. Which frame is selected is determined by the Pandos page replacement algorithm. */
@@ -87,13 +87,13 @@ void pager(){
     swapPool[frame].sw_asid = support->sup_asid;
     swapPool[frame].sw_pageNo = missingPageNumber;
     /* Update the Current Process’ Page Table entry for page p to indicate it is now present (V bit) and occupying frame i (PFN field). */
-    swapPool[frame].sw_pte = &(supports[support->sup_asid-ONE].sup_privatePgTbl[missingPageNumber]);
+    swapPool[frame].sw_pte = &(support[support->sup_asid-ONE].sup_privatePgTbl[missingPageNumber]);
     interruptsSwitch(0);
     swapPool[frame].sw_pte->entryLO = page | DIRTYON | VALIDON;
     TLBCLR();
     interruptsSwitch(1);
     /* Release mutual exclusion over the Swap Pool table. (SYS4 – V operation on the Swap Pool semaphore) */
-    SYSCALL(VERHOGEN, &swapSem, ZERO, ZERO);
+    SYSCALL(VERHOGEN, &swapperSema4, ZERO, ZERO);
     /* Return control to the Current Process to retry the instruction that caused the page fault: LDST on the saved exception state. */
     LDST(BIOSDATAPAGE);
   } else {   /* If the Cause is a TLB-Modification exception, treat this exception as a program trap [Section 4.8], otherwise continue. */
@@ -102,7 +102,7 @@ void pager(){
 }
 
 /* Pick a frame to satisfy a page fault. Which frame is selected is determined by the Pandos page replacement algorithm.  */
-pickFrameFromSwapPool(){
+int pickFrameFromSwapPool(){
 	static int frameNumber = 0;
 	frameNumber = (frameNumber + 1) % POOLSIZE;
 	return frameNumber;
