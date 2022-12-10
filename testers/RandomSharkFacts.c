@@ -6,11 +6,10 @@
 #include "h/tconst.h"
 #include "h/print.h"
  
- #include <stdlib.h>
  
 void main() {
  
-  int r = rand() % 20; /* Int between 0 and 19 */	
+  int r = rand() % 20; /* Int between 0 and 19 doesnt work yet as there is no lib */
  
  /* Return a random fact based on the number generated! */
   switch(r){
